@@ -65,8 +65,6 @@ vite.config.ts.*
 *.tar.gz
 .cache
 .temp
-.replit
-.replit.nix
 .upm/
 .vercel
 .netlify

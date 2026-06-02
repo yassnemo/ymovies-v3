@@ -17,7 +17,7 @@ import { eq, and, desc, sql, inArray } from "drizzle-orm";
 
 // Interface for storage operations
 export interface IStorage {
-  // User operations (required for Replit Auth)
+  // User operations
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
   

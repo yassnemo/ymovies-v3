@@ -657,56 +657,118 @@ export interface SearchFilters {
   genre?: number;
 }
 
+// Client-side sort applied to search results (TMDB search endpoint ignores sort_by)
+function applyClientSort<T extends { popularity: number; vote_average: number; release_date?: string; first_air_date?: string }>(
+  items: T[],
+  sortBy: string
+): T[] {
+  return [...items].sort((a, b) => {
+    switch (sortBy) {
+      case 'popularity.asc':  return a.popularity - b.popularity;
+      case 'popularity.desc': return b.popularity - a.popularity;
+      case 'vote_average.asc':  return a.vote_average - b.vote_average;
+      case 'vote_average.desc': return b.vote_average - a.vote_average;
+      case 'release_date.asc':
+      case 'release_date.desc': {
+        const da = a.release_date ?? a.first_air_date ?? '';
+        const db = b.release_date ?? b.first_air_date ?? '';
+        return sortBy === 'release_date.desc' ? db.localeCompare(da) : da.localeCompare(db);
+      }
+      default: return 0;
+    }
+  });
+}
+
 /**
- * Advanced search for movies with filters
+ * Search movies by text query, then apply filters/sort client-side.
+ * TMDB /search/movie only supports year and language server-side;
+ * rating, genre, and sort_by must be applied after the response.
  */
 export async function searchMoviesWithFilters(query: string, filters: SearchFilters = {}): Promise<Movie[]> {
-  console.log(`Advanced search for movies with query: "${query}" and filters:`, filters);
   try {
-    const params: Record<string, string> = {
-      query,
-      sort_by: filters.sortBy || 'popularity.desc'
-    };
-
-    // Add filter parameters
-    if (filters.country) params.region = filters.country;
-    if (filters.language) params.with_original_language = filters.language;
-    if (filters.year) params.year = filters.year.toString();
-    if (filters.rating) params['vote_average.gte'] = filters.rating.toString();
-    if (filters.genre) params.with_genres = filters.genre.toString();
+    const params: Record<string, string> = { query };
+    if (filters.year) params.primary_release_year = filters.year.toString();
+    if (filters.language) params.language = filters.language;
 
     const data = await fetchFromTMDb<{ results: Movie[] }>("/search/movie", params);
-    console.log(`Advanced search complete! Found ${data.results.length} results`);
-    return data.results;
+    let results = data.results;
+
+    if (filters.rating) results = results.filter(m => m.vote_average >= filters.rating!);
+    if (filters.genre)  results = results.filter(m => (m.genre_ids ?? []).includes(filters.genre!));
+    if (filters.sortBy) results = applyClientSort(results, filters.sortBy);
+
+    return results;
   } catch (error) {
-    console.error("Error in advanced movie search:", error);
+    console.error("Error in movie search with filters:", error);
     return [];
   }
 }
 
 /**
- * Advanced search for TV shows with filters
+ * Search TV shows by text query, then apply filters/sort client-side.
  */
 export async function searchTVShowsWithFilters(query: string, filters: SearchFilters = {}): Promise<TVShow[]> {
-  console.log(`Advanced search for TV shows with query: "${query}" and filters:`, filters);
   try {
-    const params: Record<string, string> = {
-      query,
-      sort_by: filters.sortBy || 'popularity.desc'
-    };
-
-    // Add filter parameters
-    if (filters.country) params.region = filters.country;
-    if (filters.language) params.with_original_language = filters.language;
+    const params: Record<string, string> = { query };
     if (filters.year) params.first_air_date_year = filters.year.toString();
-    if (filters.rating) params['vote_average.gte'] = filters.rating.toString();
-    if (filters.genre) params.with_genres = filters.genre.toString();
+    if (filters.language) params.language = filters.language;
 
     const data = await fetchFromTMDb<{ results: TVShow[] }>("/search/tv", params);
-    console.log(`Advanced search complete! Found ${data.results.length} results`);
+    let results = data.results;
+
+    if (filters.rating) results = results.filter(s => s.vote_average >= filters.rating!);
+    if (filters.genre)  results = results.filter(s => (s.genre_ids ?? []).includes(filters.genre!));
+    if (filters.sortBy) results = applyClientSort(results, filters.sortBy);
+
+    return results;
+  } catch (error) {
+    console.error("Error in TV show search with filters:", error);
+    return [];
+  }
+}
+
+/**
+ * Discover movies using TMDB /discover/movie — supports all filter params server-side.
+ * Used when there is no text query.
+ */
+export async function discoverMoviesWithFilters(filters: SearchFilters = {}): Promise<Movie[]> {
+  try {
+    const params: Record<string, string> = {
+      sort_by: filters.sortBy || 'popularity.desc',
+    };
+    if (filters.year)     params.primary_release_year = filters.year.toString();
+    if (filters.language) params.with_original_language = filters.language;
+    if (filters.rating)   params['vote_average.gte'] = filters.rating.toString();
+    if (filters.genre)    params.with_genres = filters.genre.toString();
+    if (filters.country)  params.with_origin_country = filters.country;
+
+    const data = await fetchFromTMDb<{ results: Movie[] }>("/discover/movie", params);
     return data.results;
   } catch (error) {
-    console.error("Error in advanced TV show search:", error);
+    console.error("Error discovering movies with filters:", error);
+    return [];
+  }
+}
+
+/**
+ * Discover TV shows using TMDB /discover/tv — supports all filter params server-side.
+ * Used when there is no text query.
+ */
+export async function discoverTVShowsWithFilters(filters: SearchFilters = {}): Promise<TVShow[]> {
+  try {
+    const params: Record<string, string> = {
+      sort_by: filters.sortBy || 'popularity.desc',
+    };
+    if (filters.year)     params.first_air_date_year = filters.year.toString();
+    if (filters.language) params.with_original_language = filters.language;
+    if (filters.rating)   params['vote_average.gte'] = filters.rating.toString();
+    if (filters.genre)    params.with_genres = filters.genre.toString();
+    if (filters.country)  params.with_origin_country = filters.country;
+
+    const data = await fetchFromTMDb<{ results: TVShow[] }>("/discover/tv", params);
+    return data.results;
+  } catch (error) {
+    console.error("Error discovering TV shows with filters:", error);
     return [];
   }
 }

@@ -368,8 +368,9 @@ const TVShowDetail = () => {
             className="absolute inset-0 bg-cover bg-center"
             style={{ 
               backgroundImage: `url(${backdropPath})`,
-              backgroundPosition: "center 20%"
-            }}
+              backgroundPosition: "center 20%",
+              viewTransitionName: `tv-poster-${tvShowId}`,
+            } as React.CSSProperties}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/95 to-background/30" />
           <div className="absolute inset-0 bg-gradient-to-r from-background to-transparent" />
@@ -683,7 +684,7 @@ const TVShowDetail = () => {
               <div className="overflow-x-auto overflow-y-visible scrollbar-hide">
                 <div className="flex gap-4 pb-2">
                   {similarShows.slice(0, 20).map((s) => (
-                    <div key={s.id} className="flex-shrink-0 overflow-visible">
+                    <div key={s.id} className="flex-shrink-0 w-56 overflow-visible">
                       <TVShowCard show={s} />
                     </div>
                   ))}
@@ -706,7 +707,7 @@ const TVShowDetail = () => {
               <div className="overflow-x-auto overflow-y-visible scrollbar-hide">
                 <div className="flex gap-4 pb-2">
                   {recommendedShows.slice(0, 20).map((s) => (
-                    <div key={s.id} className="flex-shrink-0 overflow-visible">
+                    <div key={s.id} className="flex-shrink-0 w-56 overflow-visible">
                       <TVShowCard show={s} />
                     </div>
                   ))}

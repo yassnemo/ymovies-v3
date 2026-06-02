@@ -67,9 +67,7 @@ const MovieDetail = () => {
   const queryClient = useQueryClient();
   const { isFavorite, addToFavorites, removeFromFavorites } = useUserPreferences();
   
-  const [usingMockData, setUsingMockData] = useState(false);
   const [recommendationCategory, setRecommendationCategory] = useState("More Like This");
-  const [recommendationStrategy, setRecommendationStrategy] = useState<string>("");
   const movieId = parseInt(id || "0", 10);
   
   // Check if movie is in favorites - use a more reactive approach
@@ -149,12 +147,8 @@ const MovieDetail = () => {
     }
   }, [similarMoviesError]);
 
-  // Ensure the section under the movie always reflects what we render (enhanced similar movies)
   React.useEffect(() => {
-    if (movie) {
-      setRecommendationCategory(`More movies like ${movie.title}`);
-      setRecommendationStrategy("Enhanced similarity matching");
-    }
+    if (movie) setRecommendationCategory(`More movies like ${movie.title}`);
   }, [movie]);
   
   // Fetch movie videos (trailers) with better error handling
@@ -362,288 +356,225 @@ const MovieDetail = () => {
         </div>
       )}
 
-      {/* Movie Header with Backdrop */}
-      <div className="relative">
-        <div 
-          className="h-[50vh] md:h-[60vh] bg-cover bg-center bg-no-repeat relative"
-          style={{ 
-            backgroundImage: `url('${backdropUrl}')`,
-            backgroundPosition: 'center 20%'
-          }}
-        >
-          {/* Dark overlay for better text visibility */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-black/20"></div>
-        </div>
-        
-        <div className="absolute bottom-0 left-0 right-0 movie-info-gradient">
-          <div className="container mx-auto flex items-center space-x-4 px-6">
-            <Button className="bg-white text-black hover:bg-gray-200" onClick={startWatching}>
-              <Play className="mr-2 h-5 w-5" />
-              {mainTrailer ? "Play Trailer" : "Play"}
-            </Button>
-            
-            <Button 
-              variant="outline" 
-              size="icon"
-              onClick={handleWatchlistToggle}
-              title={isMovieInWatchlist ? "Remove from My List" : "Add to My List"}
-            >
-              {isMovieInWatchlist ? (
-                <Check className="h-5 w-5" />
-              ) : (
-                <Plus className="h-5 w-5" />
-              )}
-            </Button>
-            
-            <Button 
-              variant="outline" 
-              size="icon"
-              onClick={handleFavoriteToggle}
-              title={favoriteStatus ? "Remove from Favorites" : "Add to Favorites"}
-              className={favoriteStatus ? "bg-red-600 border-red-600 hover:bg-red-700" : ""}
-            >
-              <Heart className={`h-5 w-5 ${favoriteStatus ? 'text-white fill-current' : 'text-white'}`} />
-            </Button>
+      {/* Hero — backdrop with title + meta + actions pinned to bottom */}
+      <div
+        className="relative h-[50vh] md:h-[60vh] bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: `url('${backdropUrl}')`,
+          backgroundPosition: 'center 20%',
+          viewTransitionName: `movie-poster-${movieId}`,
+        } as React.CSSProperties}
+      >
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/55 to-black/10" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/30 to-transparent" />
+
+        <div className="absolute bottom-0 left-0 right-0 px-6 pb-8">
+          <div className="container mx-auto">
+            <h1 className="text-3xl md:text-5xl font-bold text-white mb-2 drop-shadow-lg">
+              {movie.title}
+            </h1>
+
+            <div className="flex items-center flex-wrap gap-2.5 mb-5 text-sm">
+              <span className="text-green-400 font-bold">{Math.round(movie.vote_average * 10)}% Match</span>
+              <span className="text-gray-300">{new Date(movie.release_date).getFullYear()}</span>
+              <span className="border border-gray-500 px-1.5 py-0.5 text-xs text-gray-300 rounded">
+                {movie.adult ? "R" : "PG-13"}
+              </span>
+              {movie.runtime && <span className="text-gray-300">{formatRuntime(movie.runtime)}</span>}
+              <span className="border border-gray-500 px-1.5 py-0.5 text-xs text-gray-300 rounded">HD</span>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <Button className="bg-white text-black hover:bg-gray-200 font-semibold" onClick={startWatching}>
+                <Play className="mr-2 h-4 w-4" />
+                {mainTrailer ? "Play Trailer" : "Play"}
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={handleWatchlistToggle}
+                title={isMovieInWatchlist ? "Remove from My List" : "Add to My List"}
+              >
+                {isMovieInWatchlist ? <Check className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={handleFavoriteToggle}
+                title={favoriteStatus ? "Remove from Favorites" : "Add to Favorites"}
+                className={favoriteStatus ? "bg-red-600 border-red-600 hover:bg-red-700" : ""}
+              >
+                <Heart className={`h-4 w-4 ${favoriteStatus ? 'text-white fill-current' : ''}`} />
+              </Button>
+            </div>
           </div>
         </div>
       </div>
-      
-      {/* Movie Details */}
-      <div className="container mx-auto px-4 py-6">
-        <div className="flex flex-col md:flex-row gap-6">
-          <div className="md:w-2/3">
-            <div className="flex items-center space-x-2 mb-4">
-              <span className="text-green-600 dark:text-green-400 font-bold">{Math.round(movie.vote_average * 10)}% Match</span>
-              <span className="text-foreground">{new Date(movie.release_date).getFullYear()}</span>
-              {movie.adult ? (
-                <span className="border border-foreground/50 px-1 text-xs text-foreground">R</span>
-              ) : (
-                <span className="border border-foreground/50 px-1 text-xs text-foreground">PG-13</span>
-              )}
-              {movie.runtime && <span className="text-foreground">{formatRuntime(movie.runtime)}</span>}
-              <span className="border border-foreground/50 px-1 text-xs text-foreground">HD</span>
-            </div>
-            
-            <p className="mb-6">{movie.overview}</p>
-            
-            {movie.credits && (
-              <div className="mb-6">
-                <h3 className="text-lg font-bold mb-2">Cast</h3>
-                <p className="text-muted-foreground">
-                  {movie.credits && movie.credits.cast && Array.isArray(movie.credits.cast) 
-                    ? movie.credits.cast
-                        .slice(0, 6)
-                        .map((person: CastMember) => person.name)
-                        .join(", ")
-                    : "Cast information not available"}
-                </p>
+
+      {/* Main content */}
+      <div className="container mx-auto px-4 py-8">
+
+        {/* Overview + details grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+          {/* Left: overview + compact meta rows */}
+          <div className="md:col-span-2 space-y-3">
+            <p className="text-gray-300 leading-relaxed">{movie.overview}</p>
+
+            {movie.credits?.cast && Array.isArray(movie.credits.cast) && (
+              <div className="flex gap-2 text-sm">
+                <span className="text-muted-foreground shrink-0">Cast:</span>
+                <span className="text-foreground">
+                  {movie.credits.cast.slice(0, 6).map((p: CastMember) => p.name).join(", ")}
+                </span>
               </div>
             )}
-            
-            {movie.credits && (
-              <div className="mb-6">
-                <h3 className="text-lg font-bold mb-2">Director</h3>
-                <p className="text-muted-foreground">
-                  {movie.credits && movie.credits.crew && Array.isArray(movie.credits.crew)
-                    ? movie.credits.crew
-                        .filter((person: CrewMember) => person.job === "Director")
-                        .map((person: CrewMember) => person.name)
-                        .join(", ") || "Unknown"
-                    : "Director information not available"}
-                </p>
+
+            {movie.credits?.crew && Array.isArray(movie.credits.crew) && (
+              <div className="flex gap-2 text-sm">
+                <span className="text-muted-foreground shrink-0">Director:</span>
+                <span className="text-foreground">
+                  {movie.credits.crew
+                    .filter((p: CrewMember) => p.job === "Director")
+                    .map((p: CrewMember) => p.name)
+                    .join(", ") || "Unknown"}
+                </span>
+              </div>
+            )}
+
+            {movie.genres && (
+              <div className="flex gap-2 text-sm">
+                <span className="text-muted-foreground shrink-0">Genres:</span>
+                <span className="text-foreground">{movie.genres.map((g: Genre) => g.name).join(", ")}</span>
               </div>
             )}
           </div>
-          
-          <div className="md:w-1/3">
-            {movie.genres && (
-              <div className="mb-4">
-                <h3 className="text-lg font-bold mb-2">Genres</h3>
-                <p className="text-muted-foreground">
-                  {movie.genres.map((genre: Genre) => genre.name).join(", ")}
-                </p>
+
+          {/* Right sidebar: quick facts */}
+          <div className="space-y-4 text-sm border-l border-border pl-6 hidden md:block">
+            {movie.vote_average > 0 && (
+              <div>
+                <p className="text-muted-foreground text-xs uppercase tracking-wide mb-0.5">Rating</p>
+                <p className="font-semibold">{movie.vote_average.toFixed(1)} / 10</p>
               </div>
             )}
-            
-            <div>
-              <h3 className="text-lg font-bold mb-2">This movie is...</h3>
-              <p className="text-muted-foreground">
-                {movie.vote_average > 7.5
-                  ? "Highly Rated, "
-                  : movie.vote_average > 6
-                  ? "Well Received, "
-                  : ""}
-                {movie.genres &&
-                  movie.genres
-                    .slice(0, 2)
-                    .map((genre: Genre) => 
-                      genre.name === "Action" 
-                        ? "Exciting" 
-                        : genre.name === "Horror" 
-                        ? "Scary" 
-                        : genre.name === "Comedy" 
-                        ? "Funny" 
-                        : genre.name === "Drama" 
-                        ? "Emotional" 
-                        : genre.name === "Science Fiction" 
-                        ? "Futuristic" 
-                        : genre.name
-                    )
-                    .join(", ")}
-              </p>
-            </div>
+            {movie.release_date && (
+              <div>
+                <p className="text-muted-foreground text-xs uppercase tracking-wide mb-0.5">Released</p>
+                <p>{new Date(movie.release_date).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+              </div>
+            )}
+            {movie.runtime && (
+              <div>
+                <p className="text-muted-foreground text-xs uppercase tracking-wide mb-0.5">Runtime</p>
+                <p>{formatRuntime(movie.runtime)}</p>
+              </div>
+            )}
           </div>
         </div>
-        
-        {/* Trailer Section */}
+
+        {/* Trailer */}
         {mainTrailer && (
-          <div className="mt-10">
-            <h3 className="text-xl font-bold mb-6">Trailer</h3>
-            <div className="max-w-4xl">
+          <div className="mb-8">
+            <h3 className="text-lg font-bold mb-4">Trailer</h3>
+            <div className="max-w-2xl">
               <TrailerPlayer videoKey={mainTrailer.key} title={mainTrailer.name} />
             </div>
-            {videos && videos.length > 1 && (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-                {videos
-                  .filter((v) => v.site === "YouTube" && v.id !== mainTrailer.id)
-                  .slice(0, 4)
-                  .map((video) => (
-                    <TrailerPlayer key={video.id} videoKey={video.key} title={video.name} />
-                  ))}
-              </div>
-            )}
           </div>
         )}
 
         {/* Where to Watch */}
-        <div className="mt-10">
+        <div className="mb-8">
           <WatchProviders mediaId={movieId} mediaType="movie" />
         </div>
-        
-        {/* Reviews Section */}
+
+        {/* Reviews */}
         {reviews && Array.isArray(reviews) && reviews.length > 0 && (
-          <div className="mt-10">
-            <h3 className="text-xl font-bold mb-6">Reviews</h3>
-            <div className="space-y-6">
+          <div className="mb-8">
+            <h3 className="text-lg font-bold mb-4">Reviews</h3>
+            <div className="space-y-3">
               {reviews.slice(0, 2).map((review) => (
-                <div key={review.id} className="bg-card border border-border rounded-lg p-4 shadow-md">
-                  <div className="flex items-center mb-4">
-                    <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold mr-3">
-                      {review.author_details && review.author_details.username 
-                        ? review.author_details.username.charAt(0).toUpperCase() 
-                        : "?"}
+                <div key={review.id} className="bg-card border border-border rounded-lg p-4">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm shrink-0">
+                      {review.author_details?.username?.charAt(0).toUpperCase() ?? "?"}
                     </div>
-                    <div>
-                      <h4 className="font-semibold">{review.author}</h4>
-                      <div className="flex items-center">
-                        {review.author_details.rating && (
-                          <div className="flex items-center text-yellow-500 mr-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 mr-1">
-                              <path fillRule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.006z" clipRule="evenodd" />
-                            </svg>
-                            {review.author_details.rating}/10
-                          </div>
-                        )}
-                        <span className="text-sm text-muted-foreground">
-                          {new Date(review.created_at).toLocaleDateString()}
-                        </span>
-                      </div>
+                    <div className="flex-1 flex items-center gap-2 flex-wrap">
+                      <span className="font-semibold text-sm">{review.author}</span>
+                      {review.author_details.rating && (
+                        <span className="text-yellow-500 text-xs">★ {review.author_details.rating}/10</span>
+                      )}
+                      <span className="text-xs text-muted-foreground ml-auto">
+                        {new Date(review.created_at).toLocaleDateString()}
+                      </span>
                     </div>
                   </div>
-                  <p className="text-muted-foreground line-clamp-3">{review.content}</p>
-                  <button 
-                    onClick={() => window.open(review.url, '_blank', 'noopener,noreferrer')}
-                    className="mt-2 inline-block text-sm font-medium text-primary hover:underline bg-transparent border-none p-0 cursor-pointer"
-                  >
-                    Read full review
-                  </button>
+                  <p className="text-sm text-muted-foreground line-clamp-3">{review.content}</p>
+                  {review.url && (
+                    <button
+                      onClick={() => window.open(review.url, '_blank', 'noopener,noreferrer')}
+                      className="mt-1.5 text-xs font-medium text-primary hover:underline bg-transparent border-none p-0 cursor-pointer"
+                    >
+                      Read full review →
+                    </button>
+                  )}
                 </div>
               ))}
             </div>
           </div>
         )}
-        
-        {/* Enhanced Similar Movies Section */}
-        <div className="mt-10">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h3 className="text-xl font-bold">{recommendationCategory}</h3>
-              {recommendationStrategy && (
-                <p className="text-sm text-muted-foreground mt-1 flex items-center gap-2">
-                  <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                  {recommendationStrategy}
-                </p>
-              )}
-            </div>
+
+        {/* Recommendations */}
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-bold">{recommendationCategory}</h3>
             {isAuthenticated && (
-              <div className="text-xs text-muted-foreground bg-primary/10 px-3 py-1 rounded-full">
+              <span className="text-xs text-muted-foreground bg-primary/10 px-3 py-1 rounded-full">
                 AI-Powered
-              </div>
+              </span>
             )}
           </div>
-          
+
           {isSimilarMoviesLoading ? (
             <div className="relative">
               <div className="overflow-x-auto overflow-y-visible scrollbar-hide">
                 <div className="flex gap-4 pb-4">
                   {[...Array(10)].map((_, i) => (
-                    <div key={i} className="flex-shrink-0 overflow-visible">
+                    <div key={i} className="flex-shrink-0 w-56 overflow-visible">
                       <LoadingSkeleton variant="movie-card" />
                     </div>
                   ))}
                 </div>
               </div>
-              {/* Fading edges */}
               <div className="pointer-events-none absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-background to-transparent" />
               <div className="pointer-events-none absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-background to-transparent" />
             </div>
           ) : similarMovies && similarMovies.length > 0 ? (
-            <>
-              <div className="relative">
-                <div className="overflow-x-auto overflow-y-visible scrollbar-hide">
-                  <div className="flex gap-4 pb-2">
-                    {similarMovies.slice(0, 20).map((m) => (
-                      <div key={m.id} className="flex-shrink-0 overflow-visible">
-                        <MovieCard movie={m} />
-                      </div>
-                    ))}
-                  </div>
+            <div className="relative">
+              <div className="overflow-x-auto overflow-y-visible scrollbar-hide">
+                <div className="flex gap-4 pb-2">
+                  {similarMovies.slice(0, 20).map((m) => (
+                    <div key={m.id} className="flex-shrink-0 w-56 overflow-visible">
+                      <MovieCard movie={m} />
+                    </div>
+                  ))}
                 </div>
-                {/* Fading edges */}
-                <div className="pointer-events-none absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-background to-transparent" />
-                <div className="pointer-events-none absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-background to-transparent" />
               </div>
-              <div className="mt-4 text-center">
-                <p className="text-xs text-muted-foreground">
-                  Showing {Math.min(20, similarMovies.length)} of {similarMovies.length} recommendations
-                  {isAuthenticated && " • Personalized for you"}
-                </p>
-              </div>
-            </>
+              <div className="pointer-events-none absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-background to-transparent" />
+              <div className="pointer-events-none absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-background to-transparent" />
+            </div>
           ) : (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground mb-4">
-                {similarMoviesError 
-                  ? "Unable to load recommendations at the moment."
-                  : "No similar movies found."}
-              </p>
+            <div className="py-6 text-center">
               <p className="text-sm text-muted-foreground">
-                Our advanced recommendation system analyzes multiple factors including genre compatibility, 
-                cast connections, directorial style, user preferences, and content appropriateness to 
-                suggest movies you'll actually enjoy.
+                {similarMoviesError ? "Unable to load recommendations." : "No similar movies found."}
               </p>
               {!isAuthenticated && (
-                <div className="mt-4 p-4 bg-primary/5 rounded-lg border border-primary/20">
-                  <p className="text-sm font-medium mb-2">Get Better Recommendations</p>
+                <div className="mt-4 p-4 bg-primary/5 rounded-lg border border-primary/20 max-w-sm mx-auto">
+                  <p className="text-sm font-medium mb-1">Get Better Recommendations</p>
                   <p className="text-xs text-muted-foreground mb-3">
-                    Sign in to get personalized AI-powered recommendations based on your viewing history and preferences.
+                    Sign in for personalized AI-powered recommendations.
                   </p>
-                  <Button 
-                    size="sm" 
-                    onClick={() => navigate("/signin")}
-                    className="text-xs"
-                  >
-                    Sign In for Personalized Recommendations
+                  <Button size="sm" onClick={() => navigate("/signin")} className="text-xs">
+                    Sign In
                   </Button>
                 </div>
               )}

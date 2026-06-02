@@ -54,7 +54,7 @@ const DynamicSectionRenderer: React.FC<DynamicSectionRendererProps> = ({
     <div className="relative">
       {/* Section header */}
       <div className="px-4 mb-2">
-        <h2 className="text-2xl font-bold text-white">{section.title}</h2>
+        <h2 className="text-lg md:text-2xl font-bold text-white">{section.title}</h2>
       </div>
 
       {/* Error state */}

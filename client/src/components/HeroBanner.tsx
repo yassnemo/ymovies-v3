@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect, useRef } from "react";
 import { Movie } from "@/types/movie";
 import { TVShow } from "@/types/tvshow";
 import { useLocation } from "wouter";
@@ -111,6 +111,29 @@ const HeroBanner = ({ content, onNext, onPrevious, onIndicatorClick, currentInde
     
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
+  // Parallax scroll effect — background moves slower than content
+  // Use a ref to write directly to the DOM, with CSS transition for silky smoothness
+  const parallaxRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    let rafId: number | null = null;
+    const handleScroll = () => {
+      if (rafId !== null) return;
+      rafId = requestAnimationFrame(() => {
+        if (parallaxRef.current) {
+          parallaxRef.current.style.transform = `translate3d(0, ${window.scrollY * 0.25}px, 0) scale(1.05)`;
+        }
+        rafId = null;
+      });
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (rafId !== null) cancelAnimationFrame(rafId);
+    };
+  }, []);
   
   // Check if content is a TV show
   const isTVShow = (content: Movie | TVShow): content is TVShow => {
@@ -153,20 +176,25 @@ const HeroBanner = ({ content, onNext, onPrevious, onIndicatorClick, currentInde
 
   return (
     <section 
-      className="relative w-full max-w-[100vw] overflow-hidden"
+      className="relative w-full overflow-hidden"
       style={{ 
-        height: isMobile ? 'calc(85vh - 70px)' : '100vh'
+        height: isMobile ? 'calc(92vh - 70px)' : '100vh',
+        maxWidth: '100vw',
       }}
     >
-      {/* Background image WITHOUT cursor interactions */}
+      {/* Background image with parallax scroll effect */}
       <div 
+        ref={parallaxRef}
         key={imageKey}
-        className={`absolute inset-0 bg-cover bg-center pointer-events-none ${
+        className={`absolute pointer-events-none bg-cover bg-center ${
           isLoaded ? 'opacity-100' : 'opacity-0'
         }`}
         style={{ 
+          inset: '-15%',
           backgroundImage: `url('${backdropUrl}')`,
-          transition: 'opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1)'
+          transition: 'opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), transform 0.15s linear',
+          transform: 'translate3d(0, 0, 0) scale(1.05)',
+          willChange: 'transform',
         }}
       >
         {/* Static overlay without hover effects */}
@@ -201,7 +229,7 @@ const HeroBanner = ({ content, onNext, onPrevious, onIndicatorClick, currentInde
       
       {/* Content with smooth staggered animations and interactive hover */}
       <div 
-        className={`relative container mx-auto h-full flex flex-col justify-end px-4 pb-12 md:pb-24 pt-16 md:pt-20 ${isLoaded && !isTransitioning ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+        className={`relative container mx-auto h-full flex flex-col justify-end px-4 pb-32 md:pb-24 pt-16 md:pt-20 ${isLoaded && !isTransitioning ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
         style={{
           transition: 'all 0.7s cubic-bezier(0.4, 0, 0.2, 1)'
         }}
@@ -285,15 +313,13 @@ const HeroBanner = ({ content, onNext, onPrevious, onIndicatorClick, currentInde
               type="button"
               onClick={() => navigate(isTVShow(displayedContent) ? `/tv/${displayedContent.id}` : `/movie/${displayedContent.id}`)}
               className={
-                `group inline-flex items-center gap-2 md:gap-3 rounded-full px-4 md:px-6 py-2 md:py-3 text-sm md:text-base
-                 bg-gradient-to-r from-red-600 to-red-500 text-white font-medium ring-1 ring-red-600/30 
-                 hover:from-red-600 hover:to-red-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400/70 
-                 transition-colors`
+                `inline-flex items-center gap-2 rounded-lg px-5 md:px-6 py-2.5 md:py-3 text-sm md:text-base
+                 bg-red-600 text-white font-medium
+                 hover:bg-red-700 active:bg-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500/50
+                 transition-colors duration-200`
               }
             >
-              <span className="grid h-6 w-6 md:h-7 md:w-7 place-items-center rounded-full bg-white/10 ring-1 ring-white/20 transition-colors group-hover:bg-white/15">
-                <Play className="h-3.5 w-3.5 md:h-4 md:w-4 text-white" />
-              </span>
+              <Play className="h-4 w-4 fill-current" />
               <span>Play</span>
             </button>
 
@@ -301,15 +327,13 @@ const HeroBanner = ({ content, onNext, onPrevious, onIndicatorClick, currentInde
               type="button"
               onClick={() => navigate(isTVShow(displayedContent) ? `/tv/${displayedContent.id}` : `/movie/${displayedContent.id}`)}
               className={
-                `group inline-flex items-center gap-2 md:gap-3 rounded-full px-4 md:px-6 py-2 md:py-3 text-sm md:text-base
-                 bg-white/5 text-white/90 border border-white/15 backdrop-blur-md font-medium
-                 hover:bg-white/10 hover:border-white/25 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40 
-                 transition-colors`
+                `inline-flex items-center gap-2 rounded-lg px-5 md:px-6 py-2.5 md:py-3 text-sm md:text-base
+                 bg-white/10 text-white border border-white/20 backdrop-blur-sm font-medium
+                 hover:bg-white/20 active:bg-white/25 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30
+                 transition-colors duration-200`
               }
             >
-              <span className="grid h-6 w-6 md:h-7 md:w-7 place-items-center rounded-full bg-white/10 ring-1 ring-white/15 transition-colors group-hover:bg-white/15">
-                <Info className="h-3.5 w-3.5 md:h-4 md:w-4 text-white/90" />
-              </span>
+              <Info className="h-4 w-4" />
               <span>More Info</span>
             </button>
           </div>
@@ -322,66 +346,32 @@ const HeroBanner = ({ content, onNext, onPrevious, onIndicatorClick, currentInde
           {/* Previous button */}
           <button
             onClick={onPrevious}
-            className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-black/30 hover:bg-black/60 backdrop-blur-sm border border-white/20 rounded-full p-3 group"
-            style={{
-              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)'}
-            onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(-50%) scale(1)'}
+            className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 z-10 bg-black/40 hover:bg-black/60 backdrop-blur-sm border border-white/10 rounded-full p-2 md:p-3 transition-all duration-200 hover:scale-110"
           >
-            <ChevronLeft className="h-6 w-6 text-white group-hover:text-primary transition-colors duration-200" />
+            <ChevronLeft className="h-4 w-4 md:h-5 md:w-5 text-white/80 hover:text-white" />
           </button>
 
           {/* Next button */}
           <button
             onClick={onNext}
-            className="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-black/30 hover:bg-black/60 backdrop-blur-sm border border-white/20 rounded-full p-3 group"
-            style={{
-              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)'}
-            onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(-50%) scale(1)'}
+            className="absolute right-3 md:right-4 top-1/2 -translate-y-1/2 z-10 bg-black/40 hover:bg-black/60 backdrop-blur-sm border border-white/10 rounded-full p-2 md:p-3 transition-all duration-200 hover:scale-110"
           >
-            <ChevronRight className="h-6 w-6 text-white group-hover:text-primary transition-colors duration-200" />
+            <ChevronRight className="h-4 w-4 md:h-5 md:w-5 text-white/80 hover:text-white" />
           </button>
 
-          {/* Minimal connected progress indicators */}
-          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex items-center space-x-1">
+          {/* Slide indicators — horizontal pills centered */}
+          <div className="absolute bottom-6 md:bottom-8 left-1/2 -translate-x-1/2 z-10 flex flex-row items-center gap-2 mb-12 md:mb-0">
             {Array.from({ length: totalItems }).map((_, index) => (
-              <div key={index} className="flex items-center">
-                <button
-                  onClick={() => onIndicatorClick?.(index)}
-                  className="progress-dot-container relative group cursor-pointer w-2 h-2 flex items-center justify-center"
-                  aria-label={`Go to slide ${index + 1}`}
-                >
-                  {/* Main dot - much smaller and more subtle */}
-                  <div 
-                    className={`relative w-1.5 h-1.5 rounded-full transition-all duration-300 ease-out ${
-                      index === currentIndex
-                        ? 'bg-primary scale-110 shadow-sm shadow-primary/30'
-                        : 'bg-white/30 hover:bg-white/50 hover:scale-105'
-                    }`}
-                  ></div>
-                  
-                  {/* Subtle glow for active dot only */}
-                  {index === currentIndex && (
-                    <div className="absolute inset-0 w-1.5 h-1.5 rounded-full bg-primary/20 scale-125 blur-sm"></div>
-                  )}
-                </button>
-                
-                {/* Connection line between dots (except for the last dot) */}
-                {index < totalItems - 1 && (
-                  <div 
-                    className={`w-4 h-px transition-all duration-300 ${
-                      index < currentIndex 
-                        ? 'bg-primary/60' 
-                        : index === currentIndex
-                        ? 'bg-gradient-to-r from-primary/60 to-white/20'
-                        : 'bg-white/20'
-                    }`}
-                  ></div>
-                )}
-              </div>
+              <button
+                key={index}
+                onClick={() => onIndicatorClick?.(index)}
+                className={`h-2 rounded-full transition-all duration-500 ${
+                  index === currentIndex
+                    ? 'w-8 bg-red-600'
+                    : 'w-2 bg-white/30 hover:bg-white/60'
+                }`}
+                aria-label={`Go to slide ${index + 1}`}
+              />
             ))}
           </div>
         </>
@@ -477,20 +467,6 @@ style.textContent = `
   .hero-button:hover {
     transform: scale(1.05);
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
-  }
-  
-  /* Enhanced progress indicator animations - simplified */
-  .progress-dot-container {
-    position: relative;
-  }
-  
-  .progress-dot-container:hover {
-    transform: scale(1.1);
-  }
-  
-  /* Subtle hover effect for connection lines */
-  .progress-dot-container:hover + div {
-    opacity: 0.8;
   }
 `;
 document.head.appendChild(style);

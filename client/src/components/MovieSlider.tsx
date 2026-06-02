@@ -89,11 +89,11 @@ const MovieSlider = ({
         {/* Enhanced movie/TV card skeletons based on media type */}
         <div className="flex overflow-x-auto space-x-8 pb-6 pt-2 px-2 scrollbar-hide">
           {[...Array(6)].map((_, i) => (
-            <div key={i} className="flex-shrink-0">
+            <div key={i} className="flex-shrink-0 w-56">
               {/* TV sliders now use the same vertical card size as movies */}
               <LoadingSkeleton 
                 variant="movie-card"
-                className="w-48 md:w-56"
+                className="w-56"
               />
             </div>
           ))}
@@ -116,7 +116,7 @@ const MovieSlider = ({
     >
       {showTitle && (
         <div className="flex items-center mb-2">
-          <h2 className="text-2xl font-bold ml-2 group-hover/slider:text-red-600 transition-colors duration-300">{title}</h2>
+          <h2 className="text-lg md:text-2xl font-bold ml-2 group-hover/slider:text-red-600 transition-colors duration-300">{title}</h2>
           <div className="h-px flex-grow bg-gray-800 ml-4 opacity-0 group-hover/slider:opacity-100 transition-opacity duration-300"></div>
         </div>
       )}
@@ -140,10 +140,13 @@ const MovieSlider = ({
         {/* Movie slider */}
         <div 
           ref={sliderRef}
-          className="slider-container category-slider flex overflow-x-auto space-x-8 pb-6 pt-2 px-2 scrollbar-hide max-w-full"
+          className="slider-container category-slider flex overflow-x-auto space-x-8 pb-8 pt-8 px-2 scrollbar-hide max-w-full"
           style={{ 
             scrollbarWidth: 'none',
-            msOverflowStyle: 'none'
+            msOverflowStyle: 'none',
+            overflowY: 'visible',
+            paddingTop: '2rem',
+            paddingBottom: '2rem',
           }}
         >
           {movies.map((item, index) => {

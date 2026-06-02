@@ -83,7 +83,7 @@ const MovieList = ({ title, movies, className, defaultLayout = "grid" }: MovieLi
     <div className={className}>
       {/* Header with title and view controls */}
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-foreground">{title}</h2>
+        <h2 className="text-lg md:text-2xl font-bold text-foreground">{title}</h2>
         <div className="flex items-center space-x-2">
           <Button
             variant={viewMode === "grid" ? "default" : "outline"}

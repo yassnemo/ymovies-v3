@@ -1,11 +1,13 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState, useRef, useEffect } from "react";
 import { useLocation } from "wouter";
 import { TVShow } from "@/types/tvshow";
 import { cn } from "@/lib/utils";
-import { Play, Plus, Check, Heart, Tv } from "lucide-react";
+import { Play, Plus, Check, Heart, Tv, Star } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserPreferences } from "@/hooks/useUserPreferences";
 import { useToast } from "@/hooks/use-toast";
+import { motion, AnimatePresence } from "framer-motion";
+import { getGenreNames } from "@/lib/genres";
 
 interface TVShowCardProps {
   show: TVShow;
@@ -15,185 +17,263 @@ interface TVShowCardProps {
 
 const TVShowCard = ({ show, hideInfo = false, className }: TVShowCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
+  const [heartBurst, setHeartBurst] = useState(false);
+  const [bookmarkBounce, setBookmarkBounce] = useState(false);
+  const hoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [, navigate] = useLocation();
   const { isAuthenticated } = useAuth();
   const { toast } = useToast();
-  const { 
-    isFavorite, 
-    isInWatchlist, 
-    addToFavorites, 
-    removeFromFavorites, 
-    addToWatchlist, 
+  const {
+    isFavorite,
+    isInWatchlist,
+    addToFavorites,
+    removeFromFavorites,
+    addToWatchlist,
     removeFromWatchlist,
     addToWatchHistory
   } = useUserPreferences();
 
-  // Prefer poster to match MovieCard aspect; fallback to backdrop
   const imagePath = show.poster_path
     ? `https://image.tmdb.org/t/p/w500${show.poster_path}`
     : show.backdrop_path
       ? `https://image.tmdb.org/t/p/w500${show.backdrop_path}`
       : "https://via.placeholder.com/500x750?text=No+Image";
 
-  // Check if TV show is in favorites and watchlist
   const isShowFavorite = isFavorite(show.id);
   const isShowInWatchlist = isInWatchlist(show.id);
+  const genreNames = getGenreNames(show.genre_ids || [], 3);
+  const displayName = show.name || show.original_name;
+  const releaseYear = show.first_air_date ? new Date(show.first_air_date).getFullYear() : null;
 
-  // Handle watchlist toggle
+  const handleMouseEnter = useCallback(() => {
+    setIsHovered(true);
+    hoverTimer.current = setTimeout(() => setShowPreview(true), 350);
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    setIsHovered(false);
+    setShowPreview(false);
+    if (hoverTimer.current) {
+      clearTimeout(hoverTimer.current);
+      hoverTimer.current = null;
+    }
+  }, []);
+
+  useEffect(() => {
+    return () => { if (hoverTimer.current) clearTimeout(hoverTimer.current); };
+  }, []);
+
   const handleWatchlistToggle = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
-    
     if (!isAuthenticated) {
-      toast({
-        title: "Login Required",
-        description: "Please log in to add shows to your list.",
-        variant: "default",
-      });
+      toast({ title: "Login Required", description: "Please log in to add shows to your list." });
       return;
-    }    if (isShowInWatchlist) {
+    }
+    if (isShowInWatchlist) {
       removeFromWatchlist(show.id);
     } else {
-      // Convert TVShow to format compatible with preferences
-      const watchlistFormat = {
-        ...show,
-        title: show.name, // Map name to title for compatibility
-      };
-      addToWatchlist(watchlistFormat);
+      setBookmarkBounce(true);
+      setTimeout(() => setBookmarkBounce(false), 500);
+      addToWatchlist({ ...show, title: show.name });
     }
   }, [isAuthenticated, isShowInWatchlist, addToWatchlist, removeFromWatchlist, show, toast]);
-  
-  // Handle favorite toggle
+
   const handleFavoriteToggle = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
-    
     if (!isAuthenticated) {
-      toast({
-        title: "Login Required",
-        description: "Please log in to add shows to favorites.",
-        variant: "default",
-      });
+      toast({ title: "Login Required", description: "Please log in to add shows to favorites." });
       return;
     }
-
     if (isShowFavorite) {
       removeFromFavorites(show.id);
     } else {
-      // Convert TVShow to format compatible with preferences
-      const favoriteFormat = {
-        ...show,
-        title: show.name, // Map name to title for compatibility
-      };
-      addToFavorites(favoriteFormat);
+      setHeartBurst(true);
+      setTimeout(() => setHeartBurst(false), 700);
+      addToFavorites({ ...show, title: show.name });
     }
   }, [isAuthenticated, isShowFavorite, addToFavorites, removeFromFavorites, show, toast]);
+
   const handlePlay = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
-    
-    // Add to watch history if authenticated
-    if (isAuthenticated) {
-      const historyFormat = {
-        ...show,
-        title: show.name, // Map name to title for compatibility
-      };
-      addToWatchHistory(historyFormat);
-    }
-    
+    if (isAuthenticated) addToWatchHistory({ ...show, title: show.name });
     navigate(`/tv/${show.id}`);
   }, [navigate, show, isAuthenticated, addToWatchHistory]);
 
   const handleCardClick = useCallback((e: React.MouseEvent) => {
-    // Only navigate if the click wasn't on a button
-    if ((e.target as HTMLElement).closest('button')) {
-      return;
+    if ((e.target as HTMLElement).closest('button')) return;
+    if ('startViewTransition' in document) {
+      (document as any).startViewTransition(() => navigate(`/tv/${show.id}`));
+    } else {
+      navigate(`/tv/${show.id}`);
     }
-    navigate(`/tv/${show.id}`);
   }, [navigate, show.id]);
 
-  const displayName = show.original_name || show.name;
-
   return (
-    <div 
-      className={cn(
-        "movie-card relative group cursor-pointer overflow-visible transition-all duration-300 ease-in-out w-56",
-        className
-      )}
+    <div
+      className={cn("movie-card relative cursor-pointer w-full", className)}
+      style={{ zIndex: isHovered ? 30 : 1 }}
       onClick={handleCardClick}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
-      <div className={`relative overflow-visible rounded-lg transition-all duration-300 ease-in-out ${isHovered ? 'transform scale-105 shadow-2xl z-30' : 'shadow-lg'} will-change-transform`} style={{ transformOrigin: 'center center' }}>
-        {/* TV badge */}
-        <div className="absolute top-2 left-2 z-10">
-          <div className="h-6 w-6 rounded-full bg-black/60 backdrop-blur-sm border border-white/10 grid place-items-center text-white/90">
-            <Tv className="h-3.5 w-3.5" />
-          </div>
-        </div>
-        <div className="aspect-[2/3.2] w-full">
-          <img 
+      {/* Card — scale + overflow hidden keeps everything self-contained */}
+      <motion.div
+        className="relative rounded-xl overflow-hidden will-change-transform"
+        animate={{ scale: showPreview ? 1.04 : 1 }}
+        transition={{ type: "spring", stiffness: 320, damping: 28 }}
+        style={{
+          boxShadow: showPreview
+            ? '0 20px 50px rgba(0,0,0,0.75), 0 0 0 1.5px rgba(255,255,255,0.12)'
+            : isHovered
+              ? '0 8px 24px rgba(0,0,0,0.4)'
+              : '0 2px 8px rgba(0,0,0,0.25)',
+        }}
+      >
+        {/* Poster image */}
+        <div className="aspect-[2/3] w-full bg-zinc-800">
+          <img
             src={imagePath}
             alt={displayName}
-            className="w-full h-full object-cover rounded-lg transition-all duration-300 ease-in-out"
+            className="w-full h-full object-cover"
             loading="lazy"
+            style={{ viewTransitionName: `tv-poster-${show.id}` } as React.CSSProperties}
           />
         </div>
 
-        {!hideInfo && (
-          <div className={`absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/20 flex flex-col justify-end p-3 transition-all duration-300 ease-in-out ${isHovered ? 'opacity-100' : 'opacity-0'}`}>
-            <h3 className="font-bold text-base line-clamp-2 text-white mb-2">{displayName}</h3>
-            <div className="flex items-center text-xs space-x-2 mb-2 text-gray-200">
-              {show.vote_average > 0 && (
-                <span className="bg-red-600 text-white px-2 py-1 rounded text-xs font-semibold">
-                  {Math.round(show.vote_average * 10)}% Match
-                </span>
-              )}
-              <span className="text-gray-300 text-xs">
-                {show.first_air_date ? new Date(show.first_air_date).getFullYear() : 'N/A'}
-              </span>
-              {/* TV API doesn't include 'adult' flag consistently; omit for TV shows */}
-            </div>
-            <p className="text-xs text-gray-300 line-clamp-2 mb-3 leading-relaxed">
-              {show.overview || "No description available."}
-            </p>
-            <div className="flex items-center justify-between">
-              <div className="flex space-x-1">
-                <button 
-                  className="flex items-center space-x-1 bg-white text-black px-3 py-1.5 rounded-md font-semibold transition-colors duration-200 hover:bg-gray-200"
-                  onClick={handlePlay}
-                  aria-label="Play"
-                >
-                  <Play className="h-3 w-3" />
-                  <span className="text-xs font-medium">Play</span>
-                </button>
-                <button 
-                  className={`p-1.5 rounded-full border transition-colors duration-200 ${isShowInWatchlist ? 'bg-white border-white text-black hover:bg-gray-200' : 'bg-gray-800/80 border-gray-600 hover:bg-gray-700 text-white'}`}
-                  onClick={handleWatchlistToggle}
-                  aria-label={isShowInWatchlist ? 'Remove from watchlist' : 'Add to watchlist'}
-                >
-                  {isShowInWatchlist ? (
-                    <Check className="h-3 w-3" />
-                  ) : (
-                    <Plus className="h-3 w-3" />
-                  )}
-                </button>
-                <button 
-                  className={`p-1.5 rounded-full border transition-colors duration-200 ${isShowFavorite ? 'bg-white border-white text-black hover:bg-gray-200' : 'bg-gray-800/80 border-gray-600 hover:bg-gray-700 text-white'}`}
-                  onClick={handleFavoriteToggle}
-                  aria-label={isShowFavorite ? 'Remove from favorites' : 'Add to favorites'}
-                >
-                  <Heart className={`h-3 w-3 ${isShowFavorite ? 'fill-current' : ''}`} />
-                </button>
-              </div>
-            </div>
+        {/* TV badge — top left */}
+        <div className="absolute top-2 left-2">
+          <div className="h-6 w-6 rounded-full bg-black/60 backdrop-blur-sm border border-white/10 grid place-items-center text-white/90">
+            <Tv className="h-3 w-3" />
+          </div>
+        </div>
+
+        {/* Rating badge — top right, hidden during preview */}
+        {!showPreview && show.vote_average > 0 && (
+          <div className="absolute top-2 right-2 bg-black/70 text-white px-2 py-0.5 rounded-full text-xs font-semibold flex items-center gap-1">
+            <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+            {show.vote_average.toFixed(1)}
           </div>
         )}
-      </div>
 
-      {isHovered && (
-        <div className="absolute -inset-1 bg-gradient-to-r from-red-600/20 via-red-500/20 to-red-600/20 blur-sm rounded-lg -z-10" />
-      )}
+        {/* Hover overlay — fades in over the bottom half of the poster */}
+        {!hideInfo && (
+          <AnimatePresence>
+            {showPreview && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.22 }}
+                className="absolute inset-0 flex flex-col justify-end"
+                style={{
+                  background: 'linear-gradient(to top, rgba(0,0,0,0.97) 0%, rgba(0,0,0,0.88) 35%, rgba(0,0,0,0.4) 62%, transparent 100%)',
+                }}
+              >
+                <div className="px-3 pb-3 pt-0">
+                  {/* Title */}
+                  <p className="text-white font-semibold text-sm leading-snug line-clamp-2 mb-1.5">
+                    {displayName}
+                  </p>
+
+                  {/* Metadata row */}
+                  <div className="flex items-center gap-1.5 mb-2 flex-wrap">
+                    {show.vote_average > 0 && (
+                      <span className="text-green-400 font-bold text-xs">
+                        {Math.round(show.vote_average * 10)}%
+                      </span>
+                    )}
+                    {releaseYear && (
+                      <span className="text-gray-300 text-xs">{releaseYear}</span>
+                    )}
+                    <span className="border border-gray-500 text-gray-400 px-1 text-[10px] rounded leading-4">HD</span>
+                  </div>
+
+                  {/* Genre tags */}
+                  {genreNames.length > 0 && (
+                    <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 mb-3">
+                      {genreNames.map((genre, i) => (
+                        <React.Fragment key={genre}>
+                          <span className="text-[11px] text-gray-300">{genre}</span>
+                          {i < genreNames.length - 1 && (
+                            <span className="text-gray-600 text-[11px]">•</span>
+                          )}
+                        </React.Fragment>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Action buttons */}
+                  <div className="flex items-center gap-2">
+                    {/* Play — wide labeled button */}
+                    <button
+                      className="flex-1 flex items-center justify-center gap-1.5 h-8 rounded-full bg-white text-black text-xs font-bold hover:bg-gray-100 active:scale-95 transition-all"
+                      onClick={handlePlay}
+                      aria-label="Play"
+                    >
+                      <Play className="h-3.5 w-3.5 fill-current" />
+                      Play
+                    </button>
+
+                    {/* Watchlist */}
+                    <button
+                      className={`relative grid place-items-center h-8 w-8 rounded-full border-2 transition-all duration-150 hover:scale-110 active:scale-95
+                        ${isShowInWatchlist
+                          ? 'bg-white border-white text-black'
+                          : 'bg-black/30 border-gray-400 hover:border-white text-white'}
+                        ${bookmarkBounce ? 'animate-bookmark-bounce' : ''}`}
+                      onClick={handleWatchlistToggle}
+                      aria-label={isShowInWatchlist ? 'Remove from watchlist' : 'Add to watchlist'}
+                    >
+                      {isShowInWatchlist ? <Check className="h-3.5 w-3.5" /> : <Plus className="h-3.5 w-3.5" />}
+                    </button>
+
+                    {/* Favorites */}
+                    <button
+                      className={`relative grid place-items-center h-8 w-8 rounded-full border-2 transition-all duration-150 hover:scale-110 active:scale-95
+                        ${isShowFavorite
+                          ? 'bg-white border-white text-black'
+                          : 'bg-black/30 border-gray-400 hover:border-white text-white'}
+                        ${heartBurst ? 'animate-heart-pop' : ''}`}
+                      onClick={handleFavoriteToggle}
+                      aria-label={isShowFavorite ? 'Remove from favorites' : 'Add to favorites'}
+                      style={{ overflow: 'visible' }}
+                    >
+                      <Heart className={`h-3.5 w-3.5 ${isShowFavorite ? 'fill-current' : ''}`} />
+                      {heartBurst && (
+                        <span className="absolute inset-0 pointer-events-none" style={{ overflow: 'visible' }}>
+                          {[
+                            { x: -8, y: -10, bg: '#ef4444', delay: 0 },
+                            { x: 8, y: -8, bg: '#f97316', delay: 40 },
+                            { x: -6, y: 8, bg: '#ec4899', delay: 80 },
+                            { x: 10, y: 6, bg: '#ef4444', delay: 120 },
+                            { x: -12, y: 0, bg: '#f97316', delay: 60 },
+                            { x: 12, y: -4, bg: '#ec4899', delay: 100 },
+                          ].map((p, i) => (
+                            <span
+                              key={i}
+                              className="absolute left-1/2 top-1/2 w-1 h-1 rounded-full animate-burst-particle"
+                              style={{
+                                backgroundColor: p.bg,
+                                '--burst-x': `${p.x}px`,
+                                '--burst-y': `${p.y}px`,
+                                animationDelay: `${p.delay}ms`,
+                              } as React.CSSProperties}
+                            />
+                          ))}
+                        </span>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        )}
+      </motion.div>
     </div>
   );
 };

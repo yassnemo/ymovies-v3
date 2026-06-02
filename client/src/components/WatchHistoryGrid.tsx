@@ -57,7 +57,7 @@ const WatchHistoryGrid: React.FC<WatchHistoryGridProps> = ({
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <h2 className="text-2xl font-bold">{title}</h2>
+        <h2 className="text-lg md:text-2xl font-bold">{title}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {Array.from({ length: 6 }).map((_, index) => (
             <Card key={index} className="bg-card/50 backdrop-blur-sm border-border/50">
@@ -99,7 +99,7 @@ const WatchHistoryGrid: React.FC<WatchHistoryGridProps> = ({
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">{title}</h2>
+        <h2 className="text-lg md:text-2xl font-bold">{title}</h2>
         <div className="text-sm text-muted-foreground">
           {items.length} {items.length === 1 ? 'item' : 'items'}
         </div>

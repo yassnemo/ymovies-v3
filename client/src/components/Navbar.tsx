@@ -107,7 +107,7 @@ const Navbar = () => {
       <div className="container mx-auto flex items-center justify-between">
         {/* Logo and Navigation - Hide on mobile when search is active */}
         <div className={`flex items-center transition-all duration-300 ${searchActive ? 'md:flex hidden' : 'flex'}`}>
-          <Link href="/home" className="group relative mr-6 md:mr-10 ml-4 md:ml-10 w-15 h-9 md:w-30 md:h-30">
+          <Link href="/home" className="group relative mr-6 md:mr-10 ml-2 md:ml-10 w-15 h-9 md:w-30 md:h-30">
             <div className="flex items-center">
               <img
                 src="/logo.png"
@@ -370,7 +370,7 @@ const Navbar = () => {
         </div>
         
         {/* Right Side Elements - Hide on mobile when search is active except search itself */}
-        <div className={`flex items-center space-x-4 transition-all duration-300 ${searchActive ? 'w-full md:w-auto justify-center md:justify-end' : ''}`}>
+        <div className={`flex items-center space-x-4 mr-2 md:mr-10 transition-all duration-300 ${searchActive ? 'w-full md:w-auto justify-center md:justify-end mr-0' : ''}`}>
           {/* Search Input & Button */}
           <div className={`relative ${searchActive ? 'w-full md:w-auto' : ''}`}>
             {searchActive ? (

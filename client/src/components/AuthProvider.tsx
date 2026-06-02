@@ -66,15 +66,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // 2. Listen for future auth changes (sign in, sign out, token refresh)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      (_event, session) => {
         setSupabaseUser(session?.user ?? null);
-
-        // After OAuth redirect, the URL has #access_token=...
-        // Once the session is established, redirect to /home and clean the hash
-        if (event === 'SIGNED_IN' && session && window.location.hash.includes('access_token')) {
-          window.history.replaceState(null, '', window.location.pathname);
-          window.location.href = '/home';
-        }
       }
     );
 
@@ -157,7 +150,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: window.location.origin,
+          redirectTo: `${window.location.origin}/auth/callback`,
         },
       });
 

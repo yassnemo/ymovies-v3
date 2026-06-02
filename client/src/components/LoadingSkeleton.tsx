@@ -43,7 +43,7 @@ export function LoadingSkeleton({
               <div
                 key={i}
                 className={cn(
-                  "relative w-full aspect-[2/3.2] rounded-lg overflow-hidden",
+                  "relative w-56 aspect-[2/3.2] rounded-lg overflow-hidden",
                   className,
                 )}
                 {...props}
@@ -106,7 +106,7 @@ export function LoadingSkeleton({
             className={cn("relative w-full overflow-hidden", className)}
             style={{
               height: typeof window !== "undefined" && window.innerWidth <= 768
-                ? "calc(100vh - 70px)"
+                ? "calc(85vh - 70px)"
                 : "100vh",
             }}
             {...props}

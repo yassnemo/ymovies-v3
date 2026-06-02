@@ -50,28 +50,31 @@ const LazySearch = lazy(() => import("./pages/Search"));
 function Router() {
   const { isAuthenticated, isLoading, isError } = useAuth();
   const [location] = useLocation();
-  
-  // Show landing page for root path, main app for other paths
+
+  // Scroll to top on every route change
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location]);
+
   const isLandingPage = location === '/';
-  
-  // Loading state while checking authentication (only shown briefly on first load)
+
   if (isLoading && !isError) {
     return <LoadingScreen />;
   }
 
-  // Landing page has its own layout without navbar/footer
   if (isLandingPage) {
     return <Landing />;
   }
 
-  // Main app layout with navbar and footer
   return (
     <>
       <Navbar />
       <OnboardingTutorial />
       <AuthPrompt />
-      <Suspense fallback={<LoadingFallback />}>
-        <PageTransition routeKey={location}>
+      {/* PageTransition wraps Suspense so the crossfade fires immediately on navigation,
+          even while a lazy chunk is still loading. */}
+      <PageTransition routeKey={location}>
+        <Suspense fallback={<LoadingFallback />}>
           <Switch>
             <Route path="/home" component={Home} />
             <Route path="/search" component={LazySearch} />
@@ -82,96 +85,44 @@ function Router() {
             <Route path="/genre/:mediaType/:genre" component={Genre} />
             <Route path="/api-test" component={ApiTest} />
             <Route path="/profile">
-              {isAuthenticated ? <Profile /> : 
+              {isAuthenticated ? <Profile /> :
                 <AuthRequired message="Please log in to view your profile" />
               }
             </Route>
             <Route path="/my-list">
-              {isAuthenticated ? <MyList /> : 
+              {isAuthenticated ? <MyList /> :
                 <AuthRequired message="Please log in to view your list" />
               }
             </Route>
             <Route path="/settings">
-              {isAuthenticated ? <Settings /> : 
+              {isAuthenticated ? <Settings /> :
                 <AuthRequired message="Please log in to access settings" />
               }
             </Route>
-            <Route path="/signin">
-              <SignIn />
-            </Route>
-            <Route path="/signup">
-              <SignUp />
-            </Route>
-            <Route path="/reset-password">
-              <ResetPassword />
-            </Route>
-            <Route path="/confirm-reset-password">
-              <ConfirmResetPassword />
-            </Route>
-            <Route path="/auth/callback">
-              <AuthCallback />
-            </Route>
-            <Route path="/auth/reset-password">
-              <ConfirmResetPassword />
-            </Route>
-            <Route path="/verify-success">
-              <AuthCallback />
-            </Route>
-            <Route path="/verify-email">
-              <VerifyEmail />
-            </Route>
-            <Route path="/privacy">
-              <Privacy />
-            </Route>
-            <Route path="/terms">
-              <Terms />
-            </Route>
+            <Route path="/signin"><SignIn /></Route>
+            <Route path="/signup"><SignUp /></Route>
+            <Route path="/reset-password"><ResetPassword /></Route>
+            <Route path="/confirm-reset-password"><ConfirmResetPassword /></Route>
+            <Route path="/auth/callback"><AuthCallback /></Route>
+            <Route path="/auth/reset-password"><ConfirmResetPassword /></Route>
+            <Route path="/verify-success"><AuthCallback /></Route>
+            <Route path="/verify-email"><VerifyEmail /></Route>
+            <Route path="/privacy"><Privacy /></Route>
+            <Route path="/terms"><Terms /></Route>
             <Route component={NotFound} />
           </Switch>
-        </PageTransition>
-      </Suspense>
+        </Suspense>
+      </PageTransition>
       <Footer />
     </>
   );
 }
 
-// Loading fallback with skeleton UI
+// Minimal fallback shown only while a lazy chunk is downloading (first visit to that route)
 function LoadingFallback() {
   return (
-    <div className="container mx-auto pt-20 px-4 space-y-8">
-      <LoadingSkeleton variant="hero-banner" />
-      <div className="space-y-8">
-        <div>
-          <LoadingSkeleton variant="slider-title" />
-          <div className="flex overflow-x-auto space-x-6 pb-6 scrollbar-hide">
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className="flex-shrink-0">
-                <LoadingSkeleton variant="movie-card" />
-              </div>
-            ))}
-          </div>
-        </div>
-        <div>
-          <LoadingSkeleton variant="slider-title" />
-          <div className="flex overflow-x-auto space-x-6 pb-6 scrollbar-hide">
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className="flex-shrink-0">
-                <LoadingSkeleton variant="movie-card" />
-              </div>
-            ))}
-          </div>
-        </div>
-        <div>
-          <LoadingSkeleton variant="slider-title" />
-          <div className="flex overflow-x-auto space-x-6 pb-6 scrollbar-hide">
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className="flex-shrink-0">
-                <LoadingSkeleton variant="movie-card" />
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+    <div className="flex items-center justify-center min-h-[60vh]">
+      <div className="w-7 h-7 rounded-full border-2 border-red-600 border-t-transparent animate-spin" />
     </div>
   );
 }

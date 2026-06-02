@@ -14,7 +14,8 @@ app.use((req, res, next) => {
   ];
   
   const origin = req.headers.origin;
-  if (origin && (allowedOrigins.includes(origin) || origin.includes('.vercel.app'))) {
+  const isVercelPreview = origin ? (() => { try { return new URL(origin).hostname.endsWith('.vercel.app'); } catch { return false; } })() : false;
+  if (origin && (allowedOrigins.includes(origin) || isVercelPreview)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
   }
   

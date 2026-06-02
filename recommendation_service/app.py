@@ -13,7 +13,9 @@ app = Flask(__name__)
 CORS(app)
 
 # TMDB API configuration
-TMDB_API_KEY = os.getenv('TMDB_API_KEY', '32c9dd8c0f9c57b5a40cefb94b2ea9ea')
+TMDB_API_KEY = os.environ.get('TMDB_API_KEY')
+if not TMDB_API_KEY:
+    raise RuntimeError("TMDB_API_KEY environment variable is required")
 TMDB_BASE_URL = 'https://api.themoviedb.org/3'
 
 # Simple in-memory cache (process-local)

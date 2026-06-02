@@ -17,6 +17,8 @@
   
 </div>
 
+<img width="2880" height="1695" alt="ymovies yerradouani me_" src="https://github.com/user-attachments/assets/2ef63bc8-0bc8-441e-9662-a66806a1e100" />
+
 ## What Makes YMovies Special
 
 - **Smart AI Recommendations** - 13+ personalized categories powered by content analysis.
@@ -140,6 +142,7 @@ MIT License - see the [LICENSE](LICENSE) file for details.
 ⭐ **And of course, star this project if you found it helpful!**
 
 </div>
+
 
 
 

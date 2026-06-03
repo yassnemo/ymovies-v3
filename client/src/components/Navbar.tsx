@@ -3,7 +3,7 @@ import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import type { User as UserType } from "@/hooks/useAuth";
 import { useThemeContext } from "@/components/ui/theme-provider";
-import { SearchIcon, User as UserIcon, ChevronDown, Moon, Sun, X, Bell, Film, Tv, Home, Heart, Download, Menu } from "lucide-react";
+import { SearchIcon, User as UserIcon, ChevronDown, ChevronRight, Moon, Sun, X, Bell, Film, Tv, Home, Heart, Download, Menu, Settings as SettingsIcon, LogOut } from "lucide-react";
 import NavAuthButton from "@/components/NavAuthButton";
 import { Button } from "@/components/ui/button";
 import SearchSuggestions from "@/components/SearchSuggestions";
@@ -607,92 +607,92 @@ const MobileBottomNav = () => {
           {isAuthenticated && (
             <button
               onClick={() => setProfileMenuOpen(true)}
-              className={`flex flex-col items-center justify-center py-2 px-3 min-w-0 flex-1 transition-all duration-200 ${
-                location.startsWith('/profile') || location.startsWith('/settings')
-                  ? 'text-red-500' 
-                  : 'text-gray-400 hover:text-white active:scale-95'
-              }`}
+              className={tabClass(location.startsWith('/profile') || location.startsWith('/settings'))}
             >
-              <UserIcon className={`h-5 w-5 mb-1 transition-transform duration-200 ${location.startsWith('/profile') || location.startsWith('/settings') ? 'scale-110' : ''}`} />
-              <span className="text-xs font-medium">More</span>
+              <UserIcon className={`h-5 w-5 transition-transform duration-300 ${location.startsWith('/profile') || location.startsWith('/settings') ? 'scale-110' : ''}`} />
+              <span className="text-[10px] font-medium leading-none">More</span>
             </button>
           )}
         </div>
-
-        {/* Active indicator line */}
-        <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-red-600 to-transparent opacity-30"></div>
       </nav>
 
       {/* Browse Menu Modal for Mobile */}
       {browseMenuOpen && (
-        <div className="md:hidden fixed inset-0 z-50 bg-black/90 backdrop-blur-sm">
-          <div className="flex flex-col h-full">
+        <div className="md:hidden fixed inset-0 z-[60] bg-black/95 backdrop-blur-xl animate-in fade-in duration-200">
+          {/* Cinematic red glow */}
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-gradient-to-b from-red-950/40 via-red-950/10 to-transparent" />
+
+          <div className="relative flex h-full flex-col animate-in slide-in-from-bottom-8 duration-300">
             {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-gray-800">
-              <h2 className="text-xl font-bold">Browse</h2>
-              <button 
+            <div className="flex items-start justify-between px-6 pt-10 pb-6">
+              <div>
+                <div className="flex items-center gap-2 text-red-500 text-xs font-semibold uppercase tracking-[0.25em]">
+                  <Menu className="h-3.5 w-3.5" />
+                  Categories
+                </div>
+                <h2 className="mt-2 font-logo text-4xl tracking-wide">Browse</h2>
+              </div>
+              <button
                 onClick={() => setBrowseMenuOpen(false)}
-                className="p-2 hover:bg-gray-800 rounded-full transition-colors"
+                className="rounded-full border border-white/10 bg-white/[0.05] p-2.5 text-gray-300 backdrop-blur-md transition-colors hover:bg-white/10 hover:text-white active:scale-90"
+                aria-label="Close browse menu"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-y-auto p-4">
-              {/* Movies Section */}
-              <div className="mb-8">
-                <div className="flex items-center mb-4">
-                  <Film className="h-5 w-5 mr-2 text-red-500" />
-                  <h3 className="text-lg font-semibold">Movies</h3>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  {[
+            <div className="flex-1 overflow-y-auto px-6 pb-28">
+              {[
+                {
+                  label: 'Movies',
+                  icon: Film,
+                  genres: [
                     { name: 'Action', path: '/genre/movie/action' },
                     { name: 'Comedy', path: '/genre/movie/comedy' },
                     { name: 'Drama', path: '/genre/movie/drama' },
                     { name: 'Horror', path: '/genre/movie/horror' },
                     { name: 'Sci-Fi', path: '/genre/movie/scifi' },
                     { name: 'Thriller', path: '/genre/movie/thriller' },
-                  ].map((genre) => (
-                    <Link
-                      key={genre.path}
-                      href={genre.path}
-                      onClick={() => setBrowseMenuOpen(false)}
-                      className="flex items-center justify-center p-4 bg-gray-800/50 hover:bg-red-600/20 hover:border-red-500/50 border border-gray-700 rounded-lg transition-all duration-200 active:scale-95"
-                    >
-                      <span className="text-sm font-medium">{genre.name}</span>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-
-              {/* TV Shows Section */}
-              <div>
-                <div className="flex items-center mb-4">
-                  <Tv className="h-5 w-5 mr-2 text-red-500" />
-                  <h3 className="text-lg font-semibold">TV Shows</h3>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  {[
+                  ],
+                },
+                {
+                  label: 'TV Shows',
+                  icon: Tv,
+                  genres: [
                     { name: 'Action', path: '/genre/tv/action' },
                     { name: 'Comedy', path: '/genre/tv/comedy' },
                     { name: 'Drama', path: '/genre/tv/drama' },
                     { name: 'Crime', path: '/genre/tv/crime' },
                     { name: 'Documentary', path: '/genre/tv/documentary' },
                     { name: 'Anime', path: '/genre/tv/anime' },
-                  ].map((genre) => (
-                    <Link
-                      key={genre.path}
-                      href={genre.path}
-                      onClick={() => setBrowseMenuOpen(false)}
-                      className="flex items-center justify-center p-4 bg-gray-800/50 hover:bg-blue-600/20 hover:border-blue-500/50 border border-gray-700 rounded-lg transition-all duration-200 active:scale-95"
-                    >
-                      <span className="text-sm font-medium">{genre.name}</span>
-                    </Link>
-                  ))}
+                  ],
+                },
+              ].map((section) => (
+                <div key={section.label} className="mb-8 last:mb-0">
+                  <div className="mb-4 flex items-center gap-2">
+                    <section.icon className="h-4 w-4 text-red-500" />
+                    <h3 className="font-logo text-2xl tracking-wide">{section.label}</h3>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    {section.genres.map((genre) => (
+                      <Link
+                        key={genre.path}
+                        href={genre.path}
+                        onClick={() => setBrowseMenuOpen(false)}
+                        className="group relative flex items-center justify-between overflow-hidden rounded-sm border border-white/10 bg-white/[0.03] px-4 py-4 transition-all duration-300 hover:border-red-500/40 hover:bg-red-500/10 active:scale-[0.97]"
+                      >
+                        <span className="font-logo text-xl tracking-wide text-white transition-colors group-hover:text-red-500">
+                          {genre.name}
+                        </span>
+                        <ChevronRight className="h-4 w-4 text-gray-600 transition-all duration-300 group-hover:translate-x-0.5 group-hover:text-red-500" />
+                        {/* hover glow */}
+                        <span className="pointer-events-none absolute -right-6 -top-6 h-16 w-16 rounded-full bg-red-600/0 blur-2xl transition-all duration-300 group-hover:bg-red-600/30" />
+                      </Link>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              ))}
             </div>
           </div>
         </div>
@@ -700,42 +700,50 @@ const MobileBottomNav = () => {
 
       {/* Profile/More Menu Modal for Mobile */}
       {profileMenuOpen && (
-        <div className="md:hidden fixed inset-0 z-50 bg-black/90 backdrop-blur-sm">
-          <div className="flex flex-col h-full">
+        <div className="md:hidden fixed inset-0 z-[60] bg-black/95 backdrop-blur-xl animate-in fade-in duration-200">
+          {/* Cinematic red glow */}
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-gradient-to-b from-red-950/40 via-red-950/10 to-transparent" />
+
+          <div className="relative flex h-full flex-col animate-in slide-in-from-bottom-8 duration-300">
             {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-gray-800">
-              <h2 className="text-xl font-bold">Account</h2>
-              <button 
+            <div className="flex items-start justify-between px-6 pt-10 pb-6">
+              <div>
+                <div className="flex items-center gap-2 text-red-500 text-xs font-semibold uppercase tracking-[0.25em]">
+                  <UserIcon className="h-3.5 w-3.5" />
+                  Account
+                </div>
+                <h2 className="mt-2 font-logo text-4xl tracking-wide">More</h2>
+              </div>
+              <button
                 onClick={() => setProfileMenuOpen(false)}
-                className="p-2 hover:bg-gray-800 rounded-full transition-colors"
+                className="rounded-full border border-white/10 bg-white/[0.05] p-2.5 text-gray-300 backdrop-blur-md transition-colors hover:bg-white/10 hover:text-white active:scale-90"
+                aria-label="Close account menu"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-y-auto p-4">
+            <div className="flex-1 overflow-y-auto px-6 pb-28">
               <div className="space-y-3">
-                <Link
-                  href="/profile"
-                  onClick={() => setProfileMenuOpen(false)}
-                  className="flex items-center p-4 bg-gray-800/50 hover:bg-red-600/20 hover:border-red-500/50 border border-gray-700 rounded-lg transition-all duration-200 active:scale-95"
-                >
-                  <UserIcon className="h-5 w-5 mr-3 text-red-500" />
-                  <span className="text-sm font-medium">Profile</span>
-                </Link>
-
-                <Link
-                  href="/settings"
-                  onClick={() => setProfileMenuOpen(false)}
-                  className="flex items-center p-4 bg-gray-800/50 hover:bg-red-600/20 hover:border-red-500/50 border border-gray-700 rounded-lg transition-all duration-200 active:scale-95"
-                >
-                  <svg className="h-5 w-5 mr-3 text-red-500" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
-                    <circle cx="12" cy="12" r="3"></circle>
-                  </svg>
-                  <span className="text-sm font-medium">Settings</span>
-                </Link>
+                {[
+                  { label: 'Profile', icon: UserIcon, href: '/profile' },
+                  { label: 'Settings', icon: SettingsIcon, href: '/settings' },
+                ].map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setProfileMenuOpen(false)}
+                    className="group relative flex items-center gap-4 overflow-hidden rounded-sm border border-white/10 bg-white/[0.03] px-4 py-4 transition-all duration-300 hover:border-red-500/40 hover:bg-red-500/10 active:scale-[0.98]"
+                  >
+                    <item.icon className="h-5 w-5 text-red-500" />
+                    <span className="font-logo text-xl tracking-wide text-white transition-colors group-hover:text-red-500">
+                      {item.label}
+                    </span>
+                    <ChevronRight className="ml-auto h-4 w-4 text-gray-600 transition-all duration-300 group-hover:translate-x-0.5 group-hover:text-red-500" />
+                    <span className="pointer-events-none absolute -right-6 -top-6 h-16 w-16 rounded-full bg-red-600/0 blur-2xl transition-all duration-300 group-hover:bg-red-600/30" />
+                  </Link>
+                ))}
 
                 <button
                   onClick={async () => {
@@ -743,14 +751,10 @@ const MobileBottomNav = () => {
                     setProfileMenuOpen(false);
                     navigate("/");
                   }}
-                  className="flex items-center w-full p-4 bg-gray-800/50 hover:bg-red-600/20 hover:border-red-500/50 border border-gray-700 rounded-lg transition-all duration-200 active:scale-95 text-red-500"
+                  className="group flex w-full items-center gap-4 rounded-sm border border-red-500/20 bg-red-500/[0.06] px-4 py-4 text-red-500 transition-all duration-300 hover:border-red-500/50 hover:bg-red-500/15 active:scale-[0.98]"
                 >
-                  <svg className="h-5 w-5 mr-3" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                    <polyline points="16 17 21 12 16 7"></polyline>
-                    <line x1="21" y1="12" x2="9" y2="12"></line>
-                  </svg>
-                  <span className="text-sm font-medium">Sign Out</span>
+                  <LogOut className="h-5 w-5" />
+                  <span className="font-logo text-xl tracking-wide">Sign Out</span>
                 </button>
               </div>
             </div>

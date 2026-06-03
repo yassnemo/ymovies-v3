@@ -556,74 +556,50 @@ const MobileBottomNav = () => {
     return false;
   };
 
+  // Shared tab styling — frosted "selected" chip when active, subtle press feedback otherwise
+  const tabClass = (active: boolean) =>
+    `relative flex flex-col items-center justify-center gap-0.5 rounded-2xl py-1.5 px-2 min-w-0 flex-1 transition-all duration-300 ${
+      active
+        ? 'text-red-500 bg-white/10'
+        : 'text-gray-300 hover:text-white active:scale-90'
+    }`;
+
   return (
     <>
-      {/* Mobile Bottom Navigation */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-md border-t border-gray-800/50">
-        <div className="flex items-center justify-around py-2 px-1">
+      {/* Mobile Bottom Navigation — floating liquid-glass bar */}
+      <nav className="md:hidden fixed inset-x-0 bottom-0 z-50 px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-2 pointer-events-none">
+        <div className="pointer-events-auto relative mx-auto flex max-w-md items-center justify-around gap-1 rounded-[26px] border border-white/15 bg-black/40 px-2 py-1.5 shadow-[0_8px_40px_rgba(0,0,0,0.55)] backdrop-blur-2xl backdrop-saturate-150 [box-shadow:0_8px_40px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(255,255,255,0.12)]">
+          {/* Glass top-edge highlight */}
+          <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent"></div>
+
           {/* Home */}
-          <Link 
-            href="/home" 
-            className={`flex flex-col items-center justify-center py-2 px-3 min-w-0 flex-1 transition-all duration-200 ${
-              isActive('/home') 
-                ? 'text-red-500' 
-                : 'text-gray-400 hover:text-white active:scale-95'
-            }`}
-          >
-            <Home className={`h-5 w-5 mb-1 transition-transform duration-200 ${isActive('/home') ? 'scale-110' : ''}`} />
-            <span className="text-xs font-medium">Home</span>
+          <Link href="/home" className={tabClass(isActive('/home'))}>
+            <Home className={`h-5 w-5 transition-transform duration-300 ${isActive('/home') ? 'scale-110' : ''}`} />
+            <span className="text-[10px] font-medium leading-none">Home</span>
           </Link>
 
           {/* Browse */}
-          <button
-            onClick={() => setBrowseMenuOpen(true)}
-            className={`flex flex-col items-center justify-center py-2 px-3 min-w-0 flex-1 transition-all duration-200 ${
-              location.startsWith('/genre') 
-                ? 'text-red-500' 
-                : 'text-gray-400 hover:text-white active:scale-95'
-            }`}
-          >
-            <Menu className={`h-5 w-5 mb-1 transition-transform duration-200 ${location.startsWith('/genre') ? 'scale-110' : ''}`} />
-            <span className="text-xs font-medium">Browse</span>
+          <button onClick={() => setBrowseMenuOpen(true)} className={tabClass(location.startsWith('/genre'))}>
+            <Menu className={`h-5 w-5 transition-transform duration-300 ${location.startsWith('/genre') ? 'scale-110' : ''}`} />
+            <span className="text-[10px] font-medium leading-none">Browse</span>
           </button>
 
           {/* Search */}
-          <Link 
-            href="/search" 
-            className={`flex flex-col items-center justify-center py-2 px-3 min-w-0 flex-1 transition-all duration-200 ${
-              isActive('/search') 
-                ? 'text-red-500' 
-                : 'text-gray-400 hover:text-white active:scale-95'
-            }`}
-          >
-            <SearchIcon className={`h-5 w-5 mb-1 transition-transform duration-200 ${isActive('/search') ? 'scale-110' : ''}`} />
-            <span className="text-xs font-medium">Search</span>
+          <Link href="/search" className={tabClass(isActive('/search'))}>
+            <SearchIcon className={`h-5 w-5 transition-transform duration-300 ${isActive('/search') ? 'scale-110' : ''}`} />
+            <span className="text-[10px] font-medium leading-none">Search</span>
           </Link>
 
           {/* Fourth Tab: My List or Sign In */}
           {isAuthenticated ? (
-            <Link 
-              href="/my-list" 
-              className={`flex flex-col items-center justify-center py-2 px-3 min-w-0 flex-1 transition-all duration-200 ${
-                isActive('/my-list') 
-                  ? 'text-red-500' 
-                  : 'text-gray-400 hover:text-white active:scale-95'
-              }`}
-            >
-              <Heart className={`h-5 w-5 mb-1 transition-transform duration-200 ${isActive('/my-list') ? 'scale-110' : ''}`} />
-              <span className="text-xs font-medium">My List</span>
+            <Link href="/my-list" className={tabClass(isActive('/my-list'))}>
+              <Heart className={`h-5 w-5 transition-transform duration-300 ${isActive('/my-list') ? 'scale-110' : ''}`} />
+              <span className="text-[10px] font-medium leading-none">My List</span>
             </Link>
           ) : (
-            <Link 
-              href="/signin" 
-              className={`flex flex-col items-center justify-center py-2 px-3 min-w-0 flex-1 transition-all duration-200 ${
-                isActive('/signin') 
-                  ? 'text-red-500' 
-                  : 'text-gray-400 hover:text-white active:scale-95'
-              }`}
-            >
-              <UserIcon className={`h-5 w-5 mb-1 transition-transform duration-200 ${isActive('/signin') ? 'scale-110' : ''}`} />
-              <span className="text-xs font-medium">Sign In</span>
+            <Link href="/signin" className={tabClass(isActive('/signin'))}>
+              <UserIcon className={`h-5 w-5 transition-transform duration-300 ${isActive('/signin') ? 'scale-110' : ''}`} />
+              <span className="text-[10px] font-medium leading-none">Sign In</span>
             </Link>
           )}
 

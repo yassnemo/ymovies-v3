@@ -8,7 +8,7 @@ import { Link } from "wouter";
 import { Checkbox } from "@/components/ui/checkbox";
 
 interface MediaGridProps {
-  title: string;
+  title?: string;
   items: any[];
   isLoading: boolean;
   onRemove?: (id: number) => void;
@@ -42,7 +42,7 @@ const MediaGrid: React.FC<MediaGridProps> = ({
 }) => {  if (isLoading) {
     return (
       <div className="space-y-6">
-        <h2 className="text-lg md:text-2xl font-bold">{title}</h2>
+        {title && <h2 className="text-lg md:text-2xl font-bold">{title}</h2>}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
           {Array.from({ length: 12 }).map((_, index) => (
             <LoadingSkeleton key={index} variant="movie-card" />
@@ -77,12 +77,14 @@ const MediaGrid: React.FC<MediaGridProps> = ({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg md:text-2xl font-bold">{title}</h2>
-        <div className="text-sm text-muted-foreground">
-          {items.length} {items.length === 1 ? 'item' : 'items'}
+      {title && (
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg md:text-2xl font-bold">{title}</h2>
+          <div className="text-sm text-muted-foreground">
+            {items.length} {items.length === 1 ? 'item' : 'items'}
+          </div>
         </div>
-      </div>
+      )}
 
       {viewMode === "list" ? (
         <div className="space-y-3">

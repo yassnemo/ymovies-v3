@@ -97,6 +97,18 @@ export default {
           "0%": { opacity: "0", transform: "translateY(24px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
+        "ken-burns": {
+          "0%": { transform: "scale(1) translateY(0)" },
+          "100%": { transform: "scale(1.07) translateY(-1.5%)" },
+        },
+        "hero-reveal": {
+          "0%": { opacity: "0", transform: "translateY(12px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        "dot-progress": {
+          "0%": { height: "0%" },
+          "100%": { height: "100%" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -104,6 +116,9 @@ export default {
         shimmer: "shimmer 1.8s ease-in-out infinite",
         "skeleton-breathe": "skeleton-breathe 2s ease-in-out infinite",
         "fade-in-up": "fade-in-up 0.7s ease-out forwards",
+        "ken-burns": "ken-burns 16s ease-in-out infinite alternate",
+        "hero-reveal": "hero-reveal 0.7s ease-out forwards",
+        "dot-progress": "dot-progress 6s linear forwards",
       },
       // Other font families remain available via the classes defined above
     },

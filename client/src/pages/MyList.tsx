@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LoadingSkeleton } from "@/components/LoadingSkeleton";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import {
@@ -33,6 +32,7 @@ import {
   Film,
   Tv,
   ChevronRight,
+  Library,
 } from "lucide-react";
 import MediaGrid from "@/components/MediaGrid";
 import MasonryMediaGrid from "@/components/MasonryMediaGrid";
@@ -59,6 +59,13 @@ interface WatchHistoryItem {
     watchedAt: string | null;
   };
 }
+
+// Shared brand styling for the segmented tab bar
+const TABS_LIST_CLASS =
+  "w-max sm:w-auto h-auto bg-white/[0.03] border border-white/10 rounded-sm p-1 gap-1";
+const TABS_TRIGGER_CLASS =
+  "rounded-sm px-3 py-1.5 text-xs sm:text-sm text-gray-400 gap-1.5 data-[state=active]:bg-red-600 data-[state=active]:text-white data-[state=active]:shadow-none";
+const FIELD_CLASS = "bg-white/5 border-white/10 text-white";
 
 const MyList = () => {
   const { isAuthenticated } = useAuth();
@@ -174,6 +181,15 @@ const MyList = () => {
     (media as any).poster_path
       ? `https://image.tmdb.org/t/p/w500${(media as any).poster_path}`
       : "https://via.placeholder.com/500x750?text=No+Poster";
+
+  // Ambient backdrop for the hero, pulled from what you're watching / saving
+  const heroBackdrop = useMemo(() => {
+    const candidates: any[] = [inProgress[0], ...favorites, ...watchlist];
+    const found = candidates.find((m) => m && m.backdrop_path);
+    return found?.backdrop_path
+      ? `https://image.tmdb.org/t/p/original${found.backdrop_path}`
+      : null;
+  }, [inProgress, favorites, watchlist]);
 
   const applyFilters = (items: MediaItem[]) => {
     let out = [...items];
@@ -311,22 +327,24 @@ const MyList = () => {
 
   if (isPreferencesLoading) {
     return (
-      <div className="min-h-screen">
-        <div className="container mx-auto pt-28 pb-12 px-4">
-          <Skeleton className="h-10 w-48 mb-6" />
-          <div className="flex gap-2 mb-8">
-            {Array(5)
-              .fill(0)
-              .map((_, i) => (
-                <Skeleton key={i} className="h-10 w-24" />
-              ))}
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-            {Array(10)
-              .fill(0)
-              .map((_, i) => (
-                <LoadingSkeleton key={i} variant="movie-card" />
-              ))}
+      <div className="min-h-screen bg-black">
+        <div className="px-6 sm:px-12 lg:px-20 pt-28 pb-12">
+          <div className="max-w-7xl mx-auto">
+            <Skeleton className="h-12 w-64 mb-6 bg-white/5" />
+            <div className="flex gap-2 mb-8">
+              {Array(5)
+                .fill(0)
+                .map((_, i) => (
+                  <Skeleton key={i} className="h-10 w-24 bg-white/5" />
+                ))}
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+              {Array(10)
+                .fill(0)
+                .map((_, i) => (
+                  <LoadingSkeleton key={i} variant="movie-card" />
+                ))}
+            </div>
           </div>
         </div>
       </div>
@@ -344,250 +362,269 @@ const MyList = () => {
   const showFilters = activeTab === "watchlist" || activeTab === "favorites";
 
   return (
-    <div className="min-h-screen">
-      {/* Header */}
-      <div className="container mx-auto pt-28 pb-6 px-4">
-        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-2">
-          <div>
-            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
+    <div className="min-h-screen bg-black text-white">
+      {/* ===== CINEMATIC HEADER ===== */}
+      <section className="relative overflow-hidden border-b border-white/5">
+        {heroBackdrop ? (
+          <img
+            src={heroBackdrop}
+            alt=""
+            aria-hidden="true"
+            className="absolute inset-0 h-full w-full object-cover opacity-[0.16] animate-ken-burns will-change-transform"
+          />
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-[#160505] via-black to-black" />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/85 to-black/60" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-transparent to-transparent" />
+
+        <div className="relative px-6 sm:px-12 lg:px-20 pt-28 pb-10">
+          <div className="max-w-7xl mx-auto">
+            <p className="text-red-500 text-xs font-semibold uppercase tracking-[0.25em] mb-4 flex items-center gap-2">
+              <Library className="w-3.5 h-3.5" />
+              Your Library
+            </p>
+            <h1 className="font-logo tracking-wide text-5xl sm:text-7xl leading-[0.9]">
               My List
             </h1>
-            <p className="text-muted-foreground text-sm mt-1">
-              Your personal movie and TV show library
+            <p className="text-gray-400 text-sm mt-3">
+              Everything you've saved, loved, and started — in one place.
             </p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Badge variant="secondary" className="gap-1.5 text-xs py-1">
-              <Film className="w-3 h-3" /> {movieCount} Movies
-            </Badge>
-            <Badge variant="secondary" className="gap-1.5 text-xs py-1">
-              <Tv className="w-3 h-3" /> {tvCount} Shows
-            </Badge>
-            {inProgress.length > 0 && (
-              <Badge
-                variant="secondary"
-                className="gap-1.5 text-xs py-1 bg-red-500/10 text-red-400 border-red-500/20"
-              >
-                <Play className="w-3 h-3" /> {inProgress.length} In Progress
-              </Badge>
-            )}
+
+            {/* Stat ribbon */}
+            <div className="mt-8 grid grid-cols-3 max-w-md gap-px overflow-hidden rounded-sm border border-white/10 bg-white/10">
+              {[
+                { label: "Movies", value: movieCount },
+                { label: "Shows", value: tvCount },
+                { label: "In Progress", value: inProgress.length },
+              ].map((stat) => (
+                <div key={stat.label} className="bg-[#0a0a0a] px-4 py-4 text-center">
+                  <div className="font-logo text-3xl sm:text-4xl leading-none text-white">
+                    {stat.value}
+                  </div>
+                  <div className="mt-1 text-[10px] sm:text-xs uppercase tracking-[0.2em] text-gray-500">
+                    {stat.label}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Content */}
-      <div className="container mx-auto px-4 pb-20">
-        <Tabs
-          value={activeTab}
-          onValueChange={(v) => {
-            setActiveTab(v);
-            setSelectionMode(false);
-          }}
-        >
-          <div className="flex flex-col gap-4 mb-6">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <div className="overflow-x-auto scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0">
-                <TabsList className="w-max sm:w-auto">
-                  <TabsTrigger
-                    value="overview"
-                    className="gap-1.5 text-xs sm:text-sm"
-                  >
-                    Overview
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="watching"
-                    className="gap-1.5 text-xs sm:text-sm"
-                  >
-                    <Play className="w-3.5 h-3.5" />
-                    <span className="hidden xs:inline">Watching</span>
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="watchlist"
-                    className="gap-1.5 text-xs sm:text-sm"
-                  >
-                    <Bookmark className="w-3.5 h-3.5" />
-                    <span className="hidden xs:inline">Watchlist</span>
-                    {watchlist.length > 0 && (
-                      <span className="ml-1 text-[10px] bg-foreground/10 rounded-full px-1.5">
-                        {watchlist.length}
-                      </span>
-                    )}
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="favorites"
-                    className="gap-1.5 text-xs sm:text-sm"
-                  >
-                    <Heart className="w-3.5 h-3.5" />
-                    <span className="hidden xs:inline">Favorites</span>
-                    {favorites.length > 0 && (
-                      <span className="ml-1 text-[10px] bg-foreground/10 rounded-full px-1.5">
-                        {favorites.length}
-                      </span>
-                    )}
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="collections"
-                    className="gap-1.5 text-xs sm:text-sm"
-                  >
-                    <Star className="w-3.5 h-3.5" />
-                    <span className="hidden xs:inline">Collections</span>
-                  </TabsTrigger>
-                </TabsList>
+      {/* ===== CONTENT ===== */}
+      <div className="px-6 sm:px-12 lg:px-20 py-10 pb-20">
+        <div className="max-w-7xl mx-auto">
+          <Tabs
+            value={activeTab}
+            onValueChange={(v) => {
+              setActiveTab(v);
+              setSelectionMode(false);
+            }}
+          >
+            <div className="flex flex-col gap-4 mb-8">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div className="overflow-x-auto scrollbar-hide -mx-6 px-6 sm:mx-0 sm:px-0">
+                  <TabsList className={TABS_LIST_CLASS}>
+                    <TabsTrigger value="overview" className={TABS_TRIGGER_CLASS}>
+                      Overview
+                    </TabsTrigger>
+                    <TabsTrigger value="watching" className={TABS_TRIGGER_CLASS}>
+                      <Play className="w-3.5 h-3.5" />
+                      <span className="hidden xs:inline">Watching</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="watchlist" className={TABS_TRIGGER_CLASS}>
+                      <Bookmark className="w-3.5 h-3.5" />
+                      <span className="hidden xs:inline">Watchlist</span>
+                      {watchlist.length > 0 && (
+                        <span className="ml-1 text-[10px] bg-white/15 rounded-full px-1.5">
+                          {watchlist.length}
+                        </span>
+                      )}
+                    </TabsTrigger>
+                    <TabsTrigger value="favorites" className={TABS_TRIGGER_CLASS}>
+                      <Heart className="w-3.5 h-3.5" />
+                      <span className="hidden xs:inline">Favorites</span>
+                      {favorites.length > 0 && (
+                        <span className="ml-1 text-[10px] bg-white/15 rounded-full px-1.5">
+                          {favorites.length}
+                        </span>
+                      )}
+                    </TabsTrigger>
+                    <TabsTrigger value="collections" className={TABS_TRIGGER_CLASS}>
+                      <Star className="w-3.5 h-3.5" />
+                      <span className="hidden xs:inline">Collections</span>
+                    </TabsTrigger>
+                  </TabsList>
+                </div>
+
+                {showFilters && (
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant={selectionMode ? "secondary" : "outline"}
+                      size="sm"
+                      onClick={() => setSelectionMode(!selectionMode)}
+                      className={`text-xs h-8 rounded-sm ${
+                        selectionMode
+                          ? ""
+                          : "border-white/15 text-white hover:bg-white/10"
+                      }`}
+                    >
+                      {selectionMode ? "Done" : "Select"}
+                    </Button>
+                    <div className="flex bg-white/[0.03] rounded-sm border border-white/10 p-0.5">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className={`h-7 w-7 p-0 rounded-sm ${
+                          viewMode === "grid"
+                            ? "bg-red-600 text-white hover:bg-red-700"
+                            : "text-gray-400 hover:text-white hover:bg-white/10"
+                        }`}
+                        onClick={() => setViewMode("grid")}
+                      >
+                        <Grid3X3 className="w-3.5 h-3.5" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className={`h-7 w-7 p-0 rounded-sm ${
+                          viewMode === "list"
+                            ? "bg-red-600 text-white hover:bg-red-700"
+                            : "text-gray-400 hover:text-white hover:bg-white/10"
+                        }`}
+                        onClick={() => setViewMode("list")}
+                      >
+                        <List className="w-3.5 h-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {showFilters && (
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant={selectionMode ? "secondary" : "outline"}
-                    size="sm"
-                    onClick={() => setSelectionMode(!selectionMode)}
-                    className="text-xs h-8"
-                  >
-                    {selectionMode ? "Done" : "Select"}
-                  </Button>
-                  <div className="flex bg-card/50 rounded-md border border-border/50 p-0.5">
-                    <Button
-                      variant={viewMode === "grid" ? "secondary" : "ghost"}
-                      size="sm"
-                      className="h-7 w-7 p-0"
-                      onClick={() => setViewMode("grid")}
+                <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+                  <div className="flex gap-2 flex-1">
+                    <Select
+                      value={typeFilter}
+                      onValueChange={(v: any) => setTypeFilter(v)}
                     >
-                      <Grid3X3 className="w-3.5 h-3.5" />
-                    </Button>
-                    <Button
-                      variant={viewMode === "list" ? "secondary" : "ghost"}
-                      size="sm"
-                      className="h-7 w-7 p-0"
-                      onClick={() => setViewMode("list")}
+                      <SelectTrigger className={`w-[120px] h-9 text-xs rounded-sm ${FIELD_CLASS}`}>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Types</SelectItem>
+                        <SelectItem value="movie">Movies</SelectItem>
+                        <SelectItem value="tv">TV Shows</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Select
+                      value={sortBy}
+                      onValueChange={(v: any) => setSortBy(v)}
                     >
-                      <List className="w-3.5 h-3.5" />
-                    </Button>
+                      <SelectTrigger className={`w-[140px] h-9 text-xs rounded-sm ${FIELD_CLASS}`}>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="recent">Recent</SelectItem>
+                        <SelectItem value="title">Title A-Z</SelectItem>
+                        <SelectItem value="year">Year</SelectItem>
+                        <SelectItem value="rating">Rating</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="relative sm:max-w-xs flex-1">
+                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500" />
+                    <Input
+                      value={query}
+                      onChange={(e) => setQuery(e.target.value)}
+                      placeholder="Search your list..."
+                      className={`h-9 text-xs pl-8 rounded-sm ${FIELD_CLASS}`}
+                    />
                   </div>
                 </div>
               )}
             </div>
 
-            {showFilters && (
-              <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
-                <div className="flex gap-2 flex-1">
-                  <Select
-                    value={typeFilter}
-                    onValueChange={(v: any) => setTypeFilter(v)}
-                  >
-                    <SelectTrigger className="w-[120px] h-9 text-xs bg-card/50 border-border/50">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Types</SelectItem>
-                      <SelectItem value="movie">Movies</SelectItem>
-                      <SelectItem value="tv">TV Shows</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Select
-                    value={sortBy}
-                    onValueChange={(v: any) => setSortBy(v)}
-                  >
-                    <SelectTrigger className="w-[140px] h-9 text-xs bg-card/50 border-border/50">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="recent">Recent</SelectItem>
-                      <SelectItem value="title">Title A-Z</SelectItem>
-                      <SelectItem value="year">Year</SelectItem>
-                      <SelectItem value="rating">Rating</SelectItem>
-                    </SelectContent>
-                  </Select>
+            {selectionMode &&
+              selectedIds.size > 0 &&
+              showFilters && (
+                <div className="flex flex-wrap items-center justify-between gap-2 mb-6 bg-[#0b0b0b] border border-white/10 rounded-sm p-3">
+                  <span className="text-sm text-gray-400">
+                    {selectedIds.size} selected
+                  </span>
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className="text-xs h-8 rounded-sm"
+                      onClick={selectAllVisible}
+                    >
+                      Select All
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-xs h-8 rounded-sm text-gray-400 hover:text-white hover:bg-white/10"
+                      onClick={clearSelection}
+                    >
+                      Clear
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-xs h-8 rounded-sm border-white/15 text-white hover:bg-white/10"
+                      onClick={bulkAddToOther}
+                    >
+                      {activeTab === "watchlist"
+                        ? "Add to Favorites"
+                        : "Add to Watchlist"}
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      className="text-xs h-8 rounded-sm"
+                      onClick={bulkRemove}
+                    >
+                      Remove
+                    </Button>
+                  </div>
                 </div>
-                <div className="relative sm:max-w-xs flex-1">
-                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-                  <Input
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    placeholder="Search..."
-                    className="h-9 text-xs pl-8 bg-card/50 border-border/50"
-                  />
-                </div>
-              </div>
-            )}
-          </div>
+              )}
 
-          {selectionMode &&
-            selectedIds.size > 0 &&
-            showFilters && (
-              <div className="flex flex-wrap items-center justify-between gap-2 mb-4 bg-card/80 backdrop-blur-sm border border-border/50 rounded-lg p-3">
-                <span className="text-sm text-muted-foreground">
-                  {selectedIds.size} selected
-                </span>
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    className="text-xs h-8"
-                    onClick={selectAllVisible}
-                  >
-                    Select All
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-xs h-8"
-                    onClick={clearSelection}
-                  >
-                    Clear
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-xs h-8"
-                    onClick={bulkAddToOther}
-                  >
-                    {activeTab === "watchlist"
-                      ? "Add to Favorites"
-                      : "Add to Watchlist"}
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    className="text-xs h-8"
-                    onClick={bulkRemove}
-                  >
-                    Remove
-                  </Button>
-                </div>
-              </div>
-            )}
-
-          {/* Overview */}
-          <TabsContent value="overview" className="space-y-8 mt-0">
-            {inProgress.length > 0 && (
-              <section>
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-bold">Continue Watching</h2>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-xs gap-1"
-                    onClick={() => setActiveTab("watching")}
-                  >
-                    View All <ChevronRight className="w-3.5 h-3.5" />
-                  </Button>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {inProgress.slice(0, 3).map((item) => {
-                    const title = item.title || item.name || "Untitled";
-                    const isTV = !!item.name;
-                    const backdropUrl = item.backdrop_path
-                      ? `https://image.tmdb.org/t/p/w780${item.backdrop_path}`
-                      : item.poster_path
-                        ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
-                        : null;
-                    return (
-                      <Link
-                        key={item.id}
-                        href={isTV ? `/tv/${item.id}` : `/movie/${item.id}`}
-                      >
-                        <Card className="group overflow-hidden bg-card/50 border-border/50 hover:border-border transition-all">
-                          <div className="relative aspect-video bg-secondary/20">
+            {/* Overview */}
+            <TabsContent value="overview" className="space-y-10 mt-0">
+              {inProgress.length > 0 && (
+                <section>
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="font-logo tracking-wide text-2xl sm:text-3xl">
+                      Continue Watching
+                    </h2>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-xs gap-1 text-gray-400 hover:text-white hover:bg-white/10"
+                      onClick={() => setActiveTab("watching")}
+                    >
+                      View All <ChevronRight className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {inProgress.slice(0, 3).map((item) => {
+                      const title = item.title || item.name || "Untitled";
+                      const isTV = !!item.name;
+                      const backdropUrl = item.backdrop_path
+                        ? `https://image.tmdb.org/t/p/w780${item.backdrop_path}`
+                        : item.poster_path
+                          ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
+                          : null;
+                      return (
+                        <Link
+                          key={item.id}
+                          href={isTV ? `/tv/${item.id}` : `/movie/${item.id}`}
+                          className="group block overflow-hidden rounded-sm border border-white/10 bg-[#0b0b0b] hover:border-white/25 transition-all"
+                        >
+                          <div className="relative aspect-video bg-white/5">
                             {backdropUrl ? (
                               <img
                                 src={backdropUrl}
@@ -596,13 +633,13 @@ const MyList = () => {
                                 loading="lazy"
                               />
                             ) : (
-                              <div className="w-full h-full flex items-center justify-center bg-secondary/30">
-                                <Film className="w-8 h-8 text-muted-foreground" />
+                              <div className="w-full h-full flex items-center justify-center">
+                                <Film className="w-8 h-8 text-gray-600" />
                               </div>
                             )}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
                             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                              <div className="bg-white/10 backdrop-blur-sm rounded-full p-3 border border-white/20">
+                              <div className="bg-white/15 backdrop-blur-sm rounded-full p-3 border border-white/30">
                                 <Play className="w-5 h-5 text-white fill-white" />
                               </div>
                             </div>
@@ -610,7 +647,7 @@ const MyList = () => {
                               <p className="text-white font-medium text-sm line-clamp-1 mb-1">
                                 {title}
                               </p>
-                              <div className="flex items-center gap-2 text-xs text-gray-400 mb-2">
+                              <div className="flex items-center gap-2 text-xs text-gray-300 mb-2">
                                 <Clock className="w-3 h-3" />
                                 <span>
                                   {formatTimeLeft(
@@ -629,74 +666,71 @@ const MyList = () => {
                               </div>
                             </div>
                           </div>
-                        </Card>
-                      </Link>
-                    );
-                  })}
-                </div>
-              </section>
-            )}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </section>
+              )}
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Card
-                className="group bg-card/50 border-border/50 hover:border-blue-500/30 transition-all cursor-pointer"
-                onClick={() => setActiveTab("watchlist")}
-              >
-                <CardContent className="p-5 flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center shrink-0">
-                    <Bookmark className="w-5 h-5 text-blue-500" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <button
+                  type="button"
+                  className="group flex items-center gap-4 rounded-sm border border-white/10 bg-[#0b0b0b] p-5 text-left hover:border-red-600/40 transition-all"
+                  onClick={() => setActiveTab("watchlist")}
+                >
+                  <div className="w-12 h-12 rounded-sm bg-red-600/10 border border-red-600/20 flex items-center justify-center shrink-0">
+                    <Bookmark className="w-5 h-5 text-red-500" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-lg">
+                    <p className="font-logo text-2xl leading-none">
                       {watchlist.length}
                     </p>
-                    <p className="text-sm text-muted-foreground">
-                      In your watchlist
-                    </p>
+                    <p className="text-sm text-gray-500 mt-1">In your watchlist</p>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
-                </CardContent>
-              </Card>
-              <Card
-                className="group bg-card/50 border-border/50 hover:border-red-500/30 transition-all cursor-pointer"
-                onClick={() => setActiveTab("favorites")}
-              >
-                <CardContent className="p-5 flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-red-500/10 flex items-center justify-center shrink-0">
+                  <ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-white transition-colors" />
+                </button>
+                <button
+                  type="button"
+                  className="group flex items-center gap-4 rounded-sm border border-white/10 bg-[#0b0b0b] p-5 text-left hover:border-red-600/40 transition-all"
+                  onClick={() => setActiveTab("favorites")}
+                >
+                  <div className="w-12 h-12 rounded-sm bg-red-600/10 border border-red-600/20 flex items-center justify-center shrink-0">
                     <Heart className="w-5 h-5 text-red-500" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-lg">
+                    <p className="font-logo text-2xl leading-none">
                       {favorites.length}
                     </p>
-                    <p className="text-sm text-muted-foreground">Favorites</p>
+                    <p className="text-sm text-gray-500 mt-1">Favorites</p>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
-                </CardContent>
-              </Card>
-            </div>
+                  <ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-white transition-colors" />
+                </button>
+              </div>
 
-            {(watchlist.length > 0 || favorites.length > 0) && (
-              <section>
-                <h2 className="text-xl font-bold mb-4">Recently Added</h2>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-                  {[...favorites.slice(0, 3), ...watchlist.slice(0, 3)]
-                    .filter(
-                      (item, index, self) =>
-                        self.findIndex((i) => i.id === item.id) === index,
-                    )
-                    .slice(0, 6)
-                    .map((item) => {
-                      const title = getMediaTitle(item);
-                      const isTv = isTVItem(item);
-                      const progress = watchProgressMap[item.id];
-                      return (
-                        <Link
-                          key={item.id}
-                          href={isTv ? `/tv/${item.id}` : `/movie/${item.id}`}
-                        >
-                          <div className="group relative">
-                            <div className="relative overflow-hidden rounded-lg">
+              {(watchlist.length > 0 || favorites.length > 0) && (
+                <section>
+                  <h2 className="font-logo tracking-wide text-2xl sm:text-3xl mb-4">
+                    Recently Added
+                  </h2>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                    {[...favorites.slice(0, 3), ...watchlist.slice(0, 3)]
+                      .filter(
+                        (item, index, self) =>
+                          self.findIndex((i) => i.id === item.id) === index,
+                      )
+                      .slice(0, 6)
+                      .map((item) => {
+                        const title = getMediaTitle(item);
+                        const isTv = isTVItem(item);
+                        const progress = watchProgressMap[item.id];
+                        return (
+                          <Link
+                            key={item.id}
+                            href={isTv ? `/tv/${item.id}` : `/movie/${item.id}`}
+                            className="group block"
+                          >
+                            <div className="relative overflow-hidden rounded-sm border border-white/10">
                               <img
                                 src={getMediaPosterUrl(item)}
                                 alt={title}
@@ -714,63 +748,66 @@ const MyList = () => {
                                 </div>
                               )}
                             </div>
-                            <p className="text-xs font-medium mt-1.5 line-clamp-1">
+                            <p className="text-xs font-medium mt-1.5 line-clamp-1 group-hover:text-red-500 transition-colors">
                               {title}
                             </p>
-                            <p className="text-[10px] text-muted-foreground">
+                            <p className="text-[10px] text-gray-500">
                               {getMediaReleaseYear(item)}
                             </p>
-                          </div>
-                        </Link>
-                      );
-                    })}
-                </div>
-              </section>
-            )}
+                          </Link>
+                        );
+                      })}
+                  </div>
+                </section>
+              )}
 
-            {totalItems === 0 && inProgress.length === 0 && (
-              <div className="text-center py-20">
-                <div className="w-20 h-20 bg-muted/20 rounded-full flex items-center justify-center mx-auto mb-5">
-                  <Bookmark className="w-8 h-8 text-muted-foreground" />
-                </div>
-                <h3 className="text-xl font-semibold mb-2">
-                  Your list is empty
-                </h3>
-                <p className="text-muted-foreground text-sm mb-6 max-w-sm mx-auto">
-                  Start exploring and add movies or TV shows to build your
-                  personal library.
-                </p>
-                <div className="flex flex-wrap gap-3 justify-center">
-                  <Button asChild className="bg-red-600 hover:bg-red-700">
-                    <Link href="/">Browse Movies</Link>
-                  </Button>
-                  <Button asChild variant="outline">
-                    <Link href="/tv-shows">Browse TV Shows</Link>
-                  </Button>
-                </div>
-              </div>
-            )}
-          </TabsContent>
-
-          {/* Watching */}
-          <TabsContent value="watching" className="mt-0">
-            {inProgress.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {inProgress.map((item) => {
-                  const title = item.title || item.name || "Untitled";
-                  const isTV = !!item.name;
-                  const backdropUrl = item.backdrop_path
-                    ? `https://image.tmdb.org/t/p/w780${item.backdrop_path}`
-                    : item.poster_path
-                      ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
-                      : null;
-                  return (
-                    <Link
-                      key={item.id}
-                      href={isTV ? `/tv/${item.id}` : `/movie/${item.id}`}
+              {totalItems === 0 && inProgress.length === 0 && (
+                <div className="text-center py-20">
+                  <div className="w-20 h-20 bg-white/5 border border-white/10 rounded-full flex items-center justify-center mx-auto mb-5">
+                    <Bookmark className="w-8 h-8 text-gray-500" />
+                  </div>
+                  <h3 className="font-logo tracking-wide text-3xl mb-2">
+                    Your list is empty
+                  </h3>
+                  <p className="text-gray-400 text-sm mb-6 max-w-sm mx-auto">
+                    Start exploring and add movies or TV shows to build your
+                    personal library.
+                  </p>
+                  <div className="flex flex-wrap gap-3 justify-center">
+                    <Button asChild className="bg-red-600 hover:bg-red-700 rounded-sm">
+                      <Link href="/movies">Browse Movies</Link>
+                    </Button>
+                    <Button
+                      asChild
+                      variant="outline"
+                      className="border-white/20 text-white hover:bg-white/10 rounded-sm"
                     >
-                      <Card className="group overflow-hidden bg-card/50 border-border/50 hover:border-border transition-all">
-                        <div className="relative aspect-video bg-secondary/20">
+                      <Link href="/tv">Browse TV Shows</Link>
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </TabsContent>
+
+            {/* Watching */}
+            <TabsContent value="watching" className="mt-0">
+              {inProgress.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {inProgress.map((item) => {
+                    const title = item.title || item.name || "Untitled";
+                    const isTV = !!item.name;
+                    const backdropUrl = item.backdrop_path
+                      ? `https://image.tmdb.org/t/p/w780${item.backdrop_path}`
+                      : item.poster_path
+                        ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
+                        : null;
+                    return (
+                      <Link
+                        key={item.id}
+                        href={isTV ? `/tv/${item.id}` : `/movie/${item.id}`}
+                        className="group block overflow-hidden rounded-sm border border-white/10 bg-[#0b0b0b] hover:border-white/25 transition-all"
+                      >
+                        <div className="relative aspect-video bg-white/5">
                           {backdropUrl ? (
                             <img
                               src={backdropUrl}
@@ -779,13 +816,13 @@ const MyList = () => {
                               loading="lazy"
                             />
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center bg-secondary/30">
-                              <Film className="w-8 h-8 text-muted-foreground" />
+                            <div className="w-full h-full flex items-center justify-center">
+                              <Film className="w-8 h-8 text-gray-600" />
                             </div>
                           )}
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
                           <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                            <div className="bg-white/10 backdrop-blur-sm rounded-full p-3 border border-white/20">
+                            <div className="bg-white/15 backdrop-blur-sm rounded-full p-3 border border-white/30">
                               <Play className="w-6 h-6 text-white fill-white" />
                             </div>
                           </div>
@@ -798,7 +835,7 @@ const MyList = () => {
                             <p className="text-white font-medium text-sm line-clamp-1 mb-1">
                               {title}
                             </p>
-                            <div className="flex items-center justify-between text-xs text-gray-400 mb-2">
+                            <div className="flex items-center justify-between text-xs text-gray-300 mb-2">
                               <div className="flex items-center gap-1.5">
                                 <Clock className="w-3 h-3" />
                                 <span>
@@ -820,168 +857,173 @@ const MyList = () => {
                             </div>
                           </div>
                         </div>
-                      </Card>
-                    </Link>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="text-center py-20">
-                <div className="w-20 h-20 bg-muted/20 rounded-full flex items-center justify-center mx-auto mb-5">
-                  <Play className="w-8 h-8 text-muted-foreground" />
+                      </Link>
+                    );
+                  })}
                 </div>
-                <h3 className="text-xl font-semibold mb-2">
-                  Nothing in progress
-                </h3>
-                <p className="text-muted-foreground text-sm mb-6 max-w-sm mx-auto">
-                  When you start watching something, it will appear here so you
-                  can pick up where you left off.
-                </p>
-                <Button asChild variant="outline">
-                  <Link href="/">Start Browsing</Link>
-                </Button>
-              </div>
-            )}
-          </TabsContent>
-
-          {/* Watchlist */}
-          <TabsContent value="watchlist" className="mt-0">
-            <MediaGrid
-              title="My Watchlist"
-              items={displayWatchlist}
-              isLoading={isPreferencesLoading}
-              onRemove={handleRemoveFromWatchlist}
-              emptyMessage="Your watchlist is empty."
-              emptyAction={
-                <Button asChild>
-                  <Link href="/">Discover Movies</Link>
-                </Button>
-              }
-              getMediaTitle={getMediaTitle}
-              getMediaPosterUrl={getMediaPosterUrl}
-              getMediaReleaseYear={getMediaReleaseYear}
-              viewMode={viewMode}
-              selectable={selectionMode}
-              selectedIds={selectedIds}
-              onToggleSelect={toggleSelect}
-              watchProgressMap={watchProgressMap}
-            />
-          </TabsContent>
-
-          {/* Favorites */}
-          <TabsContent value="favorites" className="mt-0">
-            <MediaGrid
-              title="My Favorites"
-              items={displayFavorites}
-              isLoading={isPreferencesLoading}
-              onRemove={handleRemoveFromFavorites}
-              emptyMessage="No favorites yet."
-              emptyAction={
-                <Button asChild>
-                  <Link href="/">Discover Movies</Link>
-                </Button>
-              }
-              getMediaTitle={getMediaTitle}
-              getMediaPosterUrl={getMediaPosterUrl}
-              getMediaReleaseYear={getMediaReleaseYear}
-              viewMode={viewMode}
-              selectable={selectionMode}
-              selectedIds={selectedIds}
-              onToggleSelect={toggleSelect}
-              watchProgressMap={watchProgressMap}
-            />
-          </TabsContent>
-
-          {/* Collections */}
-          <TabsContent value="collections" className="space-y-6 mt-0">
-            <div className="flex flex-col gap-3">
-              <div className="flex flex-wrap items-center gap-2">
-                {collections.map((c) => (
-                  <button
-                    key={c.id}
-                    onClick={() => setActiveCollectionId(c.id)}
-                    className={`px-3 py-1.5 rounded-full border text-sm transition-colors ${
-                      activeCollectionId === c.id
-                        ? "bg-foreground/10 border-foreground/30 font-medium"
-                        : "bg-card/50 border-border/50 hover:bg-card/70"
-                    }`}
-                  >
-                    {c.name}
-                  </button>
-                ))}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="rounded-full text-xs"
-                  onClick={async () => {
-                    const name = prompt("New collection name?");
-                    if (!name) return;
-                    const color =
-                      prompt("Optional color hex (e.g. #e11d48)") || undefined;
-                    const created = await createCollection(name, color);
-                    setActiveCollectionId(created.id);
-                  }}
-                >
-                  + New
-                </Button>
-              </div>
-
-              {activeCollectionId && (
-                <div className="flex items-center gap-2">
+              ) : (
+                <div className="text-center py-20">
+                  <div className="w-20 h-20 bg-white/5 border border-white/10 rounded-full flex items-center justify-center mx-auto mb-5">
+                    <Play className="w-8 h-8 text-gray-500" />
+                  </div>
+                  <h3 className="font-logo tracking-wide text-3xl mb-2">
+                    Nothing in progress
+                  </h3>
+                  <p className="text-gray-400 text-sm mb-6 max-w-sm mx-auto">
+                    When you start watching something, it will appear here so you
+                    can pick up where you left off.
+                  </p>
                   <Button
+                    asChild
                     variant="outline"
-                    size="sm"
-                    className="text-xs h-8"
-                    onClick={async () => {
-                      const col = collections.find(
-                        (c) => c.id === activeCollectionId,
-                      );
-                      if (!col) return;
-                      const newName = prompt("Rename collection", col.name);
-                      if (!newName) return;
-                      await renameCollection(col.id, newName);
-                    }}
+                    className="border-white/20 text-white hover:bg-white/10 rounded-sm"
                   >
-                    Rename
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    className="text-xs h-8"
-                    onClick={async () => {
-                      if (!confirm("Delete this collection?")) return;
-                      await deleteCollection(activeCollectionId);
-                      setActiveCollectionId(null);
-                    }}
-                  >
-                    Delete
+                    <Link href="/home">Start Browsing</Link>
                   </Button>
                 </div>
               )}
-            </div>
+            </TabsContent>
 
-            {activeCollectionId ? (
-              <MasonryMediaGrid
-                items={
-                  collections.find((c) => c.id === activeCollectionId)?.items ||
-                  []
-                }
-                onRemove={(itemId) =>
-                  removeItemFromCollection(activeCollectionId, itemId)
+            {/* Watchlist */}
+            <TabsContent value="watchlist" className="mt-0">
+              <MediaGrid
+                items={displayWatchlist}
+                isLoading={isPreferencesLoading}
+                onRemove={handleRemoveFromWatchlist}
+                emptyMessage="Your watchlist is empty."
+                emptyAction={
+                  <Button asChild className="bg-red-600 hover:bg-red-700 rounded-sm">
+                    <Link href="/home">Discover Movies</Link>
+                  </Button>
                 }
                 getMediaTitle={getMediaTitle}
                 getMediaPosterUrl={getMediaPosterUrl}
                 getMediaReleaseYear={getMediaReleaseYear}
+                viewMode={viewMode}
+                selectable={selectionMode}
+                selectedIds={selectedIds}
+                onToggleSelect={toggleSelect}
+                watchProgressMap={watchProgressMap}
               />
-            ) : (
-              <div className="text-center py-16">
-                <p className="text-muted-foreground text-sm">
-                  Create a collection to get started.
-                </p>
+            </TabsContent>
+
+            {/* Favorites */}
+            <TabsContent value="favorites" className="mt-0">
+              <MediaGrid
+                items={displayFavorites}
+                isLoading={isPreferencesLoading}
+                onRemove={handleRemoveFromFavorites}
+                emptyMessage="No favorites yet."
+                emptyAction={
+                  <Button asChild className="bg-red-600 hover:bg-red-700 rounded-sm">
+                    <Link href="/home">Discover Movies</Link>
+                  </Button>
+                }
+                getMediaTitle={getMediaTitle}
+                getMediaPosterUrl={getMediaPosterUrl}
+                getMediaReleaseYear={getMediaReleaseYear}
+                viewMode={viewMode}
+                selectable={selectionMode}
+                selectedIds={selectedIds}
+                onToggleSelect={toggleSelect}
+                watchProgressMap={watchProgressMap}
+              />
+            </TabsContent>
+
+            {/* Collections */}
+            <TabsContent value="collections" className="space-y-6 mt-0">
+              <div className="flex flex-col gap-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  {collections.map((c) => (
+                    <button
+                      key={c.id}
+                      onClick={() => setActiveCollectionId(c.id)}
+                      className={`px-3 py-1.5 rounded-full border text-sm transition-colors ${
+                        activeCollectionId === c.id
+                          ? "bg-red-600 border-red-600 text-white font-medium"
+                          : "bg-white/[0.03] border-white/10 text-gray-400 hover:text-white hover:bg-white/10"
+                      }`}
+                    >
+                      {c.name}
+                    </button>
+                  ))}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="rounded-full text-xs border-white/15 text-white hover:bg-white/10"
+                    onClick={async () => {
+                      const name = prompt("New collection name?");
+                      if (!name) return;
+                      const color =
+                        prompt("Optional color hex (e.g. #e11d48)") || undefined;
+                      const created = await createCollection(name, color);
+                      setActiveCollectionId(created.id);
+                    }}
+                  >
+                    + New
+                  </Button>
+                </div>
+
+                {activeCollectionId && (
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-xs h-8 rounded-sm border-white/15 text-white hover:bg-white/10"
+                      onClick={async () => {
+                        const col = collections.find(
+                          (c) => c.id === activeCollectionId,
+                        );
+                        if (!col) return;
+                        const newName = prompt("Rename collection", col.name);
+                        if (!newName) return;
+                        await renameCollection(col.id, newName);
+                      }}
+                    >
+                      Rename
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      className="text-xs h-8 rounded-sm"
+                      onClick={async () => {
+                        if (!confirm("Delete this collection?")) return;
+                        await deleteCollection(activeCollectionId);
+                        setActiveCollectionId(null);
+                      }}
+                    >
+                      Delete
+                    </Button>
+                  </div>
+                )}
               </div>
-            )}
-          </TabsContent>
-        </Tabs>
+
+              {activeCollectionId ? (
+                <MasonryMediaGrid
+                  items={
+                    collections.find((c) => c.id === activeCollectionId)?.items ||
+                    []
+                  }
+                  onRemove={(itemId) =>
+                    removeItemFromCollection(activeCollectionId, itemId)
+                  }
+                  getMediaTitle={getMediaTitle}
+                  getMediaPosterUrl={getMediaPosterUrl}
+                  getMediaReleaseYear={getMediaReleaseYear}
+                />
+              ) : (
+                <div className="text-center py-16">
+                  <div className="w-16 h-16 bg-white/5 border border-white/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Star className="w-7 h-7 text-gray-500" />
+                  </div>
+                  <p className="text-gray-400 text-sm">
+                    Create a collection to group titles your way.
+                  </p>
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
+        </div>
       </div>
     </div>
   );

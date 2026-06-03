@@ -1,7 +1,15 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import { Play, ArrowRight, ArrowUp, ChevronDown } from "lucide-react";
+import {
+  Play,
+  ArrowRight,
+  ArrowUp,
+  ChevronDown,
+  Check,
+  Clock,
+  Star,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getTrendingMovies, getTrendingTVShows } from "@/lib/tmdb";
 
@@ -77,6 +85,103 @@ const GENRE_MAP: Record<number, string> = {
   10768: "War & Politics",
 };
 
+const FAQS: { q: string; a: string }[] = [
+  {
+    q: "Is YMovies free to use?",
+    a: "Yes. Browsing, recommendations, episode tracking, and your watchlist are completely free. An account simply syncs everything across your devices.",
+  },
+  {
+    q: "Does YMovies host or stream the movies?",
+    a: "No. YMovies is a discovery and tracking companion — we show you where each title is legally available and link you straight to the platform that carries it.",
+  },
+  {
+    q: "How do the recommendations actually work?",
+    a: "Our engine blends collaborative filtering (people whose taste overlaps with yours) with content analysis (genre, cast, themes, mood) to surface titles that fit you — not just whatever is trending.",
+  },
+  {
+    q: "Where does the catalogue come from?",
+    a: "Titles, artwork, and metadata are powered by TMDB, spanning 800K+ movies and shows across every genre, language, and region.",
+  },
+  {
+    q: "Do I need an account to start?",
+    a: "Not at all — explore freely. Creating an account unlocks your watchlist, continue-watching, episode progress, and recommendations that sharpen the more you watch.",
+  },
+];
+
+/**
+ * Netflix-style alternating feature row. Text on one side, a live mockup
+ * (built from real catalogue imagery) on the other. Each panel reveals
+ * itself as it scrolls into view — text and visual easing in from opposite
+ * sides so the eye is led across the row.
+ */
+function FeaturePanel({
+  reverse = false,
+  eyebrow,
+  title,
+  desc,
+  points,
+  visual,
+}: {
+  reverse?: boolean;
+  eyebrow: string;
+  title: React.ReactNode;
+  desc: string;
+  points?: string[];
+  visual: React.ReactNode;
+}) {
+  const { ref, visible } = useReveal<HTMLDivElement>(0.15);
+
+  return (
+    <div
+      ref={ref}
+      className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-20 items-center"
+    >
+      {/* Text */}
+      <div
+        className={`${reverse ? "lg:order-2" : ""} transition-all duration-700 ease-out ${
+          visible
+            ? "opacity-100 translate-x-0"
+            : `opacity-0 ${reverse ? "lg:translate-x-10" : "lg:-translate-x-10"} translate-y-6`
+        }`}
+      >
+        <p className="text-red-500 text-xs font-semibold uppercase tracking-[0.25em] mb-4">
+          {eyebrow}
+        </p>
+        <h3 className="font-logo tracking-wide text-3xl sm:text-4xl lg:text-5xl leading-[0.95] mb-5">
+          {title}
+        </h3>
+        <p className="text-gray-400 leading-relaxed mb-6 max-w-lg">{desc}</p>
+        {points && (
+          <ul className="space-y-3">
+            {points.map((p) => (
+              <li
+                key={p}
+                className="flex items-start gap-3 text-sm text-gray-300"
+              >
+                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-red-600/15">
+                  <Check className="w-3 h-3 text-red-500" />
+                </span>
+                <span>{p}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      {/* Visual */}
+      <div
+        className={`${reverse ? "lg:order-1" : ""} transition-all duration-700 delay-150 ease-out ${
+          visible
+            ? "opacity-100 translate-y-0 scale-100"
+            : "opacity-0 translate-y-10 scale-[0.97]"
+        }`}
+      >
+        {visual}
+      </div>
+    </div>
+  );
+}
+
 const Landing = () => {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
@@ -116,6 +221,24 @@ const Landing = () => {
 
   const current = showcase[activeIndex];
 
+  // Source items for the feature-panel mockups (all real catalogue data)
+  const recHero = showcase[1] || showcase[0];
+  const recPosters = posterWall.slice(2, 7);
+  const wtwItem =
+    (trendingMovies || []).find((m) => m.poster_path) || posterWall[0];
+  const resumeItem = showcase[2] || showcase[0];
+  const showItem =
+    (trendingTV || []).find((t) => t.poster_path) ||
+    (trendingMovies || [])[0];
+
+  // Background for the oversized footer wordmark — a film still clipped into
+  // the lettering, dimmed so it reads as a watermark. Falls back to a soft
+  // white gradient before the catalogue loads.
+  const footerBackdrop = showcase[0]?.backdrop_path;
+  const wordmarkBg = footerBackdrop
+    ? `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.62)), url(https://image.tmdb.org/t/p/original${footerBackdrop})`
+    : "linear-gradient(180deg, rgba(255,255,255,0.14), rgba(255,255,255,0.03))";
+
   useEffect(() => {
     setTimeout(() => setIsVisible(true), 100);
     const handleScroll = () => setShowBackToTop(window.scrollY > 400);
@@ -123,15 +246,27 @@ const Landing = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  useEffect(() => {
+  const startAutoplay = () => {
+    if (intervalRef.current) clearInterval(intervalRef.current);
     if (showcase.length < 2) return;
     intervalRef.current = setInterval(() => {
       setActiveIndex((prev) => (prev + 1) % showcase.length);
     }, 6000);
+  };
+
+  useEffect(() => {
+    startAutoplay();
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showcase.length]);
+
+  // Jump to a slide and keep the rotation running from that point
+  const goToSlide = (i: number) => {
+    setActiveIndex(i);
+    startAutoplay();
+  };
 
   const toggleSection = (id: string) => {
     setOpenSections((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -152,6 +287,7 @@ const Landing = () => {
   const discover = useReveal<HTMLElement>(0.08);
   const features = useReveal<HTMLElement>(0.08);
   const trending = useReveal<HTMLElement>(0.08);
+  const faq = useReveal<HTMLElement>(0.08);
   const cta = useReveal<HTMLElement>(0.08);
   const footer = useReveal<HTMLElement>(0.05);
 
@@ -166,7 +302,13 @@ const Landing = () => {
   return (
     <div className="bg-black text-white overflow-x-hidden">
       {/* ===== HERO — FULL BLEED CINEMATIC ===== */}
-      <section ref={heroRef} className="relative h-screen w-full">
+      <section ref={heroRef} className="relative h-screen w-full overflow-hidden">
+        {/* Loading backdrop — a warm, slow-breathing gradient so the first
+            paint reads as cinema rather than a blank black frame */}
+        {showcase.length === 0 && (
+          <div className="absolute inset-0 bg-gradient-to-br from-[#1a0606] via-black to-black animate-pulse" />
+        )}
+
         {/* Backdrop layers */}
         {showcase.map((item, i) => (
           <div
@@ -177,7 +319,7 @@ const Landing = () => {
             <img
               src={`https://image.tmdb.org/t/p/original${item.backdrop_path}`}
               alt=""
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover animate-ken-burns will-change-transform"
               loading={i === 0 ? "eager" : "lazy"}
             />
           </div>
@@ -186,6 +328,14 @@ const Landing = () => {
         {/* Gradient overlays */}
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-black/30" />
         <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-transparent to-transparent" />
+        {/* Vignette — darkened edges, like a projected frame */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background:
+              "radial-gradient(120% 120% at 50% 45%, transparent 55%, rgba(0,0,0,0.55) 100%)",
+          }}
+        />
 
         {/* Content */}
         <div className="absolute inset-0 flex flex-col justify-end pb-20 sm:pb-28 px-6 sm:px-12 lg:px-20">
@@ -202,7 +352,7 @@ const Landing = () => {
 
             {/* Active movie info */}
             {current && (
-              <div className="space-y-4 mb-8">
+              <div key={activeIndex} className="space-y-4 mb-8 animate-hero-reveal">
                 <div className="flex items-center gap-3 text-sm text-gray-400">
                   <span className="text-red-500 font-semibold uppercase tracking-widest text-xs">
                     Trending Now
@@ -218,7 +368,7 @@ const Landing = () => {
                     </>
                   )}
                 </div>
-                <h2 className="text-xl sm:text-4xl lg:text-5xl font-bold leading-tight">
+                <h2 className="font-logo tracking-wide text-2xl sm:text-5xl lg:text-6xl leading-none">
                   {getTitle(current)}
                 </h2>
                 <p className="text-gray-300 text-sm sm:text-base leading-relaxed max-w-xl line-clamp-3">
@@ -255,16 +405,21 @@ const Landing = () => {
               {showcase.map((_, i) => (
                 <button
                   key={i}
-                  onClick={() => {
-                    setActiveIndex(i);
-                    if (intervalRef.current) clearInterval(intervalRef.current);
-                  }}
-                  className={`w-2 rounded-full transition-all duration-500 ${
+                  onClick={() => goToSlide(i)}
+                  aria-label={`Go to slide ${i + 1}`}
+                  className={`relative w-2 rounded-full overflow-hidden transition-all duration-500 ${
                     i === activeIndex
-                      ? "h-8 bg-red-600"
+                      ? "h-8 bg-white/20"
                       : "h-2 bg-white/30 hover:bg-white/60"
                   }`}
-                />
+                >
+                  {i === activeIndex && (
+                    <span
+                      key={activeIndex}
+                      className="absolute inset-x-0 top-0 rounded-full bg-red-600 animate-dot-progress"
+                    />
+                  )}
+                </button>
               ))}
             </div>
           )}
@@ -292,7 +447,7 @@ const Landing = () => {
               <p className="text-red-500 text-xs font-semibold uppercase tracking-[0.25em] mb-4">
                 What is YMovies
               </p>
-              <h2 className="text-2xl sm:text-4xl lg:text-5xl font-bold leading-tight mb-6">
+              <h2 className="font-logo tracking-wide text-3xl sm:text-5xl lg:text-6xl leading-[0.95] mb-6">
                 Your taste.{" "}
                 <br />
                 <span className="text-red-600">Your algorithm.</span>
@@ -414,65 +569,300 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* ===== FEATURES — MINIMAL CARDS ===== */}
+      {/* ===== FEATURES — NETFLIX-STYLE ALTERNATING PANELS ===== */}
       <section
         ref={features.ref}
-        className="py-24 px-6 sm:px-12 lg:px-20 bg-[#0a0a0a]"
+        className="relative py-24 px-6 sm:px-12 lg:px-20 bg-[#0a0a0a] border-y border-white/5"
       >
-        <div className={`max-w-7xl mx-auto ${reveal(features.visible)}`}>
-          <div className="text-center mb-16">
+        <div className="max-w-7xl mx-auto">
+          <div className={`text-center mb-20 ${reveal(features.visible)}`}>
             <p className="text-red-500 text-xs font-semibold uppercase tracking-[0.25em] mb-4">
               Built Different
             </p>
-            <h2 className="text-2xl sm:text-4xl lg:text-5xl font-bold">
-              Not another movie database
+            <h2 className="font-logo tracking-wide text-3xl sm:text-5xl lg:text-6xl leading-tight mb-4">
+              Everything you need to watch smarter
             </h2>
+            <p className="text-gray-400 max-w-xl mx-auto">
+              Not another database. A companion that remembers what you love and
+              tells you exactly where to watch it.
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-white/5 rounded-2xl overflow-hidden">
-            {[
-              {
-                title: "AI Recommendations",
-                desc: "13+ personalized categories that evolve with your viewing patterns. No generic top-10 lists.",
-                accent: "from-red-600/20 to-transparent",
-              },
-              {
-                title: "Where to Watch",
-                desc: "Instantly see which streaming platforms carry each title. Stop switching between apps.",
-                accent: "from-blue-600/20 to-transparent",
-              },
-              {
-                title: "Episode Tracking",
-                desc: "Mark episodes watched, track progress across seasons, and always know what is next.",
-                accent: "from-green-600/20 to-transparent",
-              },
-              {
-                title: "Continue Watching",
-                desc: "Pick up exactly where you left off. Progress bars, time remaining, and smart resume.",
-                accent: "from-purple-600/20 to-transparent",
-              },
-            ].map((feature, i) => (
-              <div
-                key={i}
-                className={`relative p-8 sm:p-10 bg-[#0a0a0a] group hover:bg-[#111] transition-all duration-700 ease-out ${
-                  features.visible
-                    ? "opacity-100 translate-y-0"
-                    : "opacity-0 translate-y-6"
-                }`}
-                style={{ transitionDelay: features.visible ? `${i * 120}ms` : "0ms" }}
-              >
-                <div
-                  className={`absolute top-0 left-0 right-0 h-px bg-gradient-to-r ${feature.accent}`}
-                />
-                <p className="text-red-600 font-logo text-3xl mb-6">
-                  0{i + 1}
-                </p>
-                <h3 className="text-lg font-bold mb-3">{feature.title}</h3>
-                <p className="text-gray-500 text-sm leading-relaxed">
-                  {feature.desc}
-                </p>
-              </div>
-            ))}
+          <div className="space-y-24 lg:space-y-32">
+            {/* 1 — Recommendations */}
+            <FeaturePanel
+              eyebrow="Recommendations"
+              title={
+                <>
+                  A home screen that{" "}
+                  <span className="text-red-600">learns your taste</span>
+                </>
+              }
+              desc="Our hybrid engine studies what you watch, rate, and save — then rebuilds your home page around it. The more you watch, the sharper it gets."
+              points={[
+                "13+ personalised rows that evolve with you",
+                "Blends collaborative filtering with content analysis",
+                "No generic top-10 lists everyone else sees",
+              ]}
+              visual={
+                <div className="relative">
+                  <div className="rounded-2xl overflow-hidden border border-white/10 bg-[#0b0b0b] shadow-2xl shadow-black/70">
+                    <div className="flex items-center gap-1.5 px-4 py-3 border-b border-white/5">
+                      <span className="w-2.5 h-2.5 rounded-full bg-red-500/70" />
+                      <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/50" />
+                      <span className="w-2.5 h-2.5 rounded-full bg-green-500/40" />
+                      <span className="ml-3 font-logo text-lg tracking-wider text-white/70">
+                        YMOVIES
+                      </span>
+                    </div>
+                    {recHero && (
+                      <div className="relative aspect-[16/8]">
+                        <img
+                          src={`https://image.tmdb.org/t/p/w780${recHero.backdrop_path}`}
+                          alt=""
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#0b0b0b] via-[#0b0b0b]/10 to-transparent" />
+                        <div className="absolute bottom-3 left-4 right-4">
+                          <p className="text-[10px] text-red-500 font-semibold uppercase tracking-[0.2em] mb-1">
+                            Because you watch sci-fi
+                          </p>
+                          <p className="text-base font-bold leading-tight truncate">
+                            {getTitle(recHero)}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                    <div className="p-3">
+                      <p className="text-[11px] text-gray-400 mb-2 px-1">
+                        Picked for you
+                      </p>
+                      <div className="flex gap-2">
+                        {recPosters.map((p) => (
+                          <img
+                            key={p.id}
+                            src={`https://image.tmdb.org/t/p/w185${p.poster_path}`}
+                            alt={getTitle(p)}
+                            className="w-1/5 rounded-md aspect-[2/3] object-cover"
+                            loading="lazy"
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="absolute -inset-6 bg-red-600/10 blur-3xl -z-10 rounded-full" />
+                </div>
+              }
+            />
+
+            {/* 2 — Where to watch */}
+            <FeaturePanel
+              reverse
+              eyebrow="Where to watch"
+              title={
+                <>
+                  Stop app-hopping.{" "}
+                  <span className="text-red-600">We know who has it.</span>
+                </>
+              }
+              desc="Every title shows you exactly which streaming services carry it right now, so you go straight from 'I want to watch this' to pressing play."
+              points={[
+                "Live streaming availability per title",
+                "One tap to the platform that has it",
+                "No more guessing across six different apps",
+              ]}
+              visual={
+                wtwItem && (
+                  <div className="relative rounded-2xl border border-white/10 bg-[#0b0b0b] p-5 shadow-2xl shadow-black/70">
+                    <div className="flex gap-5">
+                      <img
+                        src={`https://image.tmdb.org/t/p/w342${wtwItem.poster_path}`}
+                        alt={getTitle(wtwItem)}
+                        className="w-28 rounded-lg shrink-0 aspect-[2/3] object-cover"
+                        loading="lazy"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-bold text-lg leading-tight truncate">
+                          {getTitle(wtwItem)}
+                        </h4>
+                        <div className="flex items-center gap-2 text-xs text-gray-400 mt-1">
+                          <span>{getYear(wtwItem)}</span>
+                          {wtwItem.vote_average > 0 && (
+                            <>
+                              <span className="w-px h-3 bg-gray-700" />
+                              <span className="flex items-center gap-1 text-yellow-500">
+                                <Star className="w-3 h-3 fill-yellow-500" />
+                                {wtwItem.vote_average.toFixed(1)}
+                              </span>
+                            </>
+                          )}
+                        </div>
+                        <p className="text-[11px] text-gray-500 uppercase tracking-[0.2em] mt-4 mb-2">
+                          Available on
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {[
+                            { name: "Netflix", color: "bg-red-600" },
+                            { name: "Prime Video", color: "bg-sky-500" },
+                            { name: "Disney+", color: "bg-indigo-500" },
+                            { name: "Max", color: "bg-purple-500" },
+                          ].map((s) => (
+                            <span
+                              key={s.name}
+                              className="inline-flex items-center gap-1.5 rounded-md bg-white/5 border border-white/10 px-2.5 py-1 text-xs text-gray-200"
+                            >
+                              <span
+                                className={`w-1.5 h-1.5 rounded-full ${s.color}`}
+                              />
+                              {s.name}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="mt-5 inline-flex items-center gap-2 rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white">
+                      <Play className="w-3.5 h-3.5 fill-white" /> Watch now
+                    </div>
+                  </div>
+                )
+              }
+            />
+
+            {/* 3 — Continue watching */}
+            <FeaturePanel
+              eyebrow="Continue watching"
+              title={
+                <>
+                  Pick up{" "}
+                  <span className="text-red-600">exactly</span> where you left
+                  off
+                </>
+              }
+              desc="Close the tab mid-episode and come back days later — YMovies remembers the title, the episode, and the minute, on every device you use."
+              points={[
+                "Resume to the exact second, anywhere",
+                "Progress bars and time remaining at a glance",
+                "Synced across phone, laptop, and TV",
+              ]}
+              visual={
+                resumeItem && (
+                  <div className="relative rounded-2xl overflow-hidden border border-white/10 shadow-2xl shadow-black/70 group">
+                    <div className="relative aspect-[16/9]">
+                      <img
+                        src={`https://image.tmdb.org/t/p/w780${resumeItem.backdrop_path}`}
+                        alt={getTitle(resumeItem)}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="flex h-14 w-14 items-center justify-center rounded-full bg-white/15 backdrop-blur-sm border border-white/30 transition-transform duration-300 group-hover:scale-110">
+                          <Play className="w-6 h-6 fill-white text-white ml-0.5" />
+                        </span>
+                      </div>
+                      <div className="absolute bottom-0 left-0 right-0 p-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="min-w-0">
+                            <p className="font-bold leading-tight truncate">
+                              {getTitle(resumeItem)}
+                            </p>
+                            <p className="text-xs text-gray-300">
+                              S2 E4 · Resume
+                            </p>
+                          </div>
+                          <span className="flex items-center gap-1 text-xs text-gray-300 shrink-0">
+                            <Clock className="w-3 h-3" /> 18 min left
+                          </span>
+                        </div>
+                        <div className="h-1 w-full rounded-full bg-white/20 overflow-hidden">
+                          <div className="h-full w-[64%] rounded-full bg-red-600" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )
+              }
+            />
+
+            {/* 4 — Episode tracking */}
+            <FeaturePanel
+              reverse
+              eyebrow="Episode tracking"
+              title={
+                <>
+                  Never lose your place in a{" "}
+                  <span className="text-red-600">long series</span>
+                </>
+              }
+              desc="Tick off episodes as you go and YMovies keeps the whole season in order — so you always know what you've seen and what's up next."
+              points={[
+                "Mark episodes watched across every season",
+                "Always know which episode is next",
+                "Season-by-season progress at a glance",
+              ]}
+              visual={
+                showItem && (
+                  <div className="rounded-2xl border border-white/10 bg-[#0b0b0b] p-5 shadow-2xl shadow-black/70">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="min-w-0">
+                        <h4 className="font-bold leading-tight truncate">
+                          {getTitle(showItem)}
+                        </h4>
+                        <p className="text-xs text-gray-500">Season 1</p>
+                      </div>
+                      <span className="text-xs text-gray-400 shrink-0">
+                        3 / 5 watched
+                      </span>
+                    </div>
+                    <ul className="space-y-2">
+                      {[
+                        { n: 1, t: "Pilot", done: true },
+                        { n: 2, t: "The Reckoning", done: true },
+                        { n: 3, t: "Crossroads", done: true },
+                        { n: 4, t: "Fallout", done: false, next: true },
+                        { n: 5, t: "Aftermath", done: false },
+                      ].map((ep) => (
+                        <li
+                          key={ep.n}
+                          className={`flex items-center gap-3 rounded-lg px-3 py-2.5 ${
+                            ep.next
+                              ? "bg-red-600/10 border border-red-600/30"
+                              : "bg-white/[0.03]"
+                          }`}
+                        >
+                          <span
+                            className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold ${
+                              ep.done
+                                ? "bg-red-600 text-white"
+                                : ep.next
+                                  ? "bg-red-600/20 text-red-400"
+                                  : "bg-white/10 text-gray-400"
+                            }`}
+                          >
+                            {ep.done ? (
+                              <Check className="w-3.5 h-3.5" />
+                            ) : ep.next ? (
+                              <Play className="w-3 h-3 fill-current" />
+                            ) : (
+                              ep.n
+                            )}
+                          </span>
+                          <span className="text-sm text-gray-300 truncate">
+                            {ep.t}
+                          </span>
+                          {ep.next && (
+                            <span className="ml-auto text-[10px] font-semibold uppercase tracking-wider text-red-400 shrink-0">
+                              Up next
+                            </span>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )
+              }
+            />
           </div>
         </div>
       </section>
@@ -489,7 +879,7 @@ const Landing = () => {
                 <p className="text-red-500 text-xs font-semibold uppercase tracking-[0.25em] mb-2">
                   Right Now
                 </p>
-                <h2 className="text-2xl sm:text-4xl font-bold">
+                <h2 className="font-logo tracking-wide text-3xl sm:text-5xl">
                   Trending This Week
                 </h2>
               </div>
@@ -548,6 +938,64 @@ const Landing = () => {
         </section>
       )}
 
+      {/* ===== FAQ ===== */}
+      <section
+        ref={faq.ref}
+        className="py-24 px-6 sm:px-12 lg:px-20 bg-[#0a0a0a] border-t border-white/5"
+      >
+        <div className={`max-w-3xl mx-auto ${reveal(faq.visible)}`}>
+          <div className="text-center mb-12">
+            <p className="text-red-500 text-xs font-semibold uppercase tracking-[0.25em] mb-4">
+              Good to know
+            </p>
+            <h2 className="font-logo tracking-wide text-3xl sm:text-5xl">
+              Frequently asked questions
+            </h2>
+          </div>
+
+          <div className="space-y-3">
+            {FAQS.map((item, i) => {
+              const open = openSections[`faq-${i}`];
+              return (
+                <div
+                  key={i}
+                  className="rounded-xl border border-white/10 bg-white/[0.02] overflow-hidden"
+                >
+                  <button
+                    type="button"
+                    onClick={() => toggleSection(`faq-${i}`)}
+                    className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left hover:bg-white/[0.03] transition-colors"
+                    aria-expanded={open ? true : false}
+                  >
+                    <span className="font-medium text-sm sm:text-base">
+                      {item.q}
+                    </span>
+                    <ChevronDown
+                      className={`w-5 h-5 text-red-500 shrink-0 transition-transform duration-300 ${
+                        open ? "rotate-180" : ""
+                      }`}
+                    />
+                  </button>
+                  <div
+                    className={`grid transition-all duration-300 ease-out ${
+                      open
+                        ? "grid-rows-[1fr] opacity-100"
+                        : "grid-rows-[0fr] opacity-0"
+                    }`}
+                  >
+                    <div className="overflow-hidden">
+                      <p className="px-5 pb-5 text-sm text-gray-400 leading-relaxed">
+                        {item.a}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
       {/* ===== FINAL CTA — CINEMATIC ===== */}
       <section
         ref={cta.ref}
@@ -567,7 +1015,7 @@ const Landing = () => {
         )}
 
         <div className={`relative max-w-3xl mx-auto text-center ${reveal(cta.visible)}`}>
-          <h2 className="text-3xl sm:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
+          <h2 className="font-logo tracking-wide text-4xl sm:text-6xl lg:text-7xl mb-6 leading-[0.95]">
             Stop scrolling.
             <br />
             <span className="text-red-600">Start watching.</span>
@@ -600,9 +1048,34 @@ const Landing = () => {
       {/* ===== FOOTER ===== */}
       <footer
         ref={footer.ref}
-        className="py-16 px-6 sm:px-12 lg:px-20 border-t border-white/5"
+        className="relative overflow-hidden pt-16 px-6 sm:px-12 lg:px-20 border-t border-white/5"
       >
-        <div className={`max-w-7xl mx-auto ${reveal(footer.visible)}`}>
+        {/* Oversized brand wordmark baked into the footer background — a film
+            still clipped into the letters, anchored to the bottom and faded so
+            it sits behind the content as a quiet watermark, never competing
+            with the links. */}
+        <div
+          className="absolute inset-x-0 bottom-0 flex justify-center overflow-hidden opacity-50 pointer-events-none select-none"
+          aria-hidden="true"
+        >
+          <h2
+            className="font-logo leading-[1.15] tracking-wide text-transparent bg-clip-text bg-cover bg-center whitespace-nowrap pb-4"
+            style={{
+              fontSize: "clamp(4rem, 22vw, 17rem)",
+              backgroundImage: wordmarkBg,
+              WebkitMaskImage:
+                "linear-gradient(to bottom, transparent 0%, black 40%, black 58%, transparent 92%)",
+              maskImage:
+                "linear-gradient(to bottom, transparent 0%, black 40%, black 58%, transparent 92%)",
+            }}
+          >
+            YMOVIES
+          </h2>
+        </div>
+
+        <div
+          className={`relative z-10 max-w-7xl mx-auto ${reveal(footer.visible)}`}
+        >
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-10 mb-14">
             {/* Brand */}
             <div className="col-span-2">
@@ -858,6 +1331,13 @@ const Landing = () => {
                 </a>
               </div>
             </div>
+
+            {/* TMDB attribution — required by their terms, and it reads legit */}
+            <p className="mt-6 max-w-2xl text-[11px] leading-relaxed text-gray-700">
+              This product uses the TMDB API but is not endorsed or certified by
+              TMDB. All title data, artwork, and ratings are provided by The
+              Movie Database.
+            </p>
           </div>
         </div>
       </footer>

@@ -1,13 +1,18 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { Link, useLocation } from "wouter";
-import { Card, CardContent } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
+import { useLocation } from "wouter";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
+import {
+  KeyRound,
+  Bell,
+  ShieldCheck,
+  Info,
+  LogOut,
+  SlidersHorizontal,
+} from "lucide-react";
 
 import supabase from "@/lib/supabase";
 
@@ -33,6 +38,66 @@ async function getAuthHeaders(): Promise<Record<string, string>> {
     "Content-Type": "application/json",
   };
 }
+
+/** A cinematic settings panel — eyebrow label + framed body, matches the
+ *  profile / landing design language. */
+const Panel = ({
+  icon: Icon,
+  eyebrow,
+  title,
+  description,
+  children,
+}: {
+  icon: React.ElementType;
+  eyebrow: string;
+  title: string;
+  description?: string;
+  children: React.ReactNode;
+}) => (
+  <section className="rounded-sm border border-white/10 bg-[#0b0b0b] overflow-hidden">
+    <div className="flex items-start gap-4 border-b border-white/5 px-5 sm:px-6 py-5">
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm bg-red-600/10 border border-red-600/20">
+        <Icon className="h-5 w-5 text-red-500" />
+      </span>
+      <div className="min-w-0">
+        <p className="text-red-500 text-[10px] font-semibold uppercase tracking-[0.25em] mb-1">
+          {eyebrow}
+        </p>
+        <h2 className="font-logo tracking-wide text-2xl leading-none">{title}</h2>
+        {description && (
+          <p className="text-sm text-gray-500 mt-1.5">{description}</p>
+        )}
+      </div>
+    </div>
+    <div className="px-5 sm:px-6 py-5">{children}</div>
+  </section>
+);
+
+/** A labelled toggle row. */
+const ToggleRow = ({
+  label,
+  description,
+  checked,
+  onChange,
+}: {
+  label: string;
+  description?: string;
+  checked: boolean;
+  onChange: () => void;
+}) => (
+  <div className="flex items-center justify-between gap-4 py-1">
+    <div className="min-w-0">
+      <p className="text-sm font-medium text-white">{label}</p>
+      {description && (
+        <p className="text-xs text-gray-500 mt-0.5">{description}</p>
+      )}
+    </div>
+    <Switch checked={checked} onCheckedChange={onChange} className="shrink-0" />
+  </div>
+);
+
+const fieldClass =
+  "bg-white/5 border-white/10 text-white placeholder:text-gray-600 focus-visible:ring-red-600/40";
 
 const Settings = () => {
   const { user, supabaseUser, signOut, changePassword } = useAuth();
@@ -128,123 +193,173 @@ const Settings = () => {
   };
 
   return (
-    <div className="container mx-auto pt-24 pb-12 px-4">
-      <div className="max-w-2xl mx-auto">
-        <h1 className="text-2xl font-bold mb-6">Settings</h1>
-        
-        {/* Account Settings */}
-        <Card className="mb-6">
-          <CardContent className="p-6 space-y-6">
-            <div>
-              <h2 className="text-xl font-bold mb-6">Account Settings</h2>
-              
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="email" className="text-muted-foreground mb-1 block">Email</Label>
-                  <Input 
-                    id="email" 
-                    type="email" 
-                    value={user?.email || "No email available"} 
-                    readOnly 
-                    className="bg-secondary/20"
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="current-password" className="text-muted-foreground mb-1 block">Current Password</Label>
-                  <Input id="current-password" type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} placeholder="Enter current password" />
-                  <Label htmlFor="new-password" className="text-muted-foreground mb-1 block">New Password</Label>
-                  <Input id="new-password" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="At least 8 characters" />
-                  <Label htmlFor="confirm-password" className="text-muted-foreground mb-1 block">Confirm New Password</Label>
-                  <Input id="confirm-password" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Re-enter new password" />
-                  <div className="flex justify-end pt-2">
-                    <Button size="sm" disabled={!canSubmitChange || changing} onClick={handleChangePassword}>
-                      {changing ? 'Updating…' : 'Change Password'}
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <Separator />
-          </CardContent>
-        </Card>
-        
-        {/* Notification Settings */}
-        <Card className="mb-6">
-          <CardContent className="p-6">
-            <h2 className="text-xl font-bold mb-6">Notification Settings</h2>
-            
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span>New Recommendations</span>
-                <Switch 
-                  checked={notificationSettings.recommendations} 
-                  onCheckedChange={() => toggleSetting('recommendations')} 
-                />
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <span>New Releases</span>
-                <Switch 
-                  checked={notificationSettings.newReleases} 
-                  onCheckedChange={() => toggleSetting('newReleases')} 
-                />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        {/* Privacy Settings */}
-        <Card className="mb-6">
-          <CardContent className="p-6">
-            <h2 className="text-xl font-bold mb-6">Privacy</h2>
-            
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span>Save Watch History</span>
-                <Switch 
-                  checked={notificationSettings.watchHistory} 
-                  onCheckedChange={() => toggleSetting('watchHistory')} 
-                />
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <span>Use Viewing Activity for Recommendations</span>
-                <Switch 
-                  checked={notificationSettings.useForRecommendations} 
-                  onCheckedChange={() => toggleSetting('useForRecommendations')} 
-                />
-              </div>
-              {isSaving && <p className="text-xs text-muted-foreground">Saving…</p>}
-            </div>
-          </CardContent>
-        </Card>
-        
-        {/* About & Version */}
-        <Card className="mb-6">
-          <CardContent className="p-6">
-            <h2 className="text-xl font-bold mb-6">About</h2>
-            
-            <div className="space-y-2">
-              <p className="text-muted-foreground">Version 3.0.0</p>
-              <p className="text-muted-foreground">© 2025 YMovies</p>
-            </div>
-          </CardContent>
-        </Card>
-        
-        {/* Sign Out */}
-        <div className="flex justify-center mb-6">
-          <Button 
-            variant="ghost" 
-            className="text-primary"
-            onClick={async () => {
-              await signOut();
-              navigate("/");
-            }}
+    <div className="min-h-screen bg-black text-white">
+      {/* Header */}
+      <div className="px-6 sm:px-12 lg:px-20 pt-28 pb-8 border-b border-white/5">
+        <div className="max-w-3xl mx-auto">
+          <p className="text-red-500 text-xs font-semibold uppercase tracking-[0.25em] mb-3 flex items-center gap-2">
+            <SlidersHorizontal className="w-3.5 h-3.5" />
+            Account
+          </p>
+          <h1 className="font-logo tracking-wide text-4xl sm:text-6xl leading-none">
+            Settings
+          </h1>
+          <p className="text-gray-500 mt-3 text-sm">
+            Manage your account, notifications, and privacy.
+          </p>
+        </div>
+      </div>
+
+      {/* Body */}
+      <div className="px-6 sm:px-12 lg:px-20 py-10">
+        <div className="max-w-3xl mx-auto space-y-6">
+          {/* Account */}
+          <Panel
+            icon={KeyRound}
+            eyebrow="Identity"
+            title="Account"
+            description="Your sign-in email and password."
           >
-            Sign Out
-          </Button>
+            <div className="space-y-5">
+              <div>
+                <label htmlFor="email" className="text-xs uppercase tracking-wider text-gray-500 mb-1.5 block">
+                  Email
+                </label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={user?.email || "No email available"}
+                  readOnly
+                  className={`${fieldClass} opacity-70 cursor-default`}
+                />
+              </div>
+
+              <div className="h-px bg-white/5" />
+
+              <div className="space-y-3">
+                <p className="text-xs uppercase tracking-wider text-gray-500">
+                  Change password
+                </p>
+                <Input
+                  id="current-password"
+                  type="password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  placeholder="Current password"
+                  className={fieldClass}
+                />
+                <Input
+                  id="new-password"
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="New password — at least 8 characters"
+                  className={fieldClass}
+                />
+                <Input
+                  id="confirm-password"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Confirm new password"
+                  className={fieldClass}
+                />
+                <div className="flex justify-end pt-1">
+                  <Button
+                    size="sm"
+                    disabled={!canSubmitChange || changing}
+                    onClick={handleChangePassword}
+                    className="bg-red-600 hover:bg-red-700 text-white rounded-sm"
+                  >
+                    {changing ? "Updating…" : "Change Password"}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </Panel>
+
+          {/* Notifications */}
+          <Panel
+            icon={Bell}
+            eyebrow="Stay in the loop"
+            title="Notifications"
+            description="Choose what we tell you about."
+          >
+            <div className="divide-y divide-white/5">
+              <div className="pb-3">
+                <ToggleRow
+                  label="New Recommendations"
+                  description="When fresh picks are tailored to your taste."
+                  checked={notificationSettings.recommendations}
+                  onChange={() => toggleSetting("recommendations")}
+                />
+              </div>
+              <div className="pt-3">
+                <ToggleRow
+                  label="New Releases"
+                  description="Just-added titles in genres you follow."
+                  checked={notificationSettings.newReleases}
+                  onChange={() => toggleSetting("newReleases")}
+                />
+              </div>
+            </div>
+          </Panel>
+
+          {/* Privacy */}
+          <Panel
+            icon={ShieldCheck}
+            eyebrow="Your data"
+            title="Privacy"
+            description="Control how your activity is used."
+          >
+            <div className="divide-y divide-white/5">
+              <div className="pb-3">
+                <ToggleRow
+                  label="Save Watch History"
+                  description="Keep track of what you've watched."
+                  checked={notificationSettings.watchHistory}
+                  onChange={() => toggleSetting("watchHistory")}
+                />
+              </div>
+              <div className="pt-3">
+                <ToggleRow
+                  label="Use Viewing Activity for Recommendations"
+                  description="Sharpen your picks using what you watch."
+                  checked={notificationSettings.useForRecommendations}
+                  onChange={() => toggleSetting("useForRecommendations")}
+                />
+              </div>
+            </div>
+            {isSaving && (
+              <p className="text-xs text-gray-500 mt-3">Saving…</p>
+            )}
+          </Panel>
+
+          {/* About */}
+          <Panel icon={Info} eyebrow="The fine print" title="About">
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-1 text-sm text-gray-400">
+              <span>
+                <span className="text-gray-500">Version</span> 3.0.0
+              </span>
+              <span className="hidden sm:inline w-px h-3.5 bg-white/10" />
+              <span>© {new Date().getFullYear()} YMovies</span>
+            </div>
+          </Panel>
+
+          {/* Sign out */}
+          <div className="flex justify-center pt-2">
+            <Button
+              variant="outline"
+              className="border-red-600/30 text-red-400 hover:bg-red-600/10 hover:text-red-300 rounded-sm gap-2"
+              onClick={async () => {
+                await signOut();
+                navigate("/");
+              }}
+            >
+              <LogOut className="w-4 h-4" />
+              Sign Out
+            </Button>
+          </div>
         </div>
       </div>
     </div>

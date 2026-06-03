@@ -136,8 +136,8 @@ const MovieDetail = () => {
     queryFn: () => getEnhancedSimilarMovies(movieId),
     enabled: movieId > 0 && !!movie,
     retry: 2,
-    staleTime: 1000 * 60 * 10, // 10 minutes - enhanced recommendations are more expensive to compute
-    gcTime: 1000 * 60 * 60, // 1 hour cache
+    staleTime: 1000 * 60 * 60 * 2, // 2 hours — matches server-side 6h cache; recs don't change often
+    gcTime: 1000 * 60 * 60 * 6,   // 6 hours in memory
   });
   
   // Handle error using useEffect

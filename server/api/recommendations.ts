@@ -63,7 +63,7 @@ const recommendationEngine = new RecommendationEngine(process.env.TMDB_API_KEY |
 type CacheEntry<T> = { data: T; expiresAt: number };
 const SIMILAR_CACHE = new Map<string, CacheEntry<Movie[]>>();
 const BECAUSE_CACHE = new Map<string, CacheEntry<{ recommendations: Movie[]; sourceMovie: Movie | null; category: string }>>();
-const DEFAULT_TTL_MS = 1000 * 30; // 30 seconds
+const DEFAULT_TTL_MS = 1000 * 60 * 60 * 6; // 6 hours — recommendations don't change minute-to-minute
 const TV_SIMILAR_CACHE = new Map<string, CacheEntry<any[]>>();
 
 function getCache<T>(map: Map<string, CacheEntry<T>>, key: string): T | null {
@@ -217,12 +217,6 @@ export async function getSimilarMovies(req: Request, res: Response) {
     // Fallback path
     const fallback = await fallbackPromise;
     setCache(SIMILAR_CACHE, cacheKey, fallback);
-
-    // Fire-and-forget: if Python finishes later and is better, refresh cache for subsequent requests
-    pythonPromise
-      .then(data => { if (Array.isArray(data) && data.length) setCache(SIMILAR_CACHE, cacheKey, data); })
-      .catch(() => {});
-
     return res.json(fallback);
   } catch (error) {
     console.error("Error fetching similar movies:", error);
@@ -235,15 +229,6 @@ export async function getSimilarMovies(req: Request, res: Response) {
  */
 export async function getTrendingWithDelay(req: Request, res: Response) {
   try {
-    // Simulate loading delay for demonstration purposes
-    const delay = req.query.delay ? parseInt(req.query.delay as string) : 0;
-    
-    // Wait for specified delay
-    if (delay > 0) {
-      await new Promise(resolve => setTimeout(resolve, delay));
-    }
-    
-    // Fetch trending movies
     const movies = await tmdbService.getTrending();
     
     return res.json(movies);
@@ -292,14 +277,6 @@ export async function getBecauseYouLikedRecommendations(req: Request, res: Respo
     }
 
     setCache(BECAUSE_CACHE, cacheKey, payload);
-
-    // Fire-and-forget refresh of cache when Python completes
-    pythonPromise.then(data => {
-      if (data && Array.isArray(data.recommendations) && data.recommendations.length) {
-        setCache(BECAUSE_CACHE, cacheKey, data);
-      }
-    }).catch(() => {});
-
     return res.json(payload);
   } catch (error) {
     console.error("Error getting 'because you liked' recommendations:", error);
@@ -340,13 +317,6 @@ export async function getSimilarTVShowsEnhanced(req: Request, res: Response) {
       const enhanced = await enhancedPromise;
       result = (enhanced && enhanced.length) ? enhanced : await tmdbService.getSimilarTV(tvId);
     }
-
-    // Fire-and-forget to refresh cache with Python results if they arrive later and are non-empty
-    pythonPromise.then(data => {
-      if (Array.isArray(data) && data.length) {
-        setCache(TV_SIMILAR_CACHE, cacheKey, data);
-      }
-    }).catch(() => {});
 
     setCache(TV_SIMILAR_CACHE, cacheKey, result);
     return res.json(result);

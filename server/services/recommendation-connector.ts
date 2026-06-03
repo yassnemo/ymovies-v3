@@ -11,9 +11,9 @@ export class RecommendationConnector {
   private baseUrl: string;
   private tmdbApiKey: string;
   private cache: Map<string, { data: any; expiresAt: number }> = new Map();
-  private defaultTtlMs = 1000 * 30; // 30s short cache for microservice responses
+  private defaultTtlMs = 1000 * 60 * 60 * 6; // 6 hours — mirrors the API-layer cache
   private lastHealthOkAt = 0;
-  private healthTtlMs = 1000 * 15; // don't ping health more than every 15s
+  private healthTtlMs = 1000 * 60 * 5; // health-check at most once every 5 minutes
 
   constructor(baseUrl = RECOMMENDATION_SERVICE_URL, tmdbApiKey = process.env.TMDB_API_KEY) {
     this.baseUrl = baseUrl;

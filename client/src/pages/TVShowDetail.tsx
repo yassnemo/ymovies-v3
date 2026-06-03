@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useParams, useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
@@ -15,7 +15,6 @@ import { LoadingSkeleton } from "@/components/LoadingSkeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import MovieCard from "@/components/MovieCard";
 import TVShowCard from "@/components/TVShowCard";
-import TVShowList from "@/components/TVShowList";
 import { TVShow } from "@/types/tvshow";
 import { getTVShowDetails, getTVShowVideos, getTVShowReviews, getTVShowSeasonDetails } from "@/lib/tmdb";
 import { getEnhancedSimilarTV } from "@/lib/recommendations";
@@ -218,18 +217,14 @@ const TVShowDetail = () => {
   }, [videos]);
   
   // Prefer enhanced server-side similar, fall back to TMDB embedded list
-  const [enhancedSimilar, setEnhancedSimilar] = useState<TVShow[] | null>(null);
-  useEffect(() => {
-    let cancelled = false;
-    if (tvShowId > 0) {
-      getEnhancedSimilarTV(tvShowId).then((res) => {
-        if (!cancelled) setEnhancedSimilar(res);
-      }).catch(() => {
-        if (!cancelled) setEnhancedSimilar([]);
-      });
-    }
-    return () => { cancelled = true; };
-  }, [tvShowId]);
+  const { data: enhancedSimilarData } = useQuery({
+    queryKey: [`tv-enhanced-similar-${tvShowId}`],
+    queryFn: () => getEnhancedSimilarTV(tvShowId),
+    enabled: tvShowId > 0,
+    staleTime: 1000 * 60 * 60 * 2, // 2 hours
+    gcTime: 1000 * 60 * 60 * 6,    // 6 hours
+  });
+  const enhancedSimilar = enhancedSimilarData ?? null;
 
   const formatDate = (dateString: string) => {
     if (!dateString) return "Unknown";

@@ -52,6 +52,41 @@ test("the Vercel handler accepts rewritten paths and rejects private TMDB resour
   assert.equal(JSON.parse(response.body).message, "Unsupported TMDB resource");
 });
 
+test("the Vercel handler uses the server-side key and returns TMDB data", async () => {
+  const previousKey = process.env.TMDB_API_KEY;
+  const originalFetch = globalThis.fetch;
+  process.env.TMDB_API_KEY = "test-key";
+  globalThis.fetch = async (input) => {
+    const url = new URL(String(input));
+    assert.equal(url.host, "api.themoviedb.org");
+    assert.equal(url.pathname, "/3/trending/movie/week");
+    assert.equal(url.searchParams.get("api_key"), "test-key");
+    return new Response(JSON.stringify({ results: [{ id: 1 }] }), { status: 200 });
+  };
+
+  const response = {
+    statusCode: 200,
+    body: "",
+    headers: new Map<string, string>(),
+    setHeader(name: string, value: string) { this.headers.set(name, value); },
+    end(body: string) { this.body = body; },
+  };
+
+  try {
+    await tmdbHandler(
+      { method: "GET", url: "/api/tmdb?endpoint=trending/movie/week" } as Parameters<typeof tmdbHandler>[0],
+      response as unknown as Parameters<typeof tmdbHandler>[1],
+    );
+    assert.equal(response.statusCode, 200);
+    assert.deepEqual(JSON.parse(response.body), { results: [{ id: 1 }] });
+    assert.ok(!response.body.includes("test-key"));
+  } finally {
+    globalThis.fetch = originalFetch;
+    if (previousKey === undefined) delete process.env.TMDB_API_KEY;
+    else process.env.TMDB_API_KEY = previousKey;
+  }
+});
+
 test("identical misses share one upstream request and subsequent reads hit cache", async () => {
   let upstreamCalls = 0;
   let release: (() => void) | undefined;

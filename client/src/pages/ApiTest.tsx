@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { API_BASE_URL } from "@/lib/apiConfig";
+import { TMDB_PROXY_URL } from "@/lib/apiConfig";
 
 type TestResult = {
   elapsedMs: number;
@@ -23,7 +23,7 @@ export default function ApiTest() {
 
     try {
       const response = await fetch(
-        `${API_BASE_URL.replace(/\/$/, "")}/api/tmdb/trending/movie/week`,
+        `${TMDB_PROXY_URL}/trending/movie/week`,
         { signal: controller.signal, credentials: "omit" },
       );
       const data = await response.json().catch(() => null);

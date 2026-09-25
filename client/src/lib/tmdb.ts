@@ -1,8 +1,7 @@
 import { Movie } from "@/types/movie";
 import { TVShow } from "@/types/tvshow";
-import { API_BASE_URL } from "@/lib/apiConfig";
+import { TMDB_PROXY_URL } from "@/lib/apiConfig";
 
-const TMDB_PROXY_URL = `${API_BASE_URL.replace(/\/$/, "")}/api/tmdb`;
 const inFlightRequests = new Map<string, Promise<unknown>>();
 
 export class TMDBClientError extends Error {

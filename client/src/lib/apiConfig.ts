@@ -14,6 +14,12 @@ const getApiBaseUrl = (): string => {
 
 export const API_BASE_URL = getApiBaseUrl();
 
+// Movie data is served by a same-origin Vercel Function in production.
+// Other app APIs can continue to use the configured backend URL.
+export const TMDB_PROXY_URL = import.meta.env.PROD
+  ? '/api/tmdb'
+  : `${API_BASE_URL.replace(/\/$/, '')}/api/tmdb`;
+
 // Demo server URL for local development only
 export const DEMO_SERVER_URL = 'http://localhost:5001';
 

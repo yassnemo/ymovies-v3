@@ -4,6 +4,10 @@
   "outputDirectory": "dist/public",
   "routes": [
     {
+      "src": "/api/tmdb/(.*)",
+      "dest": "/api/tmdb?endpoint=$1"
+    },
+    {
       "src": "/assets/(.*)",
       "headers": {
         "Cache-Control": "public, max-age=31536000, immutable"

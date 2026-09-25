@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import tmdbHandler from "../api/tmdb";
 import {
   createTMDBCacheKey,
   TMDBService,
@@ -30,6 +31,25 @@ test("the public gateway rejects account endpoints and session parameters", () =
     () => createTMDBCacheKey("/movie/popular", { session_id: "private" }),
     (error: unknown) => error instanceof TMDBServiceError && error.statusCode === 400,
   );
+});
+
+test("the Vercel handler accepts rewritten paths and rejects private TMDB resources", async () => {
+  const response = {
+    statusCode: 200,
+    body: "",
+    headers: new Map<string, string>(),
+    setHeader(name: string, value: string) { this.headers.set(name, value); },
+    end(body: string) { this.body = body; },
+  };
+
+  await tmdbHandler(
+    { method: "GET", url: "/api/tmdb?endpoint=account/123" } as Parameters<typeof tmdbHandler>[0],
+    response as unknown as Parameters<typeof tmdbHandler>[1],
+  );
+
+  assert.equal(response.statusCode, 404);
+  assert.equal(response.headers.get("Content-Type"), "application/json; charset=utf-8");
+  assert.equal(JSON.parse(response.body).message, "Unsupported TMDB resource");
 });
 
 test("identical misses share one upstream request and subsequent reads hit cache", async () => {

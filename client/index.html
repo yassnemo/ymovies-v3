@@ -14,18 +14,6 @@
     <meta name="description" content="YMovies - Discover and enjoy your next favorite movie with personalized recommendations" />
     <meta name="keywords" content="movies, recommendations, streaming, netflix clone, movie database" />
     
-    <!-- Load environment variables from multiple sources -->
-    <script src="/env.js"></script>
-    <script>
-      // Fallback global variables for API keys in case .env doesn't load properly
-      window.TMDB_API_KEY = window.ENV?.TMDB_API_KEY || "%VITE_TMDB_API_KEY%";
-      window.TMDB_API_KEY_V3 = window.ENV?.TMDB_API_KEY_V3 || "%VITE_TMDB_API_KEY_V3%";
-      window.USE_DEMO_SERVER = window.ENV?.USE_DEMO_SERVER || "%VITE_USE_DEMO_SERVER%";
-      
-      console.log("Environment variables loaded from HTML:");
-      console.log("TMDB_API_KEY:", window.TMDB_API_KEY ? "Available" : "Not found");
-      console.log("TMDB_API_KEY_V3:", window.TMDB_API_KEY_V3 ? "Available" : "Not found");
-    </script>
   </head>
   <body>
     <div id="root"></div>

@@ -38,9 +38,6 @@ const Home = () => {
     refreshSections 
   } = useDynamicSections();
   
-  // Let's use the environment variable directly
-  const USE_DEMO_SERVER = import.meta.env.VITE_USE_DEMO_SERVER === "true";
-  
   useEffect(() => {
     // Let real API calls attempt first; mock data fallback happens on error
   }, []);
@@ -236,9 +233,9 @@ const Home = () => {
           </div>
           
           <div className="mt-3 p-3 bg-gray-800 rounded text-sm font-mono overflow-auto">
-            <span className="text-gray-400">Check your TMDB API key in .env file:</span>
+            <span className="text-gray-400">Check the server-side TMDB configuration:</span>
             <br />
-            <code className="text-green-400">VITE_TMDB_API_KEY=your_tmdb_jwt_token_here</code>
+            <code className="text-green-400">TMDB_API_KEY is configured on the backend</code>
           </div>
           
           {usingMockData && (

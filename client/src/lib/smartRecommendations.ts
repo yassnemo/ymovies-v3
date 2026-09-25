@@ -1,5 +1,6 @@
 import { Movie } from "@/types/movie";
 import { getEnhancedSimilarMovies, getBecauseYouWatchedRecommendations } from "./recommendations";
+import { getSimilarMovies } from "./tmdb";
 
 export interface RecommendationStrategy {
   name: string;
@@ -166,14 +167,11 @@ export class SmartRecommendationEngine {
   ): Promise<EnhancedRecommendation> {
     try {
       // Use basic TMDB similar movies as last resort
-      const response = await fetch(
-        `https://api.themoviedb.org/3/movie/${movieId}/similar?api_key=${import.meta.env.VITE_TMDB_API_KEY}`
-      );
-      
-      if (response.ok) {
-        const data = await response.json();
+      const movies = await getSimilarMovies(movieId);
+
+      if (movies.length > 0) {
         return {
-          movies: (data.results || []).slice(0, limit),
+          movies: movies.slice(0, limit),
           strategy: RECOMMENDATION_STRATEGIES.fallback,
           category: "Similar Movies",
           confidence: 0.4,

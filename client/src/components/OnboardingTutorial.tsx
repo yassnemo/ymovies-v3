@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useLocation } from "wouter";
-import { X, ChevronRight, ChevronLeft, Check } from "lucide-react";
+import { ChevronRight, ChevronLeft, Check, Clapperboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useAuth } from "@/hooks/useAuth";
@@ -87,47 +87,67 @@ export function OnboardingTutorial() {
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open) complete(); }}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle className="text-xl font-bold">{step.title}</DialogTitle>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute right-4 top-4"
-            onClick={complete}
-          >
-            <X className="h-4 w-4" />
-            <span className="sr-only">Close</span>
-          </Button>
-        </DialogHeader>
-
-        <DialogDescription className="text-base">
-          {step.description}
-        </DialogDescription>
-
-        <div className="flex items-center justify-center mt-2 space-x-1">
-          {STEPS.map((_, index) => (
-            <span
-              key={index}
-              className={`h-1.5 rounded-full transition-all duration-300 ${
-                index === currentStep ? "w-6 bg-primary" : "w-1.5 bg-muted"
-              }`}
-            />
-          ))}
+      <DialogContent className="w-[calc(100%-2rem)] max-w-md gap-0 overflow-hidden rounded-2xl border border-white/10 bg-[#0b0b0b] p-0 text-white shadow-2xl">
+        {/* Cinematic red glow header */}
+        <div className="relative px-6 pt-7 pb-5 sm:px-7">
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-red-950/40 to-transparent" />
+          <DialogHeader className="relative space-y-3 text-left">
+            <div className="flex items-center gap-2 text-red-500 text-[11px] font-semibold uppercase tracking-[0.25em]">
+              <Clapperboard className="h-3.5 w-3.5" />
+              Step {currentStep + 1} of {STEPS.length}
+            </div>
+            <DialogTitle className="font-logo text-3xl tracking-wide sm:text-4xl">
+              {step.title}
+            </DialogTitle>
+            <DialogDescription className="text-sm leading-relaxed text-gray-400 sm:text-base">
+              {step.description}
+            </DialogDescription>
+          </DialogHeader>
         </div>
 
-        <DialogFooter className="flex justify-between mt-4">
-          <div className="flex space-x-2">
-            <Button variant="outline" onClick={prev} disabled={currentStep === 0}>
+        <div className="px-6 sm:px-7">
+          {/* Progress dots */}
+          <div className="flex items-center gap-1.5">
+            {STEPS.map((_, index) => (
+              <span
+                key={index}
+                className={`h-1.5 rounded-full transition-all duration-300 ${
+                  index === currentStep
+                    ? "w-7 bg-red-600"
+                    : index < currentStep
+                      ? "w-1.5 bg-red-600/40"
+                      : "w-1.5 bg-white/15"
+                }`}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Footer — primary action prominent on mobile, inline on desktop */}
+        <div className="mt-6 flex flex-col-reverse gap-3 border-t border-white/10 bg-white/[0.02] px-6 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-7">
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={prev}
+              disabled={currentStep === 0}
+              className="flex-1 rounded-sm border-white/20 bg-transparent text-white hover:bg-white/10 disabled:opacity-40 sm:flex-none"
+            >
               <ChevronLeft className="mr-1 h-4 w-4" />
               Back
             </Button>
-            <Button variant="outline" onClick={complete}>
+            <Button
+              variant="ghost"
+              onClick={complete}
+              className="flex-1 rounded-sm text-gray-400 hover:bg-white/5 hover:text-white sm:flex-none"
+            >
               Skip
             </Button>
           </div>
 
-          <Button onClick={next}>
+          <Button
+            onClick={next}
+            className="w-full rounded-sm bg-red-600 font-medium text-white hover:bg-red-700 sm:w-auto"
+          >
             {isLast ? (
               <>
                 Get Started
@@ -140,7 +160,7 @@ export function OnboardingTutorial() {
               </>
             )}
           </Button>
-        </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   );

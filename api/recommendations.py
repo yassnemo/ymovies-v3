@@ -6,7 +6,7 @@ from urllib.parse import parse_qs
 from datetime import datetime
 
 # TMDB API configuration
-TMDB_API_KEY = os.environ.get('TMDB_API_KEY', 'e28104677eeb4d67bd476af5d0ed9ad6')
+TMDB_API_KEY = os.environ.get('TMDB_API_KEY')
 TMDB_BASE_URL = 'https://api.themoviedb.org/3'
 
 def handler(request):
@@ -26,6 +26,13 @@ def handler(request):
             'body': ''
         }
     
+    if not TMDB_API_KEY:
+        return {
+            'statusCode': 503,
+            'headers': {'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json'},
+            'body': json.dumps({'error': 'Movie recommendations are temporarily unavailable'})
+        }
+
     try:
         # Parse request body for POST requests
         if request['httpMethod'] == 'POST':
@@ -62,8 +69,8 @@ def handler(request):
             'body': json.dumps(response_data)
         }
         
-    except Exception as e:
-        print(f"Error in recommendations: {str(e)}")
+    except Exception:
+        print("Error in recommendations request")
         return {
             'statusCode': 500,
             'headers': {
@@ -72,7 +79,7 @@ def handler(request):
             },
             'body': json.dumps({
                 'error': 'Failed to get recommendations',
-                'message': str(e)
+                'message': 'Please try again later'
             })
         }
 
@@ -205,8 +212,8 @@ def get_content_based_similar(source_content, preferences):
             
             return recommendations
     
-    except Exception as e:
-        print(f"Error in content-based similarity: {str(e)}")
+    except Exception:
+        print("Error in content-based similarity")
         return []
 
 def get_collaborative_similar(watched_content, preferences):
@@ -260,8 +267,8 @@ def get_collaborative_similar(watched_content, preferences):
             
             return recommendations
     
-    except Exception as e:
-        print(f"Error in collaborative filtering: {str(e)}")
+    except Exception:
+        print("Error in collaborative filtering")
         return []
 
 def calculate_similarity_score(item, source_content, preferences):
@@ -404,8 +411,8 @@ def get_movie_recommendations(preferences, recommendation_type='popular'):
                     'reason': get_recommendation_reason(movie, preferences, recommendation_type)
                 })
     
-    except Exception as e:
-        print(f"Error fetching movie recommendations: {str(e)}")
+    except Exception:
+        print("Error fetching movie recommendations")
     
     return recommendations
 
@@ -477,8 +484,8 @@ def get_tv_recommendations(preferences, recommendation_type='popular'):
                     'reason': get_recommendation_reason(show, preferences, recommendation_type)
                 })
     
-    except Exception as e:
-        print(f"Error fetching TV recommendations: {str(e)}")
+    except Exception:
+        print("Error fetching TV recommendations")
     
     return recommendations
 
@@ -603,8 +610,8 @@ def get_similar_to_liked_content(preferences):
                         'reason': f"Because you liked {first_liked.get('title', 'similar content')}"
                     })
     
-    except Exception as e:
-        print(f"Error fetching similar content: {str(e)}")
+    except Exception:
+        print("Error fetching similar content")
     
     return recommendations
 def apply_preference_filters(items, preferences):
@@ -685,8 +692,8 @@ def get_trending_recommendations(media_type, preferences):
             
             return recommendations
     
-    except Exception as e:
-        print(f"Error fetching trending recommendations: {str(e)}")
+    except Exception:
+        print("Error fetching trending recommendations")
         return []
 
 def get_top_rated_recommendations(preferences, content_type):
@@ -750,8 +757,8 @@ def get_top_rated_recommendations(preferences, content_type):
         
         return recommendations
     
-    except Exception as e:
-        print(f"Error fetching top rated recommendations: {str(e)}")
+    except Exception:
+        print("Error fetching top rated recommendations")
         return []
 
 def get_genre_based_recommendations(genre_id, preferences, content_type):
@@ -797,8 +804,8 @@ def get_genre_based_recommendations(genre_id, preferences, content_type):
         
         return recommendations
     
-    except Exception as e:
-        print(f"Error fetching genre recommendations: {str(e)}")
+    except Exception:
+        print("Error fetching genre recommendations")
         return []
 
 def get_genre_name(genre_id):
@@ -849,6 +856,6 @@ def get_popular_fallback(content_type, preferences):
         
         return recommendations
     
-    except Exception as e:
-        print(f"Error fetching popular fallback: {str(e)}")
+    except Exception:
+        print("Error fetching popular fallback")
         return []

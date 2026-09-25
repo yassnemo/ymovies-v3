@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Film, Tv, Loader2 } from "lucide-react";
@@ -12,18 +12,28 @@ interface SearchSuggestionsProps {
 }
 
 const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({ query, onItemClick }) => {
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+
+  useEffect(() => {
+    const normalizedQuery = query.trim().replace(/\s+/g, " ");
+    const timeout = window.setTimeout(() => setDebouncedQuery(normalizedQuery), 300);
+    return () => window.clearTimeout(timeout);
+  }, [query]);
+
   // Fetch search results
   const { data: results, isLoading } = useQuery<MediaItem[]>({
-    queryKey: ['/api/search/multi', query],
-    queryFn: () => searchMulti(query),
-    enabled: query.length > 0,
-    staleTime: 60000, // Cache results for 1 minute
+    queryKey: ['/api/search/multi', debouncedQuery.toLocaleLowerCase()],
+    queryFn: () => searchMulti(debouncedQuery),
+    enabled: debouncedQuery.length >= 2,
+    staleTime: 15 * 60 * 1000,
   });
 
   // Don't show anything if there's no query
   if (!query || query.length < 2) {
     return null;
-  }  return (
+  }
+
+  return (
     <div className="absolute top-full left-0 right-0 md:right-0 md:left-auto mt-2 w-full md:w-96 lg:w-[480px] xl:w-[600px] z-50 bg-black/95 backdrop-blur-md border border-gray-700/50 rounded-lg shadow-2xl overflow-hidden">
       {isLoading ? (
         <div className="flex items-center justify-center py-6">

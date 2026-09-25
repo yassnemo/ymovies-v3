@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { supabaseAuth } from "./supabaseAuth";
-import { TMDBService } from "./services/tmdb";
+import { TMDBService, TMDBServiceError } from "./services/tmdb";
 import { 
   getPersonalizedRecommendations,
   getSimilarMovies,
@@ -14,7 +14,8 @@ import preferencesRoutes from "./api/preferences";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize TMDb service
-  const tmdbService = new TMDBService(process.env.TMDB_API_KEY || "");
+  const tmdbService = new TMDBService(process.env.TMDB_API_KEY || process.env.TMDB_BEARER_TOKEN || "");
+  app.locals.tmdbService = tmdbService;
 
   // Register API routes that require authentication
   app.use('/api/preferences', preferencesRoutes);
@@ -160,6 +161,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error updating watch progress:", error);
       res.status(500).json({ message: "Failed to update watch progress" });
+    }
+  });
+
+  // Public, server-side TMDB gateway. Only the allowlisted GET resources in
+  // TMDBService can pass through, so account/session responses are never
+  // placed in a shared browser, CDN, or process cache.
+  app.get('/api/tmdb/*', async (req, res) => {
+    try {
+      const endpoint = `/${(req.params as { 0?: string })[0] || ''}`;
+      const params: Record<string, string> = {};
+      for (const [key, value] of Object.entries(req.query)) {
+        if (typeof value !== 'string') {
+          throw new TMDBServiceError('Invalid TMDB query parameter', 400, false);
+        }
+        params[key] = value;
+      }
+
+      const result = await tmdbService.getPublicResource(endpoint, params);
+      res.vary('Origin');
+      res.vary('Accept-Encoding');
+      res.setHeader(
+        'Cache-Control',
+        `public, max-age=${result.browserMaxAgeSeconds}, s-maxage=${result.browserMaxAgeSeconds}, stale-while-revalidate=${result.staleWhileRevalidateSeconds}, stale-if-error=${result.staleIfErrorSeconds}`,
+      );
+      res.setHeader('Age', result.ageSeconds.toString());
+      res.setHeader('X-TMDB-Cache', result.cacheStatus);
+      res.setHeader('Server-Timing', `tmdb-cache;desc="${result.cacheStatus}"`);
+      if (result.cacheStatus === 'STALE' || result.cacheStatus === 'FALLBACK') {
+        res.setHeader('Warning', '110 - "Response is stale"');
+      }
+      return res.json(result.data);
+    } catch (error) {
+      const serviceError = error instanceof TMDBServiceError
+        ? error
+        : new TMDBServiceError('TMDB is temporarily unavailable', 503, true, 2);
+      res.setHeader('Cache-Control', 'private, no-store');
+      if (serviceError.retryAfterSeconds) {
+        res.setHeader('Retry-After', serviceError.retryAfterSeconds.toString());
+      }
+      return res.status(serviceError.statusCode).json({
+        message: serviceError.message,
+        retryable: serviceError.retryable,
+      });
     }
   });
 

@@ -1,159 +1,59 @@
 import { Movie } from "@/types/movie";
 import { TVShow } from "@/types/tvshow";
+import { API_BASE_URL } from "@/lib/apiConfig";
 
-// Debug helper to diagnose environment variable issues
-export const debugApiKeys = () => {
-  console.log("TMDB API Keys Debug Information:");
-  console.log("--------------------------------");
-  
-  // Check import.meta.env variables
-  console.log("import.meta.env.VITE_TMDB_API_KEY:", import.meta.env.VITE_TMDB_API_KEY ? "Available" : "Not found");
-  console.log("import.meta.env.VITE_TMDB_API_KEY_V3:", import.meta.env.VITE_TMDB_API_KEY_V3 ? "Available" : "Not found");
-  
-  // Check window global variables
-  console.log("window.TMDB_API_KEY:", (window as any).TMDB_API_KEY ? "Available" : "Not found");
-  console.log("window.TMDB_API_KEY_V3:", (window as any).TMDB_API_KEY_V3 ? "Available" : "Not found");
-  
-  // Check window.ENV object
-  console.log("window.ENV?.TMDB_API_KEY:", (window as any).ENV?.TMDB_API_KEY ? "Available" : "Not found");
-  console.log("window.ENV?.TMDB_API_KEY_V3:", (window as any).ENV?.TMDB_API_KEY_V3 ? "Available" : "Not found");
-  
-  // Output all environment variables (masked)
-  console.log("All import.meta.env variables:");
-  Object.keys(import.meta.env).forEach(key => {
-    const value = import.meta.env[key];
-    const maskedValue = typeof value === 'string' && value.length > 10 
-      ? `${value.substring(0, 5)}...${value.substring(value.length - 5)}` 
-      : value;
-    console.log(`  ${key}: ${maskedValue}`);
-  });
-};
+const TMDB_PROXY_URL = `${API_BASE_URL.replace(/\/$/, "")}/api/tmdb`;
+const inFlightRequests = new Map<string, Promise<unknown>>();
 
-// Get both API key formats - JWT token and regular API key - from multiple possible sources
-const getApiKey = () => {
-  const sources = [
-    import.meta.env.VITE_TMDB_API_KEY,
-    (window as any).TMDB_API_KEY,
-    (window as any).ENV?.TMDB_API_KEY
-  ];
-  
-  // Debug which source is providing the key
-  debugApiKeys();
-  
-  return sources.find(key => key && key.length > 0) || "";
-};
-
-const getApiKeyV3 = () => {
-  const sources = [
-    import.meta.env.VITE_TMDB_API_KEY_V3,
-    (window as any).TMDB_API_KEY_V3,
-    (window as any).ENV?.TMDB_API_KEY_V3
-  ];
-  
-  return sources.find(key => key && key.length > 0) || "";
-};
-
-const TMDB_API_KEY = getApiKey();
-const TMDB_API_KEY_V3 = getApiKeyV3();
-
-// Use actual TMDB API to get real data
-const BASE_URL = "https://api.themoviedb.org/3";
-
-// Set this to false to ensure we use the real TMDB API for movies/shows data
-// Demo server will still be used for user preferences and watchlist
-const USE_DEMO_SERVER = false;
-
-// Keep this for other functionality like user preferences
-const DEMO_SERVER_URL = "http://localhost:5001/api";
+export class TMDBClientError extends Error {
+  constructor(message: string, public readonly status: number, public readonly retryAfterSeconds?: number) {
+    super(message);
+    this.name = "TMDBClientError";
+  }
+}
 
 /**
  * Helper function to make requests to TMDb API
  */
 async function fetchFromTMDb<T>(endpoint: string, params: Record<string, string> = {}): Promise<T> {
-  // For API endpoints, we'll determine if we should use demo server or real TMDB API
-  let requestUrl;
-  let requestHeaders = new Headers();
-  
-  // Always log which API key we're using (masked for security)
-  const apiKeyPreview = TMDB_API_KEY ? 
-    `${TMDB_API_KEY.substring(0, 5)}...${TMDB_API_KEY.substring(TMDB_API_KEY.length - 5)}` : 
-    "Not found";
-  console.log(`TMDB API key preview: ${apiKeyPreview}`);
-  console.log(`USE_DEMO_SERVER value: ${USE_DEMO_SERVER}`);
-  
-  if (USE_DEMO_SERVER) {
-    // Use demo server
-    requestUrl = `${DEMO_SERVER_URL}${endpoint}`;
-    console.log(`Using demo server URL: ${requestUrl}`);
-  } else {
-    // Use actual TMDB API with complete URL
-    requestUrl = `${BASE_URL}${endpoint}`;
-    
-    // Add query parameters for TMDB API
-    const urlObj = new URL(requestUrl);
-    
-    Object.entries(params).forEach(([key, value]) => {
-      urlObj.searchParams.append(key, value);
-    });
-    
-    // Try both authentication methods:
-    // 1. Use Bearer token authentication for newer JWT tokens
-    if (TMDB_API_KEY && TMDB_API_KEY.startsWith("ey")) {
-      requestHeaders.append('Authorization', `Bearer ${TMDB_API_KEY}`);
-      requestHeaders.append('Content-Type', 'application/json');
-      console.log("Using JWT bearer token authentication");
-    } 
-    // 2. Add the API key as a query parameter for older API keys
-    else if (TMDB_API_KEY_V3) {
-      urlObj.searchParams.append('api_key', TMDB_API_KEY_V3);
-      console.log("Using api_key parameter authentication");
-    }
-    // Fallback to using whatever token is available
-    else if (TMDB_API_KEY) {
-      urlObj.searchParams.append('api_key', TMDB_API_KEY);
-      console.log("Using fallback api_key parameter authentication");
-    }
-    else {
-      console.error("No TMDB API key found!");
-      throw new Error("TMDB API key not found");
-    }
-    
-    requestUrl = urlObj.toString();
-  }
-  
-  console.log(`Fetching from ${USE_DEMO_SERVER ? 'demo server' : 'TMDB API'}: ${requestUrl}`);
-  
-  try {
-    console.log(`Sending request with headers:`, 
-      Array.from(requestHeaders.entries()).map(([key, value]) => 
-        `${key}: ${key.toLowerCase() === 'authorization' ? 'Bearer ***' : value}`
-      )
-    );
-    
-    const response = await fetch(requestUrl, { headers: requestHeaders });
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`TMDB API error (${response.status}): ${errorText}`);
-      throw new Error(`TMDb API error: ${response.status} ${response.statusText} - ${errorText}`);
-    }
-    
-    const data = await response.json();
-    console.log(`API request succeeded! Found ${data.results?.length || 0} items`);
-    
-    // Debug the first result
-    if (data.results && data.results.length > 0) {
-      console.log("First result:", {
-        id: data.results[0].id,
-        title: data.results[0].title || data.results[0].name,
-        poster: data.results[0].poster_path
+  const requestUrl = new URL(`${TMDB_PROXY_URL}${endpoint}`);
+  Object.entries(params)
+    .sort(([left], [right]) => left.localeCompare(right))
+    .forEach(([key, value]) => requestUrl.searchParams.set(key, value));
+  const cacheKey = requestUrl.toString();
+  const existing = inFlightRequests.get(cacheKey);
+  if (existing) return existing as Promise<T>;
+
+  const request = (async () => {
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 10_000);
+    try {
+      const response = await fetch(cacheKey, {
+        credentials: "omit",
+        headers: { Accept: "application/json" },
+        signal: controller.signal,
       });
+      if (!response.ok) {
+        const body = await response.json().catch(() => ({})) as { message?: string };
+        const retryAfter = Number(response.headers.get("Retry-After")) || undefined;
+        throw new TMDBClientError(body.message || "Movie data is temporarily unavailable", response.status, retryAfter);
+      }
+      return await response.json() as T;
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") {
+        throw new TMDBClientError("Movie data request timed out", 503, 2);
+      }
+      throw error;
+    } finally {
+      window.clearTimeout(timeout);
     }
-    
-    return data;
-  } catch (error) {
-    console.error("Error in TMDB API request:", error);
-    throw error;
+  })();
+
+  inFlightRequests.set(cacheKey, request);
+  try {
+    return await request;
+  } finally {
+    if (inFlightRequests.get(cacheKey) === request) inFlightRequests.delete(cacheKey);
   }
 }
 
@@ -187,10 +87,8 @@ export async function getMovieDetails(movieId: number): Promise<Movie> {
  * Search for movies by query
  */
 export async function searchMovies(query: string): Promise<Movie[]> {
-  console.log(`Searching for movies with query: "${query}"`);
   try {
     const data = await fetchFromTMDb<{ results: Movie[] }>("/search/movie", { query });
-    console.log(`Search complete! Found ${data.results.length} results`);
     return data.results;
   } catch (error) {
     console.error("Error searching movies:", error);
@@ -305,10 +203,8 @@ export async function getTVShowDetails(tvId: number): Promise<TVShow> {
  * Search for TV shows by query
  */
 export async function searchTVShows(query: string): Promise<TVShow[]> {
-  console.log(`Searching for TV shows with query: "${query}"`);
   try {
     const data = await fetchFromTMDb<{ results: TVShow[] }>("/search/tv", { query });
-    console.log(`Search complete! Found ${data.results.length} results`);
     return data.results;
   } catch (error) {
     console.error("Error searching TV shows:", error);
@@ -429,14 +325,12 @@ export async function getTVShowsOnTheAir(): Promise<TVShow[]> {
 export type MediaItem = (Movie | TVShow) & { media_type: 'movie' | 'tv' };
 
 export async function searchMulti(query: string): Promise<MediaItem[]> {
-  console.log(`Searching for movies and TV shows with query: "${query}"`);
   try {
     const data = await fetchFromTMDb<{ results: MediaItem[] }>("/search/multi", { query });
     // Filter to only movies and TV shows (exclude people)
     const filteredResults = data.results.filter(item => 
       item.media_type === 'movie' || item.media_type === 'tv'
     );
-    console.log(`Multi search complete! Found ${filteredResults.length} results`);
     return filteredResults;
   } catch (error) {
     console.error("Error in multi search:", error);

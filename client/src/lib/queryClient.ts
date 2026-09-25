@@ -50,7 +50,8 @@ async function checkServerStatus(): Promise<boolean> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 2000);
     
-    const response = await fetch(`${DEMO_SERVER_URL}/api/health`, {
+    const serverBaseUrl = USE_DEMO_SERVER ? DEMO_SERVER_URL : API_BASE_URL;
+    const response = await fetch(`${serverBaseUrl.replace(/\/$/, "")}/api/health`, {
       signal: controller.signal
     });
     
@@ -78,9 +79,6 @@ export const getQueryFn: <T>(options: {
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
     try {
-      // Get API key from env
-      const apiKey = import.meta.env.VITE_TMDB_API_KEY;
-      
       // Process the query key to get the correct URL
       const path = queryKey[0] as string;
       let url: URL;
@@ -90,19 +88,13 @@ export const getQueryFn: <T>(options: {
         // If it's a full URL, use it directly
         url = new URL(path);
       } else if (path.startsWith('/api/')) {
-        // If it starts with /api/, add it to the demo server
-        url = new URL(`http://localhost:5001${path}`);
+        // API paths always use the configured application backend.
+        const serverBaseUrl = USE_DEMO_SERVER ? DEMO_SERVER_URL : API_BASE_URL;
+        url = new URL(`${serverBaseUrl.replace(/\/$/, "")}${path}`);
       } else {
         // Otherwise, assume it's relative to the current origin
         url = new URL(path, window.location.origin);
       }
-      
-      // Add API key for TMDB endpoints if not an auth endpoint
-      if (apiKey && !path.includes('/api/auth/')) {
-        url.searchParams.append('api_key', apiKey);
-      }
-      
-      console.log(`Fetching from ${url.toString()}`);
       
       // Set timeout to avoid long waits if server is down
       const controller = new AbortController();
@@ -135,8 +127,6 @@ export const getQueryFn: <T>(options: {
       }
 
       if (!res.ok) {
-        console.error(`Error fetching ${url.toString()}:`, res.status, res.statusText);
-        
         // If demo server not running, provide more specific error
         if (!isServerRunning && path.startsWith('/api/')) {
           throw new Error("Demo server is not running. Start it with 'npm run dev:demo'");
@@ -148,7 +138,6 @@ export const getQueryFn: <T>(options: {
       try {
         // Parse response as JSON
         const data = await res.json();
-        console.log(`Response from ${queryKey[0]}:`, data);
         return data;
       } catch (error) {
         // Handle non-JSON responses

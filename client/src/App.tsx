@@ -8,24 +8,6 @@ import { TooltipProvider } from "./components/ui/tooltip";
 import { ThemeProvider } from "./components/ui/theme-provider";
 import NotFound from "./pages/not-found";
 import Landing from "./pages/Landing";
-import Home from "./pages/Home";
-import Search from "./pages/Search";
-import MovieDetail from "./pages/MovieDetail";
-import TVShowDetail from "./pages/TVShowDetail";
-import TVShows from "./pages/TVShows";
-import Movies from "./pages/Movies";
-import Profile from "./pages/Profile";
-import MyList from "./pages/MyList";
-import Settings from "./pages/Settings";
-import ApiTest from "./pages/ApiTest";
-import SignIn from "./pages/SignIn";
-import SignUp from "./pages/SignUp";
-import ResetPassword from "./pages/ResetPassword";
-import ConfirmResetPassword from "./pages/ConfirmResetPassword";
-import AuthCallback from "./pages/AuthCallback";
-import VerifyEmail from "./pages/VerifyEmail";
-import Privacy from "./pages/Privacy";
-import Terms from "./pages/Terms";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import { OnboardingTutorial } from "./components/OnboardingTutorial";
@@ -37,17 +19,30 @@ import { AuthProvider } from "./components/AuthProvider";
 import { UserPreferencesProvider } from "./hooks/useUserPreferences";
 import { Suspense, lazy, useEffect, useState } from "react";
 import AuthPrompt from "./components/AuthPrompt";
-
-import Genre from "./pages/Genre";
+import { ServiceNotice, useServiceNotice } from "./components/ServiceNotice";
 
 // Lazily load pages for better performance
+const LazyHome = lazy(() => import("./pages/Home"));
 const LazyMovieDetail = lazy(() => import("./pages/MovieDetail"));
 const LazyTVShowDetail = lazy(() => import("./pages/TVShowDetail"));
 const LazyTVShows = lazy(() => import("./pages/TVShows"));
 const LazyMovies = lazy(() => import("./pages/Movies"));
 const LazySearch = lazy(() => import("./pages/Search"));
+const LazyGenre = lazy(() => import("./pages/Genre"));
+const LazyProfile = lazy(() => import("./pages/Profile"));
+const LazyMyList = lazy(() => import("./pages/MyList"));
+const LazySettings = lazy(() => import("./pages/Settings"));
+const LazyApiTest = lazy(() => import("./pages/ApiTest"));
+const LazySignIn = lazy(() => import("./pages/SignIn"));
+const LazySignUp = lazy(() => import("./pages/SignUp"));
+const LazyResetPassword = lazy(() => import("./pages/ResetPassword"));
+const LazyConfirmResetPassword = lazy(() => import("./pages/ConfirmResetPassword"));
+const LazyAuthCallback = lazy(() => import("./pages/AuthCallback"));
+const LazyVerifyEmail = lazy(() => import("./pages/VerifyEmail"));
+const LazyPrivacy = lazy(() => import("./pages/Privacy"));
+const LazyTerms = lazy(() => import("./pages/Terms"));
 
-function Router() {
+function Router({ noticeOpen }: { noticeOpen: boolean }) {
   const { isAuthenticated, isLoading, isError } = useAuth();
   const [location] = useLocation();
 
@@ -69,46 +64,46 @@ function Router() {
   return (
     <>
       <Navbar />
-      <OnboardingTutorial />
-      <AuthPrompt />
+      {!noticeOpen && <OnboardingTutorial />}
+      {!noticeOpen && <AuthPrompt />}
       {/* PageTransition wraps Suspense so the crossfade fires immediately on navigation,
           even while a lazy chunk is still loading. */}
       <PageTransition routeKey={location}>
         <Suspense fallback={<LoadingFallback />}>
           <Switch>
-            <Route path="/home" component={Home} />
+            <Route path="/home" component={LazyHome} />
             <Route path="/search" component={LazySearch} />
             <Route path="/movie/:id" component={LazyMovieDetail} />
             <Route path="/movies" component={LazyMovies} />
             <Route path="/tv" component={LazyTVShows} />
             <Route path="/tv/:id" component={LazyTVShowDetail} />
-            <Route path="/genre/:mediaType/:genre" component={Genre} />
-            <Route path="/api-test" component={ApiTest} />
+            <Route path="/genre/:mediaType/:genre" component={LazyGenre} />
+            <Route path="/api-test" component={LazyApiTest} />
             <Route path="/profile">
-              {isAuthenticated ? <Profile /> :
+              {isAuthenticated ? <LazyProfile /> :
                 <AuthRequired message="Please log in to view your profile" />
               }
             </Route>
             <Route path="/my-list">
-              {isAuthenticated ? <MyList /> :
+              {isAuthenticated ? <LazyMyList /> :
                 <AuthRequired message="Please log in to view your list" />
               }
             </Route>
             <Route path="/settings">
-              {isAuthenticated ? <Settings /> :
+              {isAuthenticated ? <LazySettings /> :
                 <AuthRequired message="Please log in to access settings" />
               }
             </Route>
-            <Route path="/signin"><SignIn /></Route>
-            <Route path="/signup"><SignUp /></Route>
-            <Route path="/reset-password"><ResetPassword /></Route>
-            <Route path="/confirm-reset-password"><ConfirmResetPassword /></Route>
-            <Route path="/auth/callback"><AuthCallback /></Route>
-            <Route path="/auth/reset-password"><ConfirmResetPassword /></Route>
-            <Route path="/verify-success"><AuthCallback /></Route>
-            <Route path="/verify-email"><VerifyEmail /></Route>
-            <Route path="/privacy"><Privacy /></Route>
-            <Route path="/terms"><Terms /></Route>
+            <Route path="/signin"><LazySignIn /></Route>
+            <Route path="/signup"><LazySignUp /></Route>
+            <Route path="/reset-password"><LazyResetPassword /></Route>
+            <Route path="/confirm-reset-password"><LazyConfirmResetPassword /></Route>
+            <Route path="/auth/callback"><LazyAuthCallback /></Route>
+            <Route path="/auth/reset-password"><LazyConfirmResetPassword /></Route>
+            <Route path="/verify-success"><LazyAuthCallback /></Route>
+            <Route path="/verify-email"><LazyVerifyEmail /></Route>
+            <Route path="/privacy"><LazyPrivacy /></Route>
+            <Route path="/terms"><LazyTerms /></Route>
             <Route component={NotFound} />
           </Switch>
         </Suspense>
@@ -145,6 +140,8 @@ function AuthRequired({ message }: { message: string }) {
 }
 
 const App: React.FC = () => {
+  const { isOpen: noticeOpen, dismiss: dismissNotice } = useServiceNotice();
+
   return (
     <div className="app-wrapper overflow-x-hidden w-full max-w-[100vw]">
       <QueryClientProvider client={queryClient}>
@@ -153,7 +150,8 @@ const App: React.FC = () => {
             <Toaster />
             <AuthProvider>
               <UserPreferencesProvider>
-                <Router />
+                <Router noticeOpen={noticeOpen} />
+                <ServiceNotice isOpen={noticeOpen} onDismiss={dismissNotice} />
               </UserPreferencesProvider>
             </AuthProvider>
           </TooltipProvider>

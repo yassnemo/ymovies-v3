@@ -34,11 +34,13 @@ const TVShowCard = ({ show, hideInfo = false, className }: TVShowCardProps) => {
     addToWatchHistory
   } = useUserPreferences();
 
-  const imagePath = show.poster_path
-    ? `https://image.tmdb.org/t/p/w500${show.poster_path}`
-    : show.backdrop_path
-      ? `https://image.tmdb.org/t/p/w500${show.backdrop_path}`
-      : "https://via.placeholder.com/500x750?text=No+Image";
+  const imageAssetPath = show.poster_path || show.backdrop_path;
+  const imagePath = imageAssetPath
+    ? `https://image.tmdb.org/t/p/w342${imageAssetPath}`
+    : "https://via.placeholder.com/500x750?text=No+Image";
+  const imageSrcSet = imageAssetPath
+    ? [185, 342, 500].map(width => `https://image.tmdb.org/t/p/w${width}${imageAssetPath} ${width}w`).join(', ')
+    : undefined;
 
   const isShowFavorite = isFavorite(show.id);
   const isShowInWatchlist = isInWatchlist(show.id);
@@ -137,9 +139,13 @@ const TVShowCard = ({ show, hideInfo = false, className }: TVShowCardProps) => {
         <div className="aspect-[2/3] w-full bg-zinc-800">
           <img
             src={imagePath}
+            srcSet={imageSrcSet}
+            sizes="(max-width: 768px) 45vw, (max-width: 1280px) 22vw, 185px"
             alt={displayName}
             className="w-full h-full object-cover"
             loading="lazy"
+            width="342"
+            height="513"
             style={{ viewTransitionName: `tv-poster-${show.id}` } as React.CSSProperties}
           />
         </div>

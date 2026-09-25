@@ -1,255 +1,98 @@
-// API Test Page 
-import React, { useState, useEffect } from 'react';
+import { useState } from "react";
+import { API_BASE_URL } from "@/lib/apiConfig";
+
+type TestResult = {
+  elapsedMs: number;
+  cacheStatus: string;
+  title: string;
+  posterPath?: string;
+};
 
 export default function ApiTest() {
-  const [apiResponse, setApiResponse] = useState<any>(null);
+  const [result, setResult] = useState<TestResult | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [method, setMethod] = useState<'bearer' | 'param'>('bearer');
-  const [manualApiKey, setManualApiKey] = useState('');
-  // Get API keys from all possible sources
-  const tmdbApiKey = 
-    import.meta.env.VITE_TMDB_API_KEY || 
-    (window as any).TMDB_API_KEY || 
-    (window as any).ENV?.TMDB_API_KEY || 
-    '';
-  
-  const tmdbApiKeyV3 = 
-    import.meta.env.VITE_TMDB_API_KEY_V3 || 
-    (window as any).TMDB_API_KEY_V3 || 
-    (window as any).ENV?.TMDB_API_KEY_V3 || 
-    '';
-  
-  // Debug information for all environment variables
-  const allEnvVars: Record<string, string> = {};
-  // Loop through all environment variables
-  Object.keys(import.meta.env).forEach(key => {
-    const value = import.meta.env[key];
-    if (typeof value === 'string') {
-      allEnvVars[key] = key.includes('KEY') || key.includes('TOKEN') || key.includes('SECRET') 
-        ? `${value.substring(0, 6)}...` 
-        : value;
-    } else {
-      allEnvVars[key] = String(value);
-    }
-  });
-  // Function to test the API with optional manual key
-  async function testApi(manualKey = '') {
-    setLoading(true);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const testGateway = async () => {
+    setIsLoading(true);
     setError(null);
+    setResult(null);
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 8_000);
+    const startedAt = performance.now();
+
     try {
-      let url = 'https://api.themoviedb.org/3/trending/movie/week';
-      let options: RequestInit = {};
-      
-      // Determine which key to use
-      const keyToUse = manualKey || (method === 'bearer' ? tmdbApiKey : tmdbApiKeyV3);
-      
-      if (method === 'bearer') {
-        // Using Bearer token authentication
-        options = {
-          headers: {
-            'Authorization': `Bearer ${keyToUse}`,
-            'Content-Type': 'application/json'
-          }
-        };
-      } else {
-        // Using api_key parameter
-        url += `?api_key=${keyToUse}`;
-      }
-      
-      console.log(`Testing API with ${method} method`, url);
-      const response = await fetch(url, options);
-      
+      const response = await fetch(
+        `${API_BASE_URL.replace(/\/$/, "")}/api/tmdb/trending/movie/week`,
+        { signal: controller.signal, credentials: "omit" },
+      );
+      const data = await response.json().catch(() => null);
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`API Error ${response.status}: ${errorText}`);
+        throw new Error(data?.message || `Gateway returned ${response.status}`);
       }
-      
-      const data = await response.json();
-      setApiResponse(data);
-    } catch (err: unknown) {
-      console.error("API Test Error:", err);
-      setError(err instanceof Error ? err.message : String(err));
+
+      const firstMovie = data?.results?.[0];
+      setResult({
+        elapsedMs: Math.round(performance.now() - startedAt),
+        cacheStatus: response.headers.get("X-TMDB-Cache") || "browser/CDN",
+        title: firstMovie?.title || "Trending movies loaded",
+        posterPath: firstMovie?.poster_path,
+      });
+    } catch (requestError) {
+      setError(
+        requestError instanceof DOMException && requestError.name === "AbortError"
+          ? "The server did not respond within 8 seconds."
+          : requestError instanceof Error
+            ? requestError.message
+            : "The server-side movie gateway is unavailable.",
+      );
     } finally {
-      setLoading(false);
+      window.clearTimeout(timeout);
+      setIsLoading(false);
     }
-  }
-  
-  // Run the API test when method or API keys change
-  useEffect(() => {
-    testApi();
-  }, [method, tmdbApiKey, tmdbApiKeyV3]);
+  };
+
   return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold mb-4">TMDB API Test Page</h1>
-      
-      <div className="bg-amber-500/20 border border-amber-200 p-4 mb-6 rounded-lg">
-        <h2 className="text-lg font-semibold mb-1">API Connection Troubleshooting</h2>
-        <p className="text-sm mb-2">This page tests your TMDB API connection to help diagnose issues.</p>
-        <div className="flex gap-2 mt-3">
-          <a href="/" className="px-4 py-2 bg-blue-600 rounded text-white text-sm">Return to Home</a>
-          <button 
-            onClick={() => window.location.reload()} 
-            className="px-4 py-2 bg-gray-600 rounded text-white text-sm"
-          >
-            Reload Test
-          </button>
-        </div>
-      </div>
-      
-      <div className="mb-6">
-        <h2 className="text-lg font-semibold mb-2">API Key Information</h2>
-        <div className="bg-gray-800 p-4 rounded-lg overflow-auto">
-          <p><strong>JWT Token:</strong> {tmdbApiKey ? `${tmdbApiKey.substring(0,10)}...` : 'Not found'}</p>
-          <p><strong>API Key:</strong> {tmdbApiKeyV3 ? `${tmdbApiKeyV3.substring(0,10)}...` : 'Not found'}</p>
-          
-          <div className="mt-3 pt-3 border-t border-gray-700">
-            <p className="text-sm text-gray-400">API key sources:</p>
-            <ul className="text-xs text-gray-500 mt-1 space-y-1">
-              <li>import.meta.env: {import.meta.env.VITE_TMDB_API_KEY ? 'Yes' : 'No'}</li>
-              <li>window.TMDB_API_KEY: {(window as any).TMDB_API_KEY ? 'Yes' : 'No'}</li>
-              <li>window.ENV: {(window as any).ENV?.TMDB_API_KEY ? 'Yes' : 'No'}</li>
-            </ul>
-          </div>
-          
-          <div className="mt-4 pt-4 border-t border-gray-700">
-            <h3 className="text-md font-medium mb-2">Manual API Key Input</h3>
-            <div className="flex gap-2">
-              <input 
-                type="text" 
-                className="bg-gray-900 px-3 py-2 rounded flex-grow"
-                placeholder="Enter your TMDB API key manually..."
-                value={manualApiKey}
-                onChange={(e) => setManualApiKey(e.target.value)}
-              />
-              <button 
-                className="px-3 py-2 bg-blue-600 rounded" 
-                onClick={() => testApi(manualApiKey)}
-              >
-                Test
-              </button>
-            </div>
-            <p className="text-xs text-gray-400 mt-1">
-              Use this if your environment variables aren't loading properly
-            </p>
-          </div>
-        </div>
-      </div>
-      
-      <div className="mb-6">
-        <h2 className="text-lg font-semibold mb-2">Environment Variables</h2>
-        <div className="bg-gray-800 p-4 rounded-lg overflow-auto text-xs">
-          <pre>{JSON.stringify(allEnvVars, null, 2)}</pre>
-        </div>
-      </div>
-      
-      <div className="mb-6">
-        <h2 className="text-lg font-semibold mb-2">Authentication Method</h2>
-        <div className="flex space-x-4">
-          <button 
-            className={`px-4 py-2 rounded ${method === 'bearer' ? 'bg-blue-600' : 'bg-gray-600'}`}
-            onClick={() => setMethod('bearer')}
-          >
-            Bearer Token
-          </button>
-          <button 
-            className={`px-4 py-2 rounded ${method === 'param' ? 'bg-blue-600' : 'bg-gray-600'}`}
-            onClick={() => setMethod('param')}
-          >
-            API Key Parameter
-          </button>
-        </div>
-      </div>
-        <div className="mb-6">
-        <h2 className="text-lg font-semibold mb-2">Troubleshooting Guide</h2>
-        <div className="bg-gray-800 p-4 rounded-lg space-y-2 text-sm">
-          <p>If you're seeing API errors, try the following steps:</p>
-          <ol className="list-decimal pl-5 space-y-1">
-            <li>Check that your API keys are correct in the .env file</li>
-            <li>Make sure the Vite development server has been restarted after changing .env</li>
-            <li>Try the JWT token first, then the API key parameter method</li>
-            <li>Check the browser console for additional error messages</li>
-            <li>Try the manual input method with your API key</li>
-          </ol>
-        </div>
-      </div>
-      
-      <div className="mb-6">
-        <h2 className="text-lg font-semibold mb-2">API Response</h2>
-        
-        {loading && (
-          <div className="bg-gray-700 p-4 rounded-lg">
-            <div className="animate-pulse flex space-x-4">
-              <div className="flex-1 space-y-4 py-1">
-                <div className="h-4 bg-gray-600 rounded w-3/4"></div>
-                <div className="space-y-2">
-                  <div className="h-4 bg-gray-600 rounded"></div>
-                  <div className="h-4 bg-gray-600 rounded w-5/6"></div>
-                </div>
-              </div>
-            </div>
-            <p className="mt-3">Loading API data...</p>
-          </div>
-        )}
-        
-        {error && (
-          <div className="bg-red-900/30 border border-red-500 p-4 rounded-lg">
-            <h3 className="text-red-400 font-semibold">Error</h3>
-            <p className="mb-2">{error}</p>
-            
-            <details className="mt-4 text-sm">
-              <summary className="cursor-pointer text-amber-400">Troubleshooting Tips</summary>
-              <div className="mt-2 pl-4 border-l-2 border-amber-700">
-                <ul className="list-disc pl-4 space-y-1">
-                  <li>Check that your TMDB API key is valid and active</li>
-                  <li>Verify that you're using the correct authentication method for your key</li>
-                  <li>JWT tokens start with "ey" and should use Bearer authentication</li>
-                  <li>API v3 keys are alphanumeric and should use the api_key parameter</li>
-                  <li>Check your network connection and CORS settings</li>
-                </ul>
-              </div>
-            </details>
-          </div>
-        )}
-        
-        {apiResponse && (
-          <div className="bg-green-900/30 border border-green-500 p-4 rounded-lg">
-            <h3 className="text-green-400 font-semibold mb-2">Success!</h3>
-            <p className="mb-2">Found {apiResponse.results?.length || 0} trending movies</p>
-            
-            {apiResponse.results?.length > 0 && (
-              <div>
-                <h4 className="font-semibold mb-1">Sample Movie:</h4>
-                <div className="bg-gray-800 p-3 rounded flex items-start gap-4">
-                  {apiResponse.results[0].poster_path && (
-                    <img 
-                      src={`https://image.tmdb.org/t/p/w92${apiResponse.results[0].poster_path}`}
-                      alt={apiResponse.results[0].title}
-                      className="rounded"
-                    />
-                  )}
-                  <div>
-                    <p><strong>Title:</strong> {apiResponse.results[0].title}</p>
-                    <p><strong>ID:</strong> {apiResponse.results[0].id}</p>
-                    <p><strong>Overview:</strong> {apiResponse.results[0].overview.substring(0, 100)}...</p>
-                  </div>
-                </div>
-                
-                <div className="mt-4 p-3 bg-green-900/20 border border-green-800 rounded">
-                  <p className="text-green-300">API is working correctly. You should now see real movie data in your app!</p>
-                </div>
-              </div>
-            )}
-            
-            <details className="mt-4">
-              <summary className="cursor-pointer text-blue-400">View raw JSON</summary>
-              <pre className="bg-black p-2 rounded mt-2 text-xs overflow-auto max-h-80">
-                {JSON.stringify(apiResponse, null, 2)}
-              </pre>
-            </details>
-          </div>
-        )}
-      </div>
-    </div>
+    <main className="mx-auto max-w-2xl px-4 py-24 text-white">
+      <h1 className="mb-3 text-3xl font-bold">Movie API diagnostics</h1>
+      <p className="mb-6 text-gray-300">
+        This checks the application&apos;s server-side TMDB gateway. API credentials are never sent to this browser.
+      </p>
+
+      <button
+        type="button"
+        onClick={testGateway}
+        disabled={isLoading}
+        className="rounded bg-red-600 px-5 py-3 font-semibold hover:bg-red-700 disabled:opacity-60"
+      >
+        {isLoading ? "Testing&" : "Test movie gateway"}
+      </button>
+
+      {result && (
+        <section className="mt-6 rounded border border-green-600 bg-green-950/40 p-4">
+          <h2 className="font-semibold text-green-300">Gateway is responding</h2>
+          <p className="mt-2">Latency: {result.elapsedMs} ms</p>
+          <p>Cache: {result.cacheStatus}</p>
+          <p>Sample: {result.title}</p>
+          {result.posterPath && (
+            <img
+              className="mt-4 w-32 rounded"
+              src={`https://image.tmdb.org/t/p/w185${result.posterPath}`}
+              alt="Sample trending poster"
+              loading="lazy"
+              width="128"
+              height="192"
+            />
+          )}
+        </section>
+      )}
+
+      {error && (
+        <section className="mt-6 rounded border border-red-600 bg-red-950/40 p-4" role="alert">
+          <h2 className="font-semibold text-red-300">Gateway check failed</h2>
+          <p className="mt-2">{error}</p>
+        </section>
+      )}
+    </main>
   );
-} 
+}

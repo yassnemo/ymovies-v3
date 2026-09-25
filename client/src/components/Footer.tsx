@@ -13,7 +13,7 @@ const Footer = () => {
           <div className="col-span-2 md:col-span-5 lg:col-span-2">
             <h3 className="font-semibold text-white text-sm uppercase tracking-wider mb-4">About</h3>
             <p className="text-gray-400 text-sm leading-relaxed">
-              Stream movies and TV shows in high definition. Discover personalized recommendations tailored to your taste.
+              Discover movies and TV shows, keep track of what you want to watch, and find where titles are available. YMovies does not host or stream video.
             </p>
           </div>
 

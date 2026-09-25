@@ -20,10 +20,4 @@ export const DEMO_SERVER_URL = 'http://localhost:5001';
 // Check if we should use demo server (local development only)
 export const USE_DEMO_SERVER = import.meta.env.VITE_USE_DEMO_SERVER === 'true' && !import.meta.env.PROD;
 
-console.log('API Configuration:', {
-  API_BASE_URL,
-  USE_DEMO_SERVER,
-  PROD: import.meta.env.PROD
-});
-
 export default API_BASE_URL;

@@ -25,7 +25,7 @@
     "db:push": "drizzle-kit push",
     "check:env": "node scripts/development/check-env.js",
     "setup:env": "node scripts/deployment/setup-environment.js",
-    "test": "echo \"No tests specified yet\" && exit 0",
+    "test": "tsx --test tests/tmdb-service.test.ts",
     "lint": "echo \"Linting passed - using TypeScript check instead\" && exit 0",
     "test:deployment": "bash scripts/testing/test-deployment.sh",
     "lint:ui": "echo \"React imports check passed\" && exit 0",

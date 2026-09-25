@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { WatchHistory } from '@shared/schema';
+import { TMDBService } from './tmdb';
 
 // Connection to the recommendation microservice
 const RECOMMENDATION_SERVICE_URL = process.env.RECOMMENDATION_SERVICE_URL || 'http://localhost:5001';
@@ -9,7 +10,7 @@ const RECOMMENDATION_SERVICE_URL = process.env.RECOMMENDATION_SERVICE_URL || 'ht
  */
 export class RecommendationConnector {
   private baseUrl: string;
-  private tmdbApiKey: string;
+  private tmdbService: TMDBService;
   private cache: Map<string, { data: any; expiresAt: number }> = new Map();
   private defaultTtlMs = 1000 * 60 * 60 * 6; // 6 hours — mirrors the API-layer cache
   private lastHealthOkAt = 0;
@@ -17,7 +18,7 @@ export class RecommendationConnector {
 
   constructor(baseUrl = RECOMMENDATION_SERVICE_URL, tmdbApiKey = process.env.TMDB_API_KEY) {
     this.baseUrl = baseUrl;
-    this.tmdbApiKey = tmdbApiKey || '';
+    this.tmdbService = new TMDBService(tmdbApiKey || process.env.TMDB_BEARER_TOKEN || '');
   }
 
   /**
@@ -198,10 +199,7 @@ export class RecommendationConnector {
       
       // If the user has watch history, add trending recommendations
       if (userData.watch_history && userData.watch_history.length > 0) {
-        const trending = await axios.get(
-          `https://api.themoviedb.org/3/trending/movie/week?api_key=${this.tmdbApiKey}`
-        ).then(res => res.data.results || [])
-          .catch(() => []);
+        const trending = await this.tmdbService.getTrending('week').catch(() => []);
         
         if (trending.length > 0) {
           categories.push({
@@ -255,33 +253,13 @@ export class RecommendationConnector {
    */
   async getFallbackRecommendations(movieId?: number): Promise<any[]> {
     try {
-      let endpoint = '/movie/popular';
-      let params = '';
-      
-      // If a specific movie is provided, get recommendations for it
-      if (movieId) {
-        endpoint = `/movie/${movieId}/recommendations`;
-      } else {
-        // For popular movies, add some parameters to get better diversity
-        params = '&region=US&sort_by=popularity.desc&page=1';
-      }
-      
-      const response = await axios.get(
-        `https://api.themoviedb.org/3${endpoint}?api_key=${this.tmdbApiKey}${params}`,
-        { timeout: 5000 } // 5 second timeout
-      );
-      
-      // Make sure we have results
-      const results = response.data.results || [];
+      const results = movieId
+        ? await this.tmdbService.getMovieRecommendations(movieId)
+        : await this.tmdbService.getPopular();
       
       // If we didn't get enough results, supplement with popular movies
       if (results.length < 5 && movieId) {
-        const popularResponse = await axios.get(
-          `https://api.themoviedb.org/3/movie/popular?api_key=${this.tmdbApiKey}`,
-          { timeout: 5000 }
-        );
-        
-        const popularMovies = popularResponse.data.results || [];
+        const popularMovies = await this.tmdbService.getPopular();
         
         // Combine unique results based on movie ID
         const combinedResults = [...results];
@@ -307,11 +285,7 @@ export class RecommendationConnector {
       // If the specific movie recommendation failed, try popular movies as a last resort
       if (movieId) {
         try {
-          const popularResponse = await axios.get(
-            `https://api.themoviedb.org/3/movie/popular?api_key=${this.tmdbApiKey}`,
-            { timeout: 5000 }
-          );
-          return popularResponse.data.results || [];
+          return await this.tmdbService.getPopular();
         } catch (secondError) {
           console.error('Failed to get even popular movies as fallback:', secondError);
           return [];

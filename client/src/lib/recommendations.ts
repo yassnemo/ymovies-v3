@@ -1,6 +1,7 @@
 import { Movie } from "@/types/movie";
 import { API_BASE_URL } from "./apiConfig";
 import { TVShow } from "@/types/tvshow";
+import { getSimilarMovies } from "./tmdb";
 
 /**
  * Get enhanced similar movies using the advanced recommendation algorithm
@@ -107,16 +108,7 @@ export async function getEnhancedSimilarTV(tvId: number): Promise<TVShow[]> {
  */
 async function getFallbackSimilarMovies(movieId: number): Promise<Movie[]> {
   try {
-    const response = await fetch(
-      `https://api.themoviedb.org/3/movie/${movieId}/similar?api_key=${import.meta.env.VITE_TMDB_API_KEY}`
-    );
-    
-    if (!response.ok) {
-      throw new Error(`TMDB API error: ${response.status}`);
-    }
-    
-    const data = await response.json();
-    return data.results || [];
+    return await getSimilarMovies(movieId);
   } catch (error) {
     console.error('Error fetching fallback similar movies:', error);
     return [];

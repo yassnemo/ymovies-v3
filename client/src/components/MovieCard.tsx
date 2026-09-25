@@ -37,8 +37,11 @@ const MovieCard = ({ movie, hideInfo = false, mediaType, watchProgress }: MovieC
   } = useUserPreferences();
 
   const posterUrl = movie.poster_path
-    ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
+    ? `https://image.tmdb.org/t/p/w342${movie.poster_path}`
     : "https://via.placeholder.com/500x750?text=No+Poster";
+  const posterSrcSet = movie.poster_path
+    ? [185, 342, 500].map(width => `https://image.tmdb.org/t/p/w${width}${movie.poster_path} ${width}w`).join(', ')
+    : undefined;
 
   const isMovieFavorite = isFavorite(movie.id);
   const isMovieInWatchlist = isInWatchlist(movie.id);
@@ -140,9 +143,13 @@ const MovieCard = ({ movie, hideInfo = false, mediaType, watchProgress }: MovieC
         <div className="aspect-[2/3] w-full bg-zinc-800">
           <img
             src={posterUrl}
+            srcSet={posterSrcSet}
+            sizes="(max-width: 768px) 45vw, (max-width: 1280px) 22vw, 185px"
             alt={displayTitle}
             className="w-full h-full object-cover"
             loading="lazy"
+            width="342"
+            height="513"
             style={{ viewTransitionName: `movie-poster-${movie.id}` } as React.CSSProperties}
           />
         </div>

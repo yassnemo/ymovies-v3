@@ -4,7 +4,7 @@ import os
 from urllib.parse import parse_qs
 
 # TMDB API configuration
-TMDB_API_KEY = os.environ.get('TMDB_API_KEY', 'e28104677eeb4d67bd476af5d0ed9ad6')
+TMDB_API_KEY = os.environ.get('TMDB_API_KEY')
 TMDB_BASE_URL = 'https://api.themoviedb.org/3'
 
 def handler(request):
@@ -23,6 +23,13 @@ def handler(request):
             'body': ''
         }
     
+    if not TMDB_API_KEY:
+        return {
+            'statusCode': 503,
+            'headers': {'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json'},
+            'body': json.dumps({'error': 'Movie data is temporarily unavailable'})
+        }
+
     try:
         # Parse query parameters
         query_params = request.get('queryStringParameters', {}) or {}
@@ -72,8 +79,8 @@ def handler(request):
             'body': json.dumps(response_data)
         }
         
-    except Exception as e:
-        print(f"Error in similar content: {str(e)}")
+    except Exception:
+        print("Error in similar content request")
         return {
             'statusCode': 500,
             'headers': {
@@ -82,7 +89,7 @@ def handler(request):
             },
             'body': json.dumps({
                 'error': 'Failed to get similar content',
-                'message': str(e)
+                'message': 'Please try again later'
             })
         }
 
@@ -98,8 +105,8 @@ def get_similar_content(content_id, media_type):
             results = response.json().get('results', [])
             return format_content_results(results, media_type, "Similar content")
         
-    except Exception as e:
-        print(f"Error fetching similar content: {str(e)}")
+    except Exception:
+        print("Error fetching similar content")
     
     return []
 
@@ -115,8 +122,8 @@ def get_recommended_content(content_id, media_type):
             results = response.json().get('results', [])
             return format_content_results(results, media_type, "Recommended for you")
         
-    except Exception as e:
-        print(f"Error fetching recommended content: {str(e)}")
+    except Exception:
+        print("Error fetching recommended content")
     
     return []
 

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import tmdbHandler from "../api/tmdb";
+import { createTMDBRequestUrl } from "../client/src/lib/tmdbUrl";
 import {
   createTMDBCacheKey,
   TMDBService,
@@ -20,6 +21,18 @@ test("cache keys normalize searches and query parameter order", () => {
   });
 
   assert.equal(first, second);
+});
+
+test("TMDB browser URLs resolve both production and development proxies", () => {
+  const production = createTMDBRequestUrl(
+    "/api/tmdb", "/trending/movie/week", "https://ymovies.yerradouani.me", { page: "2" },
+  );
+  assert.equal(production.toString(), "https://ymovies.yerradouani.me/api/tmdb/trending/movie/week?page=2");
+
+  const development = createTMDBRequestUrl(
+    "http://localhost:5000/api/tmdb", "/movie/popular", "http://localhost:5173",
+  );
+  assert.equal(development.toString(), "http://localhost:5000/api/tmdb/movie/popular");
 });
 
 test("the public gateway rejects account endpoints and session parameters", () => {

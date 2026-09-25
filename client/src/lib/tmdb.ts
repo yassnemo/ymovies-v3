@@ -1,6 +1,7 @@
 import { Movie } from "@/types/movie";
 import { TVShow } from "@/types/tvshow";
 import { TMDB_PROXY_URL } from "@/lib/apiConfig";
+import { createTMDBRequestUrl } from "./tmdbUrl";
 
 const inFlightRequests = new Map<string, Promise<unknown>>();
 
@@ -15,10 +16,7 @@ export class TMDBClientError extends Error {
  * Helper function to make requests to TMDb API
  */
 async function fetchFromTMDb<T>(endpoint: string, params: Record<string, string> = {}): Promise<T> {
-  const requestUrl = new URL(`${TMDB_PROXY_URL}${endpoint}`);
-  Object.entries(params)
-    .sort(([left], [right]) => left.localeCompare(right))
-    .forEach(([key, value]) => requestUrl.searchParams.set(key, value));
+  const requestUrl = createTMDBRequestUrl(TMDB_PROXY_URL, endpoint, window.location.origin, params);
   const cacheKey = requestUrl.toString();
   const existing = inFlightRequests.get(cacheKey);
   if (existing) return existing as Promise<T>;

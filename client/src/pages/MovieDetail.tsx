@@ -539,7 +539,7 @@ const MovieDetail = () => {
               <div className="overflow-x-auto overflow-y-visible scrollbar-hide">
                 <div className="flex gap-4 pb-4">
                   {[...Array(10)].map((_, i) => (
-                    <div key={i} className="flex-shrink-0 w-56 overflow-visible">
+                    <div key={i} className="flex-shrink-0 w-48 overflow-visible md:w-56">
                       <LoadingSkeleton variant="movie-card" />
                     </div>
                   ))}
@@ -553,7 +553,7 @@ const MovieDetail = () => {
               <div className="overflow-x-auto overflow-y-visible scrollbar-hide">
                 <div className="flex gap-4 pb-2">
                   {similarMovies.slice(0, 20).map((m) => (
-                    <div key={m.id} className="flex-shrink-0 w-56 overflow-visible">
+                    <div key={m.id} className="flex-shrink-0 w-48 overflow-visible md:w-56">
                       <MovieCard movie={m} />
                     </div>
                   ))}

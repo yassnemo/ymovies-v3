@@ -679,7 +679,7 @@ const TVShowDetail = () => {
               <div className="overflow-x-auto overflow-y-visible scrollbar-hide">
                 <div className="flex gap-4 pb-2">
                   {similarShows.slice(0, 20).map((s) => (
-                    <div key={s.id} className="flex-shrink-0 w-56 overflow-visible">
+                    <div key={s.id} className="flex-shrink-0 w-48 overflow-visible md:w-56">
                       <TVShowCard show={s} />
                     </div>
                   ))}
@@ -702,7 +702,7 @@ const TVShowDetail = () => {
               <div className="overflow-x-auto overflow-y-visible scrollbar-hide">
                 <div className="flex gap-4 pb-2">
                   {recommendedShows.slice(0, 20).map((s) => (
-                    <div key={s.id} className="flex-shrink-0 w-56 overflow-visible">
+                    <div key={s.id} className="flex-shrink-0 w-48 overflow-visible md:w-56">
                       <TVShowCard show={s} />
                     </div>
                   ))}

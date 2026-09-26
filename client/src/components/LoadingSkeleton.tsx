@@ -43,7 +43,7 @@ export function LoadingSkeleton({
               <div
                 key={i}
                 className={cn(
-                  "relative w-56 aspect-[2/3.2] rounded-lg overflow-hidden",
+                  "relative w-full aspect-[2/3.2] rounded-lg overflow-hidden",
                   className,
                 )}
                 {...props}

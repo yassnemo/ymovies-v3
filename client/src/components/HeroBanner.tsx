@@ -2,7 +2,7 @@ import React, { useMemo, useState, useEffect, useRef } from "react";
 import { Movie } from "@/types/movie";
 import { TVShow } from "@/types/tvshow";
 import { useLocation } from "wouter";
-import { Play, Info, Star, ChevronLeft, ChevronRight } from "lucide-react";
+import { Play, ArrowRight, Star, ChevronLeft, ChevronRight } from "lucide-react";
 import { getMovieLogos, getTVLogos, pickBestLogo } from "@/lib/tmdb";
 
 interface HeroBannerProps {
@@ -178,7 +178,7 @@ const HeroBanner = ({ content, onNext, onPrevious, onIndicatorClick, currentInde
     <section 
       className="relative w-full overflow-hidden"
       style={{ 
-        height: isMobile ? 'calc(92vh - 70px)' : '100vh',
+        height: isMobile ? 'calc(100dvh - 70px - env(safe-area-inset-bottom))' : '100vh',
         maxWidth: '100vw',
       }}
     >
@@ -229,7 +229,7 @@ const HeroBanner = ({ content, onNext, onPrevious, onIndicatorClick, currentInde
       
       {/* Content with smooth staggered animations and interactive hover */}
       <div 
-        className={`relative container mx-auto h-full flex flex-col justify-end px-4 pb-32 md:pb-24 pt-16 md:pt-20 ${isLoaded && !isTransitioning ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+        className={`relative container mx-auto h-full flex flex-col justify-end px-4 pb-12 md:pb-24 pt-16 md:pt-20 ${isLoaded && !isTransitioning ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
         style={{
           transition: 'all 0.7s cubic-bezier(0.4, 0, 0.2, 1)'
         }}
@@ -239,7 +239,7 @@ const HeroBanner = ({ content, onNext, onPrevious, onIndicatorClick, currentInde
         <div className="max-w-xl mt-4 md:mt-10">
           {/* Badge row with smooth slide-in animation */}
           <div 
-            className={`flex items-center space-x-2 mb-2 delay-100 ${isLoaded && !isTransitioning ? 'translate-x-0 opacity-100' : 'translate-x-10 opacity-0'}`} 
+            className={`flex flex-wrap items-center gap-x-1.5 gap-y-1.5 md:gap-2 mb-3 md:mb-2 delay-100 ${isLoaded && !isTransitioning ? 'translate-x-0 opacity-100' : 'translate-x-10 opacity-0'}`}
             style={{ 
               textShadow: '0 1px 3px rgba(0,0,0,0.8)',
               transition: 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)'
@@ -247,25 +247,25 @@ const HeroBanner = ({ content, onNext, onPrevious, onIndicatorClick, currentInde
           >
             {isLoaded && !isTransitioning && (
               <>
-                <div className="flex items-center bg-black/40 rounded-md px-2 py-1 backdrop-blur-sm">
-                  <Star className="text-yellow-500 h-4 w-4 mr-1" />
-                  <span className="text-primary font-bold">{Math.round(displayedContent?.vote_average * 10)}% Match</span>
+                <div className="inline-flex shrink-0 items-center rounded-md bg-black/40 px-1.5 py-0.5 backdrop-blur-sm md:px-2 md:py-1">
+                  <Star className="text-yellow-500 h-3 w-3 mr-1 md:h-4 md:w-4" />
+                  <span className="text-primary text-[11px] leading-4 font-bold md:text-base md:leading-normal">{Math.round(displayedContent?.vote_average * 10)}% Match</span>
                 </div>
                 
                 {/* Content type badge (Movie or TV Show) */}
-                <span className="bg-primary/70 backdrop-blur-sm border border-primary px-2 py-0.5 text-xs rounded">
+                <span className="shrink-0 rounded border border-primary bg-primary/70 px-1.5 py-0.5 text-[10px] leading-4 backdrop-blur-sm md:px-2 md:text-xs">
                   {isTVShow(displayedContent) ? 'TV SHOW' : 'MOVIE'}
                 </span>
                 
                 {(!isTVShow(displayedContent) && displayedContent?.adult) ? (
-                  <span className="bg-red-800/70 backdrop-blur-sm border border-red-700 px-2 py-0.5 text-xs rounded">R</span>
+                  <span className="shrink-0 rounded border border-red-700 bg-red-800/70 px-1.5 py-0.5 text-[10px] leading-4 backdrop-blur-sm md:px-2 md:text-xs">R</span>
                 ) : (
-                  <span className="bg-gray-800/70 backdrop-blur-sm border border-gray-700 px-2 py-0.5 text-xs rounded">PG-13</span>
+                  <span className="shrink-0 rounded border border-gray-700 bg-gray-800/70 px-1.5 py-0.5 text-[10px] leading-4 backdrop-blur-sm md:px-2 md:text-xs">PG-13</span>
                 )}
                 
-                <span className="bg-black/30 backdrop-blur-sm px-2 py-0.5 rounded text-sm">{releaseYear}</span>
+                <span className="shrink-0 rounded bg-black/30 px-1.5 py-0.5 text-[11px] leading-4 backdrop-blur-sm md:px-2 md:text-sm">{releaseYear}</span>
                 
-                <span className="bg-black/30 backdrop-blur-sm border border-gray-700 px-2 py-0.5 text-xs rounded">HD</span>
+                <span className="shrink-0 rounded border border-gray-700 bg-black/30 px-1.5 py-0.5 text-[10px] leading-4 backdrop-blur-sm md:px-2 md:text-xs">HD</span>
               </>
             )}
           </div>
@@ -313,7 +313,7 @@ const HeroBanner = ({ content, onNext, onPrevious, onIndicatorClick, currentInde
               type="button"
               onClick={() => navigate(isTVShow(displayedContent) ? `/tv/${displayedContent.id}` : `/movie/${displayedContent.id}`)}
               className={
-                `inline-flex items-center gap-2 rounded-lg px-5 md:px-6 py-2.5 md:py-3 text-sm md:text-base
+                `inline-flex items-center gap-2 rounded-full px-5 md:px-6 py-2.5 md:py-3 text-sm md:text-base
                  bg-red-600 text-white font-medium
                  hover:bg-red-700 active:bg-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500/50
                  transition-colors duration-200`
@@ -327,14 +327,14 @@ const HeroBanner = ({ content, onNext, onPrevious, onIndicatorClick, currentInde
               type="button"
               onClick={() => navigate(isTVShow(displayedContent) ? `/tv/${displayedContent.id}` : `/movie/${displayedContent.id}`)}
               className={
-                `inline-flex items-center gap-2 rounded-lg px-5 md:px-6 py-2.5 md:py-3 text-sm md:text-base
+                `inline-flex items-center gap-2 rounded-full px-5 md:px-6 py-2.5 md:py-3 text-sm md:text-base
                  bg-white/10 text-white border border-white/20 backdrop-blur-sm font-medium
                  hover:bg-white/20 active:bg-white/25 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30
                  transition-colors duration-200`
               }
             >
-              <Info className="h-4 w-4" />
               <span>More Info</span>
+              <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </button>
           </div>
         </div>
@@ -360,18 +360,22 @@ const HeroBanner = ({ content, onNext, onPrevious, onIndicatorClick, currentInde
           </button>
 
           {/* Slide indicators — horizontal pills centered */}
-          <div className="absolute bottom-6 md:bottom-8 left-1/2 -translate-x-1/2 z-10 flex flex-row items-center gap-2 mb-12 md:mb-0">
+          <div className="absolute bottom-1 left-1/2 z-10 flex -translate-x-1/2 items-center gap-0.5 md:bottom-8 md:gap-2">
             {Array.from({ length: totalItems }).map((_, index) => (
               <button
+                type="button"
                 key={index}
                 onClick={() => onIndicatorClick?.(index)}
-                className={`h-2 rounded-full transition-all duration-500 ${
-                  index === currentIndex
-                    ? 'w-8 bg-red-600'
-                    : 'w-2 bg-white/30 hover:bg-white/60'
-                }`}
+                className="-mx-px grid h-8 w-6 place-items-center md:mx-0 md:h-2 md:w-auto"
                 aria-label={`Go to slide ${index + 1}`}
-              />
+                aria-current={index === currentIndex ? "true" : undefined}
+              >
+                <span className={`h-1.5 rounded-full transition-all duration-500 md:h-2 ${
+                  index === currentIndex
+                    ? 'w-4 bg-red-600 md:w-8'
+                    : 'w-1.5 bg-white/30 md:w-2 md:hover:bg-white/60'
+                }`} />
+              </button>
             ))}
           </div>
         </>

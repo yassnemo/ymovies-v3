@@ -87,13 +87,13 @@ const MovieSlider = ({
         {showTitle && <LoadingSkeleton variant="slider-title" />}
         
         {/* Enhanced movie/TV card skeletons based on media type */}
-        <div className="flex overflow-x-auto space-x-8 pb-6 pt-2 px-2 scrollbar-hide">
+        <div className="flex overflow-x-auto gap-4 md:gap-8 pb-6 pt-2 px-2 scrollbar-hide">
           {[...Array(6)].map((_, i) => (
-            <div key={i} className="flex-shrink-0 w-56">
+            <div key={i} className="flex-shrink-0 w-48 md:w-56">
               {/* TV sliders now use the same vertical card size as movies */}
               <LoadingSkeleton 
                 variant="movie-card"
-                className="w-56"
+                className="w-full"
               />
             </div>
           ))}
@@ -140,7 +140,7 @@ const MovieSlider = ({
         {/* Movie slider */}
         <div 
           ref={sliderRef}
-          className="slider-container category-slider flex overflow-x-auto space-x-8 pb-8 pt-8 px-2 scrollbar-hide max-w-full"
+          className="slider-container category-slider flex overflow-x-auto gap-4 md:gap-8 pb-8 pt-8 px-2 scrollbar-hide max-w-full"
           style={{ 
             scrollbarWidth: 'none',
             msOverflowStyle: 'none',
@@ -156,7 +156,7 @@ const MovieSlider = ({
             return (
               <div 
                 key={item.id} 
-                className={`flex-shrink-0 transition-transform duration-500 ease-out w-56`}
+                className="flex-shrink-0 w-48 transition-transform duration-500 ease-out md:w-56"
                 style={{ animationDelay: `${index * 0.05}s` }}
               >
                 {isTV ? (

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserPreferences } from "@/hooks/useUserPreferences";
@@ -10,6 +10,7 @@ import PersonalizedRecommendations from "@/components/PersonalizedRecommendation
 import DynamicSections from "@/components/DynamicSections";
 import ContinueWatching from "@/components/ContinueWatching";
 import { useDynamicSections } from "@/hooks/useDynamicSections";
+import { useHeroIntroScroll } from "@/hooks/useHeroIntroScroll";
 import { Button } from "@/components/ui/button";
 import { Movie } from "@/types/movie";
 import { TVShow } from "@/types/tvshow";
@@ -30,6 +31,10 @@ const Home = () => {
   const [isHeroPaused, setIsHeroPaused] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
   const [usingMockData, setUsingMockData] = useState<boolean>(false);
+  const heroRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  useHeroIntroScroll(heroRef, contentRef, featuredContent !== null);
   
   // Dynamic sections for rotating content
   const { 
@@ -150,12 +155,17 @@ const Home = () => {
   // Keyboard navigation for hero section
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
+      const heroBounds = heroRef.current?.getBoundingClientRect();
+      if (!heroBounds || heroBounds.top >= window.innerHeight * 0.25 || heroBounds.bottom <= 120) return;
+      if (e.target instanceof Element && e.target.closest("button, a, input, textarea, select, [contenteditable], [role=dialog]")) return;
       const allContent: (Movie | TVShow)[] = [
         ...trendingMovies,
         ...(popularData || []),
         ...(trendingTVData || []),
         ...(popularTVData || [])
       ].filter(Boolean);
+
+      if (allContent.length === 0) return;
 
       const maxIndex = Math.min(10, allContent.length) - 1;
 
@@ -165,15 +175,12 @@ const Home = () => {
       } else if (e.key === 'ArrowRight') {
         e.preventDefault();
         setCurrentIndex((prevIndex) => prevIndex === maxIndex ? 0 : prevIndex + 1);
-      } else if (e.key === ' ') {
-        e.preventDefault();
-        setIsHeroPaused(!isHeroPaused);
       }
     };
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [trendingMovies, popularData, trendingTVData, popularTVData, isHeroPaused]);
+  }, [trendingMovies, popularData, trendingTVData, popularTVData]);
 
   // Navigation functions for hero section
   const handleNext = () => {
@@ -249,6 +256,7 @@ const Home = () => {
       {/* Featured Content Banner */}
       {featuredContent ? (
         <div 
+          ref={heroRef}
           className="relative animate-in fade-in-0 duration-700"
           onMouseEnter={() => setIsHeroPaused(true)}
           onMouseLeave={() => setIsHeroPaused(false)}
@@ -265,7 +273,8 @@ const Home = () => {
       ) : (isTrendingLoading || isPopularLoading) ? (
         <LoadingSkeleton variant="hero-banner" />
       ) : null}
-      
+
+      <div ref={contentRef}>
       {/* Personalized Recommendations (if user is authenticated) */}
       {isAuthenticated && preferences?.completed === true && <PersonalizedRecommendations userId={user?.id} />}
       
@@ -354,6 +363,7 @@ const Home = () => {
         onRefreshSections={refreshSections}
         isAuthenticated={isAuthenticated}
       />
+      </div>
     </main>
   );
 };

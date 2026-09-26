@@ -7,7 +7,7 @@ import { Link } from "wouter";
 import { Movie } from "@/types/movie";
 import { TVShow } from "@/types/tvshow";
 import { Button } from "@/components/ui/button";
-import { Heart, Bookmark, Settings, Calendar, ArrowRight, Clapperboard } from "lucide-react";
+import { Heart, Bookmark, Settings, Calendar, ArrowRight } from "lucide-react";
 import MediaGrid from "@/components/MediaGrid";
 
 // Combined media type for both movies and TV shows
@@ -109,145 +109,72 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      {/* ===== CINEMATIC IDENTITY HERO ===== */}
-      <section className="relative overflow-hidden">
-        {/* Ambient backdrop drawn from the user's own catalogue */}
-        {heroBackdrop ? (
-          <img
-            src={heroBackdrop}
-            alt=""
-            aria-hidden="true"
-            className="absolute inset-0 h-full w-full object-cover opacity-[0.18] animate-ken-burns will-change-transform"
-          />
-        ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-[#1a0606] via-black to-black" />
+      <section className="relative overflow-hidden border-b border-white/[0.06]">
+        {heroBackdrop && (
+          <img src={heroBackdrop} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full object-cover opacity-[0.14]" />
         )}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/85 to-black" />
+        <div className="relative mx-auto max-w-7xl px-4 pb-8 pt-24 sm:px-12 sm:pb-12 sm:pt-32 lg:px-20">
+          <div className="flex items-center gap-4">
+            <div className="grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-full bg-red-600/20 text-2xl font-semibold text-white ring-2 ring-red-500/40 sm:h-20 sm:w-20 sm:text-3xl">
+              {user?.profileImageUrl ? (
+                <img src={user.profileImageUrl} alt={displayName} className="h-full w-full object-cover" />
+              ) : initial}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-red-400">Your profile</p>
+              <h1 className="mt-1 truncate text-2xl font-semibold tracking-tight sm:text-4xl">{displayName}</h1>
+              {user?.email && <p className="mt-1 truncate text-sm text-gray-400">{user.email}</p>}
+            </div>
+          </div>
 
-        {/* Gradient + vignette so identity text always reads */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/85 to-black/60" />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-transparent to-transparent" />
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background:
-              "radial-gradient(120% 120% at 50% 30%, transparent 50%, rgba(0,0,0,0.7) 100%)",
-          }}
-        />
-
-        <div className="relative px-6 sm:px-12 lg:px-20 pt-32 pb-14">
-          <div className="max-w-7xl mx-auto">
-            <p className="text-red-500 text-xs font-semibold uppercase tracking-[0.25em] mb-6 flex items-center gap-2">
-              <Clapperboard className="w-3.5 h-3.5" />
-              Member Pass
+          {memberSince && (
+            <p className="mt-4 flex items-center gap-2 text-xs text-gray-400">
+              <Calendar className="h-4 w-4" /> Member since {memberSince}
             </p>
+          )}
 
-            <div className="flex flex-col sm:flex-row items-start gap-6 sm:gap-8">
-              {/* Framed avatar — reads like a film frame, not a generic circle */}
-              <div className="relative shrink-0">
-                <div className="absolute -inset-1.5 rounded-sm bg-gradient-to-br from-red-600 to-red-900" />
-                <div className="relative h-24 w-24 sm:h-28 sm:w-28 overflow-hidden rounded-sm bg-[#0b0b0b]">
-                  {user?.profileImageUrl ? (
-                    <img
-                      src={user.profileImageUrl}
-                      alt={displayName}
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center font-logo text-5xl tracking-wider text-white/90">
-                      {initial}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Identity */}
-              <div className="flex-1 min-w-0">
-                <h1 className="font-logo tracking-wide text-4xl sm:text-6xl lg:text-7xl leading-[0.9] break-words">
-                  {displayName}
-                </h1>
-                <div className="h-1 w-16 bg-red-600 mt-3 mb-4" />
-
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-400">
-                  {user?.email && (
-                    <span className="truncate max-w-full">{user.email}</span>
-                  )}
-                  {memberSince && (
-                    <>
-                      <span className="hidden sm:inline w-px h-3.5 bg-gray-700" />
-                      <span className="flex items-center gap-1.5">
-                        <Calendar className="w-3.5 h-3.5" />
-                        Member since {memberSince}
-                      </span>
-                    </>
-                  )}
-                </div>
-
-                {/* Genre taste */}
-                {genreNames.length > 0 && (
-                  <div className="mt-5 flex flex-wrap gap-2">
-                    {genreNames.slice(0, 7).map((g) => (
-                      <span
-                        key={g}
-                        className="rounded-full border border-red-600/30 bg-red-600/10 px-3 py-1 text-xs font-medium text-red-300"
-                      >
-                        {g}
-                      </span>
-                    ))}
-                    {genreNames.length > 7 && (
-                      <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-gray-400">
-                        +{genreNames.length - 7}
-                      </span>
-                    )}
-                  </div>
-                )}
-
-                {/* Actions */}
-                <div className="mt-6 flex flex-wrap gap-3">
-                  <Button
-                    asChild
-                    className="bg-red-600 hover:bg-red-700 text-white rounded-sm gap-2"
-                  >
-                    <Link href="/my-list">
-                      Open My List <ArrowRight className="w-4 h-4" />
-                    </Link>
-                  </Button>
-                  <Button
-                    asChild
-                    variant="outline"
-                    className="border-white/20 text-white hover:bg-white/10 rounded-sm gap-2"
-                  >
-                    <Link href="/settings">
-                      <Settings className="w-4 h-4" /> Settings
-                    </Link>
-                  </Button>
-                </div>
-              </div>
-            </div>
-
-            {/* Stat ribbon — oversized font-logo numerals, festival-pass feel */}
-            <div className="mt-10 grid grid-cols-3 max-w-md gap-px overflow-hidden rounded-sm border border-white/10 bg-white/10">
-              {[
-                { label: "Favorites", value: favorites.length },
-                { label: "Watchlist", value: watchlist.length },
-                { label: "Genres", value: genreNames.length },
-              ].map((stat) => (
-                <div key={stat.label} className="bg-[#0a0a0a] px-4 py-4 text-center">
-                  <div className="font-logo text-3xl sm:text-4xl leading-none text-white">
-                    {stat.value}
-                  </div>
-                  <div className="mt-1 text-[10px] sm:text-xs uppercase tracking-[0.2em] text-gray-500">
-                    {stat.label}
-                  </div>
-                </div>
+          {genreNames.length > 0 && (
+            <div className="mt-5 flex flex-wrap gap-2">
+              {genreNames.slice(0, 5).map((genre) => (
+                <span key={genre} className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-1.5 text-xs font-medium text-gray-200">
+                  {genre}
+                </span>
               ))}
+              {genreNames.length > 5 && (
+                <span className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-1.5 text-xs text-gray-400">
+                  +{genreNames.length - 5}
+                </span>
+              )}
             </div>
+          )}
+
+          <div className="mt-7 grid max-w-lg grid-cols-3 gap-2">
+            {[
+              { label: "Favorites", value: favorites.length },
+              { label: "Watchlist", value: watchlist.length },
+              { label: "Genres", value: genreNames.length },
+            ].map((stat) => (
+              <div key={stat.label} className="rounded-2xl border border-white/[0.07] bg-white/[0.05] px-3 py-3.5">
+                <div className="text-2xl font-semibold tracking-tight text-white">{stat.value}</div>
+                <div className="mt-1 text-xs text-gray-400">{stat.label}</div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-5 flex max-w-lg gap-3">
+            <Button asChild className="h-11 flex-1 gap-2 rounded-full bg-red-600 text-white hover:bg-red-700 sm:flex-none">
+              <Link href="/my-list">My List <ArrowRight className="h-4 w-4" /></Link>
+            </Button>
+            <Button asChild variant="outline" className="h-11 flex-1 gap-2 rounded-full border-white/15 bg-white/[0.05] text-white hover:bg-white/10 sm:flex-none">
+              <Link href="/settings"><Settings className="h-4 w-4" /> Settings</Link>
+            </Button>
           </div>
         </div>
       </section>
-
       {/* Decorative film-strip of the user's titles */}
       {showFilmstrip && (
-        <div className="relative border-y border-white/5 bg-[#070707]">
+        <div className="relative hidden border-y border-white/5 bg-[#070707] sm:block">
           <div className="flex gap-1 p-1 overflow-x-auto scrollbar-hide">
             {filmstrip.map((m) => (
               <Link
@@ -271,25 +198,23 @@ const Profile = () => {
       )}
 
       {/* ===== LIBRARY ===== */}
-      <section className="px-6 sm:px-12 lg:px-20 py-12 sm:py-16">
+      <section className="px-4 py-8 sm:px-12 sm:py-16 lg:px-20">
         <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
+          <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="text-red-500 text-xs font-semibold uppercase tracking-[0.25em] mb-2">
-                Your Collection
-              </p>
-              <h2 className="font-logo tracking-wide text-3xl sm:text-4xl">
-                The Library
-              </h2>
+              <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">Your library</h2>
+              <p className="mt-1 text-sm text-gray-400">The titles you want to keep close.</p>
             </div>
 
             {/* Brand segmented toggle — not a generic tab bar */}
-            <div className="inline-flex rounded-sm border border-white/10 bg-white/[0.03] p-1 self-start sm:self-auto">
+            <div className="flex w-full rounded-2xl bg-white/[0.07] p-1 sm:w-auto">
               <button
+                type="button"
+                aria-pressed={view === "favorites"}
                 onClick={() => setView("favorites")}
-                className={`flex items-center gap-2 rounded-sm px-4 py-2 text-sm font-medium transition-colors ${
+                className={`flex h-11 flex-1 items-center justify-center gap-2 rounded-xl px-4 text-sm font-medium transition-colors sm:flex-none ${
                   view === "favorites"
-                    ? "bg-red-600 text-white"
+                    ? "bg-white text-black"
                     : "text-gray-400 hover:text-white"
                 }`}
               >
@@ -298,10 +223,12 @@ const Profile = () => {
                 <span className="text-xs opacity-70">{favorites.length}</span>
               </button>
               <button
+                type="button"
+                aria-pressed={view === "watchlist"}
                 onClick={() => setView("watchlist")}
-                className={`flex items-center gap-2 rounded-sm px-4 py-2 text-sm font-medium transition-colors ${
+                className={`flex h-11 flex-1 items-center justify-center gap-2 rounded-xl px-4 text-sm font-medium transition-colors sm:flex-none ${
                   view === "watchlist"
-                    ? "bg-red-600 text-white"
+                    ? "bg-white text-black"
                     : "text-gray-400 hover:text-white"
                 }`}
               >
@@ -319,7 +246,7 @@ const Profile = () => {
               onRemove={handleRemoveFromFavorites}
               emptyMessage="No favorites yet — the films you love will live here."
               emptyAction={
-                <Button asChild className="bg-red-600 hover:bg-red-700 rounded-sm">
+                <Button asChild className="rounded-full bg-red-600 hover:bg-red-700">
                   <Link href="/home">Discover titles</Link>
                 </Button>
               }
@@ -334,7 +261,7 @@ const Profile = () => {
               onRemove={handleRemoveFromWatchlist}
               emptyMessage="Your watchlist is empty — save something for later."
               emptyAction={
-                <Button asChild className="bg-red-600 hover:bg-red-700 rounded-sm">
+                <Button asChild className="rounded-full bg-red-600 hover:bg-red-700">
                   <Link href="/home">Discover titles</Link>
                 </Button>
               }

@@ -151,7 +151,8 @@ const HeroBanner = ({ content, onNext, onPrevious, onIndicatorClick, currentInde
     }
     return displayedContent?.title;
   }, [displayedContent]);
-  const logoPath = logo?.key === contentKey(displayedContent) ? logo.path : null;
+  const titleIsCurrent = contentKey(displayedContent) === contentKey(content);
+  const logoPath = titleIsCurrent && logo?.key === contentKey(displayedContent) ? logo.path : null;
 
   // Get release year
   const releaseYear = useMemo(() => {
@@ -237,7 +238,7 @@ const HeroBanner = ({ content, onNext, onPrevious, onIndicatorClick, currentInde
         <div className="max-w-xl mt-4 md:mt-10">
           {/* Title or TMDB logo image */}
           <div
-            className={`delay-200 ${isLoaded && !isTransitioning ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}
+            className={`delay-200 ${titleIsCurrent ? '' : 'invisible'} ${isLoaded && !isTransitioning ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}
             style={{
               textShadow: '0 2px 10px rgba(0,0,0,0.7)',
               transition: 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)'

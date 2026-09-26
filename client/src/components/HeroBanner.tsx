@@ -14,6 +14,9 @@ interface HeroBannerProps {
   totalItems?: number;
 }
 
+const contentKey = (item: Movie | TVShow) =>
+  `${'name' in item && 'first_air_date' in item ? 'tv' : 'movie'}:${item.id}`;
+
 const HeroBanner = ({ content, onNext, onPrevious, onIndicatorClick, currentIndex = 0, totalItems = 1 }: HeroBannerProps) => {
   const [, navigate] = useLocation();
   const [isLoaded, setIsLoaded] = useState(true); // Start as loaded for initial render
@@ -22,80 +25,73 @@ const HeroBanner = ({ content, onNext, onPrevious, onIndicatorClick, currentInde
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [imageKey, setImageKey] = useState(0);
   const [displayedContent, setDisplayedContent] = useState(content); // Content currently being displayed
-  const [logoPath, setLogoPath] = useState<string | null>(null);
+  const [logo, setLogo] = useState<{ key: string; path: string | null } | null>(null);
   
-  // Handle content changes with smooth transitions
+  // Preload the next backdrop, and cancel work from slides that were skipped.
   useEffect(() => {
-    // Don't transition if it's the same content
-    if (displayedContent?.id === content?.id) {
+    if (contentKey(displayedContent) === contentKey(content)) {
+      setIsLoaded(true);
+      setIsTransitioning(false);
       return;
     }
-    
-    // Start transition - fade out current content
+
     setIsTransitioning(true);
     setIsLoaded(false);
-    
-    // Preload the new image before updating content
+
+    let completed = false;
+    let revealTimer: ReturnType<typeof setTimeout> | null = null;
     const img = new Image();
-    const newBackdropUrl = content?.backdrop_path 
+    const newBackdropUrl = content?.backdrop_path
       ? `https://image.tmdb.org/t/p/original${content.backdrop_path}`
       : 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&h=600&q=80';
-    
-    img.src = newBackdropUrl;
-    
-    img.onload = () => {
-      // Image is loaded, now update the displayed content and show it
-      setTimeout(() => {
-        setDisplayedContent(content); // Update the content being displayed
-        setImageKey(prev => prev + 1); // Force background image update
-        setIsLoaded(true);
-        setIsTransitioning(false);
-      }, 300); // Small delay for smooth transition
-    };
-    
-    img.onerror = () => {
-      // Even if image fails, update content after delay
-      setTimeout(() => {
+
+    const reveal = () => {
+      if (completed) return;
+      completed = true;
+      clearTimeout(fallbackTimer);
+      revealTimer = setTimeout(() => {
         setDisplayedContent(content);
         setImageKey(prev => prev + 1);
         setIsLoaded(true);
         setIsTransitioning(false);
       }, 300);
     };
-    
-    // Fallback timer in case image takes too long
-    const fallbackTimer = setTimeout(() => {
-      setDisplayedContent(content);
-      setImageKey(prev => prev + 1);
-      setIsLoaded(true);
-      setIsTransitioning(false);
-    }, 2000);
-    
-    return () => clearTimeout(fallbackTimer);
-  }, [content, displayedContent]);
 
-  // Fetch TMDB title logo for the displayed content
+    const fallbackTimer = setTimeout(reveal, 2000);
+    img.onload = reveal;
+    img.onerror = reveal;
+    img.src = newBackdropUrl;
+
+    return () => {
+      completed = true;
+      img.onload = null;
+      img.onerror = null;
+      clearTimeout(fallbackTimer);
+      if (revealTimer !== null) clearTimeout(revealTimer);
+    };
+  }, [content]);
+
+  // Keep each title logo paired with the content it belongs to.
   useEffect(() => {
     let cancelled = false;
+    const key = contentKey(displayedContent);
+    setLogo(null);
+
     async function fetchLogo() {
       try {
-        if (!displayedContent?.id) {
-          setLogoPath(null);
-          return;
+        if (!displayedContent?.id) return;
+        const logos = isTVShow(displayedContent)
+          ? await getTVLogos(displayedContent.id)
+          : await getMovieLogos(displayedContent.id);
+        const best = pickBestLogo(logos);
+        if (!cancelled) {
+          setLogo({ key, path: best ? `https://image.tmdb.org/t/p/original${best.file_path}` : null });
         }
-        if (isTVShow(displayedContent)) {
-          const logos = await getTVLogos(displayedContent.id);
-          const best = pickBestLogo(logos);
-          if (!cancelled) setLogoPath(best ? `https://image.tmdb.org/t/p/original${best.file_path}` : null);
-        } else {
-          const logos = await getMovieLogos(displayedContent.id);
-          const best = pickBestLogo(logos);
-          if (!cancelled) setLogoPath(best ? `https://image.tmdb.org/t/p/original${best.file_path}` : null);
-        }
-      } catch (e) {
-        if (!cancelled) setLogoPath(null);
+      } catch (error) {
+        if (!cancelled) setLogo({ key, path: null });
       }
     }
+
     fetchLogo();
     return () => { cancelled = true; };
   }, [displayedContent]);
@@ -155,6 +151,7 @@ const HeroBanner = ({ content, onNext, onPrevious, onIndicatorClick, currentInde
     }
     return displayedContent?.title;
   }, [displayedContent]);
+  const logoPath = logo?.key === contentKey(displayedContent) ? logo.path : null;
 
   // Get release year
   const releaseYear = useMemo(() => {

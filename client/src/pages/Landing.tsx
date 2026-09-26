@@ -1048,14 +1048,32 @@ const Landing = () => {
       {/* ===== FOOTER ===== */}
       <footer
         ref={footer.ref}
-        className="relative overflow-hidden pt-16 px-6 sm:px-12 lg:px-20 border-t border-white/5"
+        className="relative overflow-hidden border-t border-white/5 px-6 pb-8 pt-8 sm:px-12 md:pt-16 lg:px-20"
       >
+        <div className="relative z-10 mx-auto max-w-7xl md:hidden">
+          <Link href="/home" className="text-lg font-semibold tracking-tight text-white">YMovies</Link>
+          <p className="mt-2 text-sm text-gray-400">Find your next favorite movie or show.</p>
+          <nav aria-label="Footer links" className="mt-5 flex flex-wrap gap-x-5 gap-y-3 text-sm text-gray-300">
+            <Link href="/privacy">Privacy</Link>
+            <Link href="/terms">Terms</Link>
+            <a href="https://yerradouani.me" target="_blank" rel="noopener noreferrer">Website</a>
+          </nav>
+          <div className="mt-5 flex flex-wrap gap-x-4 gap-y-2 border-t border-white/10 pt-4 text-xs text-gray-500">
+            <span>&copy; {new Date().getFullYear()} YMovies</span>
+            <a href="/humans.txt">Crafted by yours truly</a>
+          </div>
+          <p className="mt-4 text-[11px] leading-relaxed text-gray-600">
+            This product uses the TMDB API but is not endorsed or certified by TMDB.
+            Title data and artwork are provided by The Movie Database.
+          </p>
+        </div>
+
         {/* Oversized brand wordmark baked into the footer background — a film
             still clipped into the letters, anchored to the bottom and faded so
             it sits behind the content as a quiet watermark, never competing
             with the links. */}
         <div
-          className="absolute inset-x-0 bottom-0 flex justify-center overflow-hidden opacity-50 pointer-events-none select-none"
+          className="pointer-events-none absolute inset-x-0 bottom-0 hidden justify-center overflow-hidden opacity-50 select-none md:flex"
           aria-hidden="true"
         >
           <h2
@@ -1074,7 +1092,7 @@ const Landing = () => {
         </div>
 
         <div
-          className={`relative z-10 max-w-7xl mx-auto ${reveal(footer.visible)}`}
+          className={`relative z-10 mx-auto hidden max-w-7xl md:block ${reveal(footer.visible)}`}
         >
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-10 mb-14">
             {/* Brand */}

@@ -5,8 +5,25 @@ const Footer = () => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="py-12 px-4 border-t border-gray-800 bg-black relative z-10 mt-20">
+    <footer className="relative z-10 mt-12 border-t border-gray-800 bg-black px-4 pb-24 pt-8 md:mt-20 md:py-12">
       <div className="container mx-auto">
+        <div className="md:hidden">
+          <Link href="/home" className="text-lg font-semibold tracking-tight text-white">YMovies</Link>
+          <p className="mt-2 max-w-sm text-sm leading-relaxed text-gray-400">
+            Discover movies and TV shows. We don't host or stream video.
+          </p>
+          <nav aria-label="Footer links" className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-3 text-sm text-gray-300">
+            <Link href="/privacy" className="hover:text-white">Privacy</Link>
+            <Link href="/terms" className="hover:text-white">Terms</Link>
+            <a href="https://yerradouani.me" target="_blank" rel="noopener noreferrer" className="hover:text-white">Website</a>
+          </nav>
+          <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-white/10 pt-4 text-xs text-gray-500">
+            <span>&copy; {currentYear} YMovies</span>
+            <a href="/humans.txt" className="hover:text-white">Crafted by yours truly</a>
+          </div>
+        </div>
+
+        <div className="hidden md:block">
         {/* Main grid */}
         <div className="grid grid-cols-2 md:grid-cols-5 lg:grid-cols-6 gap-8 mb-10">
           {/* About */}
@@ -171,6 +188,7 @@ const Footer = () => {
               </a>
             </div>
           </div>
+        </div>
         </div>
       </div>
     </footer>

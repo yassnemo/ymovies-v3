@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useLocation } from "wouter";
-import { Search as SearchIcon, ArrowLeft } from "lucide-react";
+import { useLocation, useSearch } from "wouter";
+import { Search as SearchIcon } from "lucide-react";
 import MovieCard from "@/components/MovieCard";
 import HorizontalSearchFilters from "@/components/HorizontalSearchFilters";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { LoadingSkeleton } from "@/components/LoadingSkeleton";
 import { Movie } from "@/types/movie";
 import { TVShow } from "@/types/tvshow";
@@ -22,14 +21,15 @@ import {
 } from "@/lib/tmdb";
 
 const Search = () => {
-  const [location, navigate] = useLocation();
+  const [, navigate] = useLocation();
+  const urlSearch = useSearch();
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [filters, setFilters] = useState<SearchFiltersType>({});
 
   // Parse query + filters from URL on load / navigation
   useEffect(() => {
-    const params = new URLSearchParams(location.split("?")[1] || "");
+    const params = new URLSearchParams(urlSearch);
     const q = params.get("q") ?? "";
     setSearchQuery(q);
     setDebouncedQuery(q);
@@ -50,7 +50,7 @@ const Search = () => {
     if (lang)    parsed.language = lang;
 
     setFilters(parsed);
-  }, [location]);
+  }, [urlSearch]);
 
   // Debounce the search input
   useEffect(() => {
@@ -63,7 +63,7 @@ const Search = () => {
   const showResults = hasQuery || hasFilters;
 
   // Push URL whenever query or filters change
-  const syncUrl = (q: string, f: SearchFiltersType) => {
+  const syncUrl = (q: string, f: SearchFiltersType, replace = false) => {
     const params = new URLSearchParams();
     if (q)         params.set("q",        q);
     if (f.year)    params.set("year",     f.year.toString());
@@ -72,18 +72,20 @@ const Search = () => {
     if (f.genre)   params.set("genre",    f.genre!.toString());
     if (f.country) params.set("country",  f.country);
     if (f.language)params.set("language", f.language);
-    navigate(`/search?${params.toString()}`);
+    const query = params.toString();
+    navigate(query ? `/search?${query}` : "/search", { replace });
   };
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     syncUrl(searchQuery.trim(), filters);
     setDebouncedQuery(searchQuery.trim());
+    e.currentTarget.querySelector("input")?.blur();
   };
 
   const handleFiltersChange = (newFilters: SearchFiltersType) => {
     setFilters(newFilters);
-    syncUrl(searchQuery.trim(), newFilters);
+    syncUrl(searchQuery.trim(), newFilters, true);
   };
 
   // ── Movie results ──────────────────────────────────────────────────────────
@@ -133,40 +135,27 @@ const Search = () => {
     : "Filtered results";
 
   return (
-    <div className="container mx-auto pt-24 pb-12 px-4">
-      {/* Header row: back + search bar + filters */}
-      <div className="flex flex-col gap-4 mb-8">
-        <div className="flex items-center gap-3 flex-wrap">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="md:hidden flex-shrink-0"
-            onClick={() => window.history.back()}
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-
-          <form onSubmit={handleSearchSubmit} className="flex-1 min-w-[260px] max-w-md">
-            <div className="relative">
-              <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
-              <Input
-                type="text"
-                placeholder="Search movies, TV shows..."
-                className="w-full pl-10 bg-background"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                autoFocus
-              />
-            </div>
-          </form>
-
-          <HorizontalSearchFilters
-            filters={filters}
-            onFiltersChange={handleFiltersChange}
-            mediaType="both"
-          />
+    <div className="container mx-auto px-4 pb-28 pt-24 md:pb-12">
+      <header className="mb-7">
+        <h1 className="text-3xl font-semibold tracking-tight text-white">Search</h1>
+        <p className="mt-1 text-sm text-gray-400">Find something worth watching.</p>
+        <form onSubmit={handleSearchSubmit} role="search" className="mt-5 max-w-xl">
+          <div className="relative">
+            <SearchIcon className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+            <Input
+              type="search"
+              enterKeyHint="search"
+              placeholder="Movies and TV shows"
+              className="h-12 w-full rounded-2xl border-white/10 bg-white/[0.06] pl-12 pr-4 text-base text-white placeholder:text-gray-500 focus-visible:ring-red-500/50"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+        </form>
+        <div className="mt-4">
+          <HorizontalSearchFilters filters={filters} onFiltersChange={handleFiltersChange} />
         </div>
-      </div>
+      </header>
 
       {/* Results */}
       {showResults ? (

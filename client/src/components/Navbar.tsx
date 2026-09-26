@@ -548,7 +548,45 @@ const MobileBottomNav = () => {
   const [location, navigate] = useLocation();
   const { isAuthenticated, signOut } = useAuth();
   const [browseMenuOpen, setBrowseMenuOpen] = useState(false);
+  const [browseCategory, setBrowseCategory] = useState<"movie" | "tv">("movie");
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const browseActive = location.startsWith("/genre") || location === "/movies" || location.startsWith("/tv");
+
+  useEffect(() => {
+    if (!browseMenuOpen && !profileMenuOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setBrowseMenuOpen(false);
+        setProfileMenuOpen(false);
+      }
+    };
+    window.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [browseMenuOpen, profileMenuOpen]);
+
+  const browseGenres = {
+    movie: [
+      { name: "Action", path: "/genre/movie/action" },
+      { name: "Comedy", path: "/genre/movie/comedy" },
+      { name: "Drama", path: "/genre/movie/drama" },
+      { name: "Horror", path: "/genre/movie/horror" },
+      { name: "Sci-Fi", path: "/genre/movie/scifi" },
+      { name: "Thriller", path: "/genre/movie/thriller" },
+    ],
+    tv: [
+      { name: "Action", path: "/genre/tv/action" },
+      { name: "Comedy", path: "/genre/tv/comedy" },
+      { name: "Drama", path: "/genre/tv/drama" },
+      { name: "Crime", path: "/genre/tv/crime" },
+      { name: "Documentary", path: "/genre/tv/documentary" },
+      { name: "Anime", path: "/genre/tv/anime" },
+    ],
+  };
 
   const isActive = (path: string) => {
     if (path === '/home' && location === '/home') return true;
@@ -579,8 +617,11 @@ const MobileBottomNav = () => {
           </Link>
 
           {/* Browse */}
-          <button onClick={() => setBrowseMenuOpen(true)} className={tabClass(location.startsWith('/genre'))}>
-            <Menu className={`h-5 w-5 transition-transform duration-300 ${location.startsWith('/genre') ? 'scale-110' : ''}`} />
+          <button onClick={() => {
+            setBrowseCategory(location.startsWith("/tv") || location.startsWith("/genre/tv") ? "tv" : "movie");
+            setBrowseMenuOpen(true);
+          }} className={tabClass(browseActive)}>
+            <Menu className={`h-5 w-5 transition-transform duration-300 ${browseActive ? 'scale-110' : ''}`} />
             <span className="text-[10px] font-medium leading-none">Browse</span>
           </button>
 
@@ -618,105 +659,99 @@ const MobileBottomNav = () => {
 
       {/* Browse Menu Modal for Mobile */}
       {browseMenuOpen && (
-        <div className="md:hidden fixed inset-0 z-[60] bg-black/95 backdrop-blur-xl animate-in fade-in duration-200">
-          {/* Cinematic red glow */}
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-gradient-to-b from-red-950/40 via-red-950/10 to-transparent" />
-
-          <div className="relative flex h-full flex-col animate-in slide-in-from-bottom-8 duration-300">
-            {/* Header */}
-            <div className="flex items-start justify-between px-6 pt-10 pb-6">
+        <div role="dialog" aria-modal="true" aria-label="Browse" className="fixed inset-0 z-[60] bg-[#090909] text-white md:hidden">
+          <div className="flex h-[100dvh] flex-col">
+            <div className="flex items-center justify-between px-5 pb-5 pt-[calc(env(safe-area-inset-top)+1.5rem)]">
               <div>
-                <div className="flex items-center gap-2 text-red-500 text-xs font-semibold uppercase tracking-[0.25em]">
-                  <Menu className="h-3.5 w-3.5" />
-                  Categories
-                </div>
-                <h2 className="mt-2 font-logo text-4xl tracking-wide">Browse</h2>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-red-400">Explore</p>
+                <h2 className="mt-1 text-3xl font-semibold tracking-tight">Browse</h2>
               </div>
               <button
+                type="button"
                 onClick={() => setBrowseMenuOpen(false)}
-                className="rounded-full border border-white/10 bg-white/[0.05] p-2.5 text-gray-300 backdrop-blur-md transition-colors hover:bg-white/10 hover:text-white active:scale-90"
+                className="grid h-11 w-11 place-items-center rounded-full border border-white/10 bg-white/[0.06] text-gray-300 active:scale-95"
                 aria-label="Close browse menu"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
-            {/* Content */}
-            <div className="flex-1 overflow-y-auto px-6 pb-28">
-              {[
-                {
-                  label: 'Movies',
-                  icon: Film,
-                  genres: [
-                    { name: 'Action', path: '/genre/movie/action' },
-                    { name: 'Comedy', path: '/genre/movie/comedy' },
-                    { name: 'Drama', path: '/genre/movie/drama' },
-                    { name: 'Horror', path: '/genre/movie/horror' },
-                    { name: 'Sci-Fi', path: '/genre/movie/scifi' },
-                    { name: 'Thriller', path: '/genre/movie/thriller' },
-                  ],
-                },
-                {
-                  label: 'TV Shows',
-                  icon: Tv,
-                  genres: [
-                    { name: 'Action', path: '/genre/tv/action' },
-                    { name: 'Comedy', path: '/genre/tv/comedy' },
-                    { name: 'Drama', path: '/genre/tv/drama' },
-                    { name: 'Crime', path: '/genre/tv/crime' },
-                    { name: 'Documentary', path: '/genre/tv/documentary' },
-                    { name: 'Anime', path: '/genre/tv/anime' },
-                  ],
-                },
-              ].map((section) => (
-                <div key={section.label} className="mb-8 last:mb-0">
-                  <div className="mb-4 flex items-center gap-2">
-                    <section.icon className="h-4 w-4 text-red-500" />
-                    <h3 className="font-logo text-2xl tracking-wide">{section.label}</h3>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    {section.genres.map((genre) => (
-                      <Link
-                        key={genre.path}
-                        href={genre.path}
-                        onClick={() => setBrowseMenuOpen(false)}
-                        className="group relative flex items-center justify-between overflow-hidden rounded-sm border border-white/10 bg-white/[0.03] px-4 py-4 transition-all duration-300 hover:border-red-500/40 hover:bg-red-500/10 active:scale-[0.97]"
-                      >
-                        <span className="font-logo text-xl tracking-wide text-white transition-colors group-hover:text-red-500">
-                          {genre.name}
-                        </span>
-                        <ChevronRight className="h-4 w-4 text-gray-600 transition-all duration-300 group-hover:translate-x-0.5 group-hover:text-red-500" />
-                        {/* hover glow */}
-                        <span className="pointer-events-none absolute -right-6 -top-6 h-16 w-16 rounded-full bg-red-600/0 blur-2xl transition-all duration-300 group-hover:bg-red-600/30" />
-                      </Link>
-                    ))}
-                  </div>
+            <div className="px-5">
+              <div role="tablist" aria-label="Browse media type" className="grid grid-cols-2 rounded-2xl bg-white/[0.07] p-1">
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={browseCategory === "movie"}
+                  onClick={() => setBrowseCategory("movie")}
+                  className={browseCategory === "movie" ? "flex h-11 items-center justify-center gap-2 rounded-xl bg-white text-sm font-semibold text-black shadow-sm" : "flex h-11 items-center justify-center gap-2 rounded-xl text-sm font-medium text-gray-400"}
+                >
+                  <Film className="h-4 w-4" /> Movies
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={browseCategory === "tv"}
+                  onClick={() => setBrowseCategory("tv")}
+                  className={browseCategory === "tv" ? "flex h-11 items-center justify-center gap-2 rounded-xl bg-white text-sm font-semibold text-black shadow-sm" : "flex h-11 items-center justify-center gap-2 rounded-xl text-sm font-medium text-gray-400"}
+                >
+                  <Tv className="h-4 w-4" /> TV Shows
+                </button>
+              </div>
+            </div>
+
+            <div key={browseCategory} className="min-h-0 flex-1 overflow-y-auto px-5 pb-[calc(env(safe-area-inset-bottom)+2rem)]">
+              <Link
+                href={browseCategory === "movie" ? "/movies" : "/tv"}
+                onClick={() => setBrowseMenuOpen(false)}
+                className="mt-5 flex min-h-24 items-center gap-4 rounded-2xl border border-red-500/20 bg-gradient-to-br from-red-900/35 via-red-950/20 to-[#171717] p-4 active:scale-[0.99]"
+              >
+                <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-red-500/15 text-red-400">
+                  {browseCategory === "movie" ? <Film className="h-6 w-6" /> : <Tv className="h-6 w-6" />}
                 </div>
-              ))}
+                <div className="min-w-0 flex-1">
+                  <span className="block text-base font-semibold">{browseCategory === "movie" ? "All movies" : "All TV shows"}</span>
+                  <span className="mt-0.5 block text-xs text-gray-400">Explore popular and trending picks</span>
+                </div>
+                <ChevronRight className="h-5 w-5 shrink-0 text-gray-400" />
+              </Link>
+
+              <div className="mb-3 mt-7 flex items-center justify-between">
+                <h3 className="text-base font-semibold">Genres</h3>
+                <span className="text-xs text-gray-500">Pick a mood</span>
+              </div>
+              <div className="space-y-2">
+                {browseGenres[browseCategory].map((item) => (
+                  <Link
+                    key={item.path}
+                    href={item.path}
+                    onClick={() => setBrowseMenuOpen(false)}
+                    className="flex min-h-14 items-center justify-between rounded-xl border border-white/[0.06] bg-white/[0.04] px-4 text-sm font-medium text-gray-100 transition-colors active:bg-white/10"
+                  >
+                    {item.name}
+                    <ChevronRight className="h-4 w-4 text-gray-500" />
+                  </Link>
+                ))}
+              </div>
             </div>
           </div>
         </div>
       )}
-
       {/* Profile/More Menu Modal for Mobile */}
       {profileMenuOpen && (
-        <div className="md:hidden fixed inset-0 z-[60] bg-black/95 backdrop-blur-xl animate-in fade-in duration-200">
-          {/* Cinematic red glow */}
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-gradient-to-b from-red-950/40 via-red-950/10 to-transparent" />
-
-          <div className="relative flex h-full flex-col animate-in slide-in-from-bottom-8 duration-300">
+        <div role="dialog" aria-modal="true" aria-label="Account" className="fixed inset-0 z-[60] bg-[#090909] text-white md:hidden">
+          <div className="flex h-[100dvh] flex-col">
             {/* Header */}
-            <div className="flex items-start justify-between px-6 pt-10 pb-6">
+            <div className="flex items-start justify-between px-5 pb-5 pt-[calc(env(safe-area-inset-top)+1.5rem)]">
               <div>
-                <div className="flex items-center gap-2 text-red-500 text-xs font-semibold uppercase tracking-[0.25em]">
+                <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-red-400">
                   <UserIcon className="h-3.5 w-3.5" />
                   Account
                 </div>
-                <h2 className="mt-2 font-logo text-4xl tracking-wide">More</h2>
+                <h2 className="mt-2 text-3xl font-semibold tracking-tight">More</h2>
               </div>
               <button
                 onClick={() => setProfileMenuOpen(false)}
-                className="rounded-full border border-white/10 bg-white/[0.05] p-2.5 text-gray-300 backdrop-blur-md transition-colors hover:bg-white/10 hover:text-white active:scale-90"
+                className="grid h-11 w-11 place-items-center rounded-full border border-white/10 bg-white/[0.06] text-gray-300 active:scale-95"
                 aria-label="Close account menu"
               >
                 <X className="h-5 w-5" />
@@ -724,7 +759,7 @@ const MobileBottomNav = () => {
             </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-y-auto px-6 pb-28">
+            <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-[calc(env(safe-area-inset-bottom)+2rem)]">
               <div className="space-y-3">
                 {[
                   { label: 'Profile', icon: UserIcon, href: '/profile' },
@@ -734,10 +769,10 @@ const MobileBottomNav = () => {
                     key={item.href}
                     href={item.href}
                     onClick={() => setProfileMenuOpen(false)}
-                    className="group relative flex items-center gap-4 overflow-hidden rounded-sm border border-white/10 bg-white/[0.03] px-4 py-4 transition-all duration-300 hover:border-red-500/40 hover:bg-red-500/10 active:scale-[0.98]"
+                    className="group relative flex items-center gap-4 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-4 transition-colors hover:bg-white/[0.08] active:scale-[0.98]"
                   >
                     <item.icon className="h-5 w-5 text-red-500" />
-                    <span className="font-logo text-xl tracking-wide text-white transition-colors group-hover:text-red-500">
+                    <span className="text-base font-medium text-white">
                       {item.label}
                     </span>
                     <ChevronRight className="ml-auto h-4 w-4 text-gray-600 transition-all duration-300 group-hover:translate-x-0.5 group-hover:text-red-500" />
@@ -751,10 +786,10 @@ const MobileBottomNav = () => {
                     setProfileMenuOpen(false);
                     navigate("/");
                   }}
-                  className="group flex w-full items-center gap-4 rounded-sm border border-red-500/20 bg-red-500/[0.06] px-4 py-4 text-red-500 transition-all duration-300 hover:border-red-500/50 hover:bg-red-500/15 active:scale-[0.98]"
+                  className="group flex w-full items-center gap-4 rounded-2xl border border-red-500/20 bg-red-500/[0.06] px-4 py-4 text-red-400 transition-colors hover:bg-red-500/15 active:scale-[0.98]"
                 >
                   <LogOut className="h-5 w-5" />
-                  <span className="font-logo text-xl tracking-wide">Sign Out</span>
+                  <span className="text-base font-medium">Sign Out</span>
                 </button>
               </div>
             </div>

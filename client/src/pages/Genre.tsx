@@ -90,6 +90,13 @@ const Genre = () => {
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
+  // Clear the previous category before applying cached or freshly fetched results.
+  useEffect(() => {
+    setCurrentPage(1);
+    setAllContent([]);
+    setHasNextPage(true);
+  }, [sortBy, currentGenre.id]);
+
   // Update allContent when new content is fetched
   useEffect(() => {
     if (content) {
@@ -110,15 +117,8 @@ const Genre = () => {
     }
   }, [content, currentPage]);
 
-  // Reset pagination when sort changes
-  useEffect(() => {
-    setCurrentPage(1);
-    setAllContent([]);
-    setHasNextPage(true);
-  }, [sortBy, currentGenre.id]);
   const handleSortChange = (newSort: string) => {
     setSortBy(newSort);
-    // Reset pagination will be handled by useEffect
   };
 
   const loadMore = () => {
@@ -141,20 +141,21 @@ const Genre = () => {
   }
 
   return (
-    <div className="min-h-screen pt-20 pb-12">
+    <div className="min-h-screen pb-28 pt-24 md:pb-12">
       <div className="container mx-auto px-4">
-        {/* Header */}        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
+        {/* Header */}
+        <div className="mb-7 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
             {isMovie ? (
-              <Film className="h-8 w-8 text-red-500" />
+              <Film className="h-6 w-6 shrink-0 text-red-500 sm:h-8 sm:w-8" />
             ) : (
-              <Tv className="h-8 w-8 text-red-500" />
+              <Tv className="h-6 w-6 shrink-0 text-red-500 sm:h-8 sm:w-8" />
             )}
             <div>
-              <h1 className="text-3xl font-bold">
+              <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
                 {currentGenre.name} {isMovie ? "Movies" : "TV Shows"}
               </h1>
-              <p className="text-muted-foreground">
+              <p className="text-sm text-muted-foreground">
                 Discover the best {currentGenre.name.toLowerCase()} {isMovie ? "movies" : "TV shows"}
               </p>
             </div>
@@ -163,7 +164,7 @@ const Genre = () => {
           {/* Sort Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="flex items-center gap-2">
+              <Button variant="outline" className="flex h-10 items-center gap-2 rounded-full border-white/10 bg-white/[0.05] text-sm">
                 Sort by: {sortBy === "popularity.desc" ? "Popular" : 
                          sortBy === "vote_average.desc" ? "Top Rated" :
                          sortBy === "release_date.desc" || sortBy === "first_air_date.desc" ? "Latest" : "Popular"}
@@ -184,7 +185,8 @@ const Genre = () => {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-        </div>        {/* Content Grid */}
+        </div>
+        {/* Content Grid */}
         {error ? (
           <div className="text-center py-12">
             <h3 className="text-lg font-semibold text-red-500 mb-2">Error loading content</h3>

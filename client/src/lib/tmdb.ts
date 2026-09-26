@@ -648,7 +648,7 @@ export async function discoverMoviesWithFilters(filters: SearchFilters = {}): Pr
 export async function discoverTVShowsWithFilters(filters: SearchFilters = {}): Promise<TVShow[]> {
   try {
     const params: Record<string, string> = {
-      sort_by: filters.sortBy || 'popularity.desc',
+      sort_by: filters.sortBy?.replace('release_date', 'first_air_date') || 'popularity.desc',
     };
     if (filters.year)     params.first_air_date_year = filters.year.toString();
     if (filters.language) params.with_original_language = filters.language;

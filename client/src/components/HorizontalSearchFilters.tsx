@@ -1,177 +1,77 @@
-import React, { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { 
-  Calendar, 
-  Star, 
-  Globe, 
-  ArrowUpDown, 
-  X, 
-  MapPin,
-  Clapperboard,
-  ChevronDown
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { getGenres, getTVGenres } from "@/lib/tmdb";
+import React from "react";
+import { ArrowUpDown, Calendar, ChevronDown, Star, X } from "lucide-react";
 import { SearchFilters as SearchFiltersType } from "@/lib/tmdb";
 
 interface HorizontalSearchFiltersProps {
   filters: SearchFiltersType;
   onFiltersChange: (filters: SearchFiltersType) => void;
-  mediaType: 'movie' | 'tv' | 'both';
 }
 
-const HorizontalSearchFilters: React.FC<HorizontalSearchFiltersProps> = ({
-  filters,
-  onFiltersChange,
-  mediaType
-}) => {
-  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+const sortOptions: { value: NonNullable<SearchFiltersType["sortBy"]>; label: string }[] = [
+  { value: "popularity.desc", label: "Most popular" },
+  { value: "release_date.desc", label: "Newest first" },
+  { value: "release_date.asc", label: "Oldest first" },
+  { value: "vote_average.desc", label: "Top rated" },
+];
 
-  // Sort options
-  const sortOptions = [
-    { value: 'popularity.desc', label: 'Most Popular' },
-    { value: 'release_date.desc', label: 'Latest Release' },
-    { value: 'release_date.asc', label: 'Oldest Release' },
-    { value: 'vote_average.desc', label: 'Highest Rated' },
-  ];
+const chipClass = "h-10 appearance-none rounded-full border bg-[#171717] pl-9 pr-8 text-sm font-medium outline-none transition-colors [color-scheme:dark] focus-visible:ring-2 focus-visible:ring-red-500/60";
 
-  // Rating options
-  const ratingOptions = [
-    { value: 9, label: '9+' },
-    { value: 8, label: '8+' },
-    { value: 7, label: '7+' },
-    { value: 6, label: '6+' },
-    { value: 5, label: '5+' },
-  ];
-
-  // Generate year options
-  const currentYear = new Date().getFullYear();
-  const years = Array.from({ length: 25 }, (_, i) => currentYear - i);
-
-  const updateFilter = (key: keyof SearchFiltersType, value: any) => {
-    onFiltersChange({
-      ...filters,
-      [key]: value === '' ? undefined : value
-    });
-    setOpenDropdown(null);
-  };
-
-  const clearAllFilters = () => {
-    onFiltersChange({});
-  };
-
-  const toggleDropdown = (dropdown: string) => {
-    setOpenDropdown(openDropdown === dropdown ? null : dropdown);
-  };
-
-  const hasActiveFilters = Object.values(filters).some(value => value !== undefined);
+const HorizontalSearchFilters = ({ filters, onFiltersChange }: HorizontalSearchFiltersProps) => {
+  const years = Array.from({ length: 30 }, (_, index) => new Date().getFullYear() - index);
+  const hasActiveFilters = Object.values(filters).some((value) => value !== undefined);
 
   return (
-    <div className="flex items-center gap-2 flex-wrap">
-      {/* Sort By */}
-      <div className="relative">
-        <Button
-          variant={filters.sortBy ? "default" : "outline"}
-          size="sm"
-          className="flex items-center gap-2 h-8"
-          onClick={() => toggleDropdown('sortBy')}
+    <div className="flex flex-wrap items-center gap-2" aria-label="Search filters">
+      <label className="relative shrink-0">
+        <ArrowUpDown className="pointer-events-none absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-gray-400" />
+        <select
+          aria-label="Sort results"
+          value={filters.sortBy || ""}
+          onChange={(event) => onFiltersChange({ ...filters, sortBy: event.target.value ? event.target.value as SearchFiltersType["sortBy"] : undefined })}
+          className={chipClass + (filters.sortBy ? " border-red-500/50 bg-red-500/10 text-white" : " border-white/10 text-gray-200")}
         >
-          <ArrowUpDown className="h-3 w-3" />
-          <span className="text-xs">
-            {filters.sortBy ? sortOptions.find(s => s.value === filters.sortBy)?.label : 'Sort'}
-          </span>
-          <ChevronDown className="h-3 w-3" />
-        </Button>
-        
-        {openDropdown === 'sortBy' && (
-          <div className="absolute top-full left-0 mt-1 bg-background border rounded-md shadow-lg z-50 min-w-[200px] max-h-60 overflow-y-auto">
-            {sortOptions.map((option) => (
-              <button
-                key={option.value}
-                className="w-full px-3 py-2 text-left text-sm hover:bg-muted"
-                onClick={() => updateFilter('sortBy', option.value)}
-              >
-                {option.label}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
+          <option value="">Sort</option>
+          {sortOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+        </select>
+        <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
+      </label>
 
-      {/* Year */}
-      <div className="relative">
-        <Button
-          variant={filters.year ? "default" : "outline"}
-          size="sm"
-          className="flex items-center gap-2 h-8"
-          onClick={() => toggleDropdown('year')}
+      <label className="relative shrink-0">
+        <Calendar className="pointer-events-none absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-gray-400" />
+        <select
+          aria-label="Filter by year"
+          value={filters.year || ""}
+          onChange={(event) => onFiltersChange({ ...filters, year: event.target.value ? Number(event.target.value) : undefined })}
+          className={chipClass + (filters.year ? " border-red-500/50 bg-red-500/10 text-white" : " border-white/10 text-gray-200")}
         >
-          <Calendar className="h-3 w-3" />
-          <span className="text-xs">{filters.year || 'Year'}</span>
-          <ChevronDown className="h-3 w-3" />
-        </Button>
-        
-        {openDropdown === 'year' && (
-          <div className="absolute top-full left-0 mt-1 bg-background border rounded-md shadow-lg z-50 min-w-[120px] max-h-60 overflow-y-auto">
-            {years.map((year) => (
-              <button
-                key={year}
-                className="w-full px-3 py-2 text-left text-sm hover:bg-muted"
-                onClick={() => updateFilter('year', year)}
-              >
-                {year}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
+          <option value="">Year</option>
+          {years.map((year) => <option key={year} value={year}>{year}</option>)}
+        </select>
+        <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
+      </label>
 
-      {/* Rating */}
-      <div className="relative">
-        <Button
-          variant={filters.rating ? "default" : "outline"}
-          size="sm"
-          className="flex items-center gap-2 h-8"
-          onClick={() => toggleDropdown('rating')}
+      <label className="relative shrink-0">
+        <Star className="pointer-events-none absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-gray-400" />
+        <select
+          aria-label="Filter by minimum rating"
+          value={filters.rating || ""}
+          onChange={(event) => onFiltersChange({ ...filters, rating: event.target.value ? Number(event.target.value) : undefined })}
+          className={chipClass + (filters.rating ? " border-red-500/50 bg-red-500/10 text-white" : " border-white/10 text-gray-200")}
         >
-          <Star className="h-3 w-3" />
-          <span className="text-xs">{filters.rating ? `${filters.rating}+` : 'Rating'}</span>
-          <ChevronDown className="h-3 w-3" />
-        </Button>
-        
-        {openDropdown === 'rating' && (
-          <div className="absolute top-full left-0 mt-1 bg-background border rounded-md shadow-lg z-50 min-w-[120px] max-h-60 overflow-y-auto">
-            {ratingOptions.map((option) => (
-              <button
-                key={option.value}
-                className="w-full px-3 py-2 text-left text-sm hover:bg-muted"
-                onClick={() => updateFilter('rating', option.value)}
-              >
-                {option.label}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
+          <option value="">Rating</option>
+          {[9, 8, 7, 6, 5].map((rating) => <option key={rating} value={rating}>{rating}+ rated</option>)}
+        </select>
+        <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
+      </label>
 
-      {/* Clear All Filters */}
       {hasActiveFilters && (
-        <Button
-          variant="ghost"
-          size="sm"
-          className="text-xs h-8"
-          onClick={clearAllFilters}
+        <button
+          type="button"
+          onClick={() => onFiltersChange({})}
+          className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-full px-3 text-sm font-medium text-gray-300 transition-colors hover:text-white active:scale-95"
         >
-          Clear All
-        </Button>
-      )}
-
-      {/* Click outside to close dropdown */}
-      {openDropdown && (
-        <div 
-          className="fixed inset-0 z-40" 
-          onClick={() => setOpenDropdown(null)}
-        />
+          Clear <X className="h-3.5 w-3.5" />
+        </button>
       )}
     </div>
   );

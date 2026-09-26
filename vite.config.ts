@@ -15,6 +15,16 @@ export default defineConfig(() => {
       },
     },
     root: path.resolve(import.meta.dirname, "client"),
+    server: {
+      host: "0.0.0.0",
+      // When Vite runs on its own, keep API calls on the same origin as the page.
+      proxy: {
+        "/api": {
+          target: `http://127.0.0.1:${process.env.PORT || 5000}`,
+          changeOrigin: true,
+        },
+      },
+    },
     build: {
       outDir: path.resolve(import.meta.dirname, "dist/public"),
       emptyOutDir: true,

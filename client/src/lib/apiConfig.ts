@@ -8,8 +8,11 @@ const getApiBaseUrl = (): string => {
     return import.meta.env.VITE_API_URL || 'https://ymovies-backend-a306d5f1eff3.herokuapp.com';
   }
   
-  // In development, use local backend
-  return import.meta.env.VITE_API_URL || 'http://localhost:5000';
+  // A localhost override belongs to the computer, not to a phone on the LAN.
+  const configuredUrl = import.meta.env.VITE_API_URL;
+  const loopbackUrl = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?\/?$/i.test(configuredUrl || '');
+  const localPage = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+  return configuredUrl && (!loopbackUrl || localPage) ? configuredUrl : window.location.origin;
 };
 
 export const API_BASE_URL = getApiBaseUrl();

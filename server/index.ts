@@ -3,6 +3,14 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import os from 'os';
 
+function getLanAddresses() {
+  return Object.entries(os.networkInterfaces())
+    .flatMap(([name, interfaces]) => (interfaces || [])
+      .filter((address) => address.family === 'IPv4' && !address.internal && !address.address.startsWith('169.254.'))
+      .map((address) => ({ name, address: address.address })))
+    .sort((a, b) => Number(!/wi-?fi|wlan|ethernet/i.test(a.name)) - Number(!/wi-?fi|wlan|ethernet/i.test(b.name)));
+}
+
 const app = express();
 
 // CORS configuration for hybrid deployment
@@ -133,6 +141,14 @@ if (import.meta.url === `file://${process.argv[1]}` || process.env.NODE_ENV !== 
         server.off('error', onError);
         server.off('listening', onListening);
         console.log(`\n  ➜ Local:   \x1b[36mhttp://localhost:${port}\x1b[0m\n`);
+        const shown = new Set<string>();
+        for (const { name, address } of getLanAddresses()) {
+          if (shown.has(address)) continue;
+          shown.add(address);
+          console.log(`  Network (${name}): \x1b[36mhttp://${address}:${port}\x1b[0m`);
+        }
+        if (shown.size === 0) console.log('  Network: no LAN IPv4 address found');
+        console.log('  Open a Network URL on a phone connected to the same Wi-Fi.\n');
         resolve();
       };
 
@@ -150,13 +166,7 @@ if (import.meta.url === `file://${process.argv[1]}` || process.env.NODE_ENV !== 
       server.once('error', onError);
       server.once('listening', onListening);
 
-      if (os.platform() === 'win32') {
-        // On Windows, bind without explicit hostname
-        server.listen(port);
-      } else {
-        // On non-Windows, bind to 0.0.0.0
-        server.listen({ port, host: '0.0.0.0', reusePort: true });
-      }
+      server.listen({ port, host: '0.0.0.0' });
     };
 
     listenOn(startPort);

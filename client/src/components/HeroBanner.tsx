@@ -166,13 +166,14 @@ const HeroBanner = ({ content, onNext, onPrevious, onIndicatorClick, currentInde
     return '';
   }, [displayedContent]);
   
-  // Truncate overview for better display
+  // Keep the hero description brief, especially on narrow screens.
   const truncatedOverview = useMemo(() => {
-    if (displayedContent?.overview && displayedContent.overview.length > 200) {
-      return displayedContent.overview.substring(0, 200) + '...';
-    }
-    return displayedContent?.overview || '';
-  }, [displayedContent]);
+    const overview = displayedContent?.overview?.trim() || '';
+    const limit = isMobile ? 100 : 155;
+    if (overview.length <= limit) return overview;
+    const shortened = overview.slice(0, limit);
+    return `${shortened.slice(0, shortened.lastIndexOf(' ')) || shortened}…`;
+  }, [displayedContent, isMobile]);
 
   return (
     <section 
@@ -237,42 +238,9 @@ const HeroBanner = ({ content, onNext, onPrevious, onIndicatorClick, currentInde
         onMouseLeave={() => setIsHovered(false)}
       >
         <div className="max-w-xl mt-4 md:mt-10">
-          {/* Badge row with smooth slide-in animation */}
-          <div 
-            className={`flex flex-wrap items-center gap-x-1.5 gap-y-1.5 md:gap-2 mb-3 md:mb-2 delay-100 ${isLoaded && !isTransitioning ? 'translate-x-0 opacity-100' : 'translate-x-10 opacity-0'}`}
-            style={{ 
-              textShadow: '0 1px 3px rgba(0,0,0,0.8)',
-              transition: 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)'
-            }}
-          >
-            {isLoaded && !isTransitioning && (
-              <>
-                <div className="inline-flex shrink-0 items-center rounded-md bg-black/40 px-1.5 py-0.5 backdrop-blur-sm md:px-2 md:py-1">
-                  <Star className="text-yellow-500 h-3 w-3 mr-1 md:h-4 md:w-4" />
-                  <span className="text-primary text-[11px] leading-4 font-bold md:text-base md:leading-normal">{Math.round(displayedContent?.vote_average * 10)}% Match</span>
-                </div>
-                
-                {/* Content type badge (Movie or TV Show) */}
-                <span className="shrink-0 rounded border border-primary bg-primary/70 px-1.5 py-0.5 text-[10px] leading-4 backdrop-blur-sm md:px-2 md:text-xs">
-                  {isTVShow(displayedContent) ? 'TV SHOW' : 'MOVIE'}
-                </span>
-                
-                {(!isTVShow(displayedContent) && displayedContent?.adult) ? (
-                  <span className="shrink-0 rounded border border-red-700 bg-red-800/70 px-1.5 py-0.5 text-[10px] leading-4 backdrop-blur-sm md:px-2 md:text-xs">R</span>
-                ) : (
-                  <span className="shrink-0 rounded border border-gray-700 bg-gray-800/70 px-1.5 py-0.5 text-[10px] leading-4 backdrop-blur-sm md:px-2 md:text-xs">PG-13</span>
-                )}
-                
-                <span className="shrink-0 rounded bg-black/30 px-1.5 py-0.5 text-[11px] leading-4 backdrop-blur-sm md:px-2 md:text-sm">{releaseYear}</span>
-                
-                <span className="shrink-0 rounded border border-gray-700 bg-black/30 px-1.5 py-0.5 text-[10px] leading-4 backdrop-blur-sm md:px-2 md:text-xs">HD</span>
-              </>
-            )}
-          </div>
-          
           {/* Title or TMDB logo image */}
           <div
-            className={`mb-4 delay-200 ${isLoaded && !isTransitioning ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}
+            className={`delay-200 ${isLoaded && !isTransitioning ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}
             style={{
               textShadow: '0 2px 10px rgba(0,0,0,0.7)',
               transition: 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)'
@@ -288,10 +256,38 @@ const HeroBanner = ({ content, onNext, onPrevious, onIndicatorClick, currentInde
               <h1 className="text-2xl md:text-6xl font-bold">{isLoaded && !isTransitioning ? title : ''}</h1>
             )}
           </div>
+
+          {/* Movie details sit directly below the title. */}
+          <div
+            className={`mt-3 mb-3 flex flex-wrap items-center gap-x-1.5 gap-y-1.5 delay-100 md:mt-4 md:mb-4 md:gap-2 ${isLoaded && !isTransitioning ? 'translate-x-0 opacity-100' : 'translate-x-10 opacity-0'}`}
+            style={{
+              textShadow: '0 1px 3px rgba(0,0,0,0.8)',
+              transition: 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)'
+            }}
+          >
+            {isLoaded && !isTransitioning && (
+              <>
+                <div className="inline-flex shrink-0 items-center rounded-md bg-black/40 px-1.5 py-0.5 backdrop-blur-sm md:px-2 md:py-1">
+                  <Star className="mr-1 h-3 w-3 text-yellow-500 md:h-4 md:w-4" />
+                  <span className="text-[11px] font-bold leading-4 text-primary md:text-base md:leading-normal">{Math.round(displayedContent?.vote_average * 10)}% Match</span>
+                </div>
+                <span className="shrink-0 rounded border border-primary bg-primary/70 px-1.5 py-0.5 text-[10px] leading-4 backdrop-blur-sm md:px-2 md:text-xs">
+                  {isTVShow(displayedContent) ? 'TV SHOW' : 'MOVIE'}
+                </span>
+                {(!isTVShow(displayedContent) && displayedContent?.adult) ? (
+                  <span className="shrink-0 rounded border border-red-700 bg-red-800/70 px-1.5 py-0.5 text-[10px] leading-4 backdrop-blur-sm md:px-2 md:text-xs">R</span>
+                ) : (
+                  <span className="shrink-0 rounded border border-gray-700 bg-gray-800/70 px-1.5 py-0.5 text-[10px] leading-4 backdrop-blur-sm md:px-2 md:text-xs">PG-13</span>
+                )}
+                {releaseYear && <span className="shrink-0 rounded bg-black/30 px-1.5 py-0.5 text-[11px] leading-4 backdrop-blur-sm md:px-2 md:text-sm">{releaseYear}</span>}
+                <span className="shrink-0 rounded border border-gray-700 bg-black/30 px-1.5 py-0.5 text-[10px] leading-4 backdrop-blur-sm md:px-2 md:text-xs">HD</span>
+              </>
+            )}
+          </div>
           
           {/* Description with smooth fade-in animation */}
           <p 
-            className={`text-sm md:text-lg mb-4 md:mb-8 delay-300 ${isLoaded && !isTransitioning ? 'translate-y-0 opacity-90' : 'translate-y-4 opacity-0'}`}
+            className={`mb-4 line-clamp-2 text-sm md:mb-8 md:line-clamp-3 md:text-lg delay-300 ${isLoaded && !isTransitioning ? 'translate-y-0 opacity-90' : 'translate-y-4 opacity-0'}`}
             style={{
               maxWidth: '700px',
               lineHeight: '1.6',
@@ -360,13 +356,13 @@ const HeroBanner = ({ content, onNext, onPrevious, onIndicatorClick, currentInde
           </button>
 
           {/* Slide indicators — horizontal pills centered */}
-          <div className="absolute bottom-1 left-1/2 z-10 flex -translate-x-1/2 items-center gap-0.5 md:bottom-8 md:gap-2">
+          <div className="absolute bottom-1 left-1/2 z-10 flex -translate-x-1/2 items-center gap-0 md:bottom-8 md:gap-2">
             {Array.from({ length: totalItems }).map((_, index) => (
               <button
                 type="button"
                 key={index}
                 onClick={() => onIndicatorClick?.(index)}
-                className="-mx-px grid h-8 w-6 place-items-center md:mx-0 md:h-2 md:w-auto"
+                className="grid h-8 w-5 place-items-center md:h-2 md:w-auto"
                 aria-label={`Go to slide ${index + 1}`}
                 aria-current={index === currentIndex ? "true" : undefined}
               >

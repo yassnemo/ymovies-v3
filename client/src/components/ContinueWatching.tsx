@@ -2,8 +2,8 @@ import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
-import { useLocation } from "wouter";
-import { Play, Clock } from "lucide-react";
+import MovieCard from "./MovieCard";
+import { Movie } from "@/types/movie";
 
 interface WatchHistoryItem {
   id: number;
@@ -27,8 +27,7 @@ interface WatchHistoryItem {
 }
 
 const ContinueWatching = () => {
-  const { isAuthenticated, user } = useAuth();
-  const [, navigate] = useLocation();
+  const { isAuthenticated } = useAuth();
 
   const { data: history, isLoading } = useQuery<WatchHistoryItem[]>({
     queryKey: ["continue-watching"],
@@ -67,7 +66,7 @@ const ContinueWatching = () => {
   return (
     <section className="mt-8 px-4 relative group/slider w-full">
       <div className="flex items-center mb-2">
-        <h2 className="text-2xl font-bold ml-2 group-hover/slider:text-red-600 transition-colors duration-300">
+        <h2 className="text-section-title font-bold ml-2 group-hover/slider:text-red-600 transition-colors duration-300">
           Continue Watching
         </h2>
         <div className="h-px flex-grow bg-gray-800 ml-4 opacity-0 group-hover/slider:opacity-100 transition-opacity duration-300" />
@@ -80,55 +79,22 @@ const ContinueWatching = () => {
         >
           {inProgress.map((item) => {
             const title = item.title || item.name || "Untitled";
-            const posterUrl = item.backdrop_path
-              ? `https://image.tmdb.org/t/p/w780${item.backdrop_path}`
-              : item.poster_path
-                ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
-                : null;
             const isTV = !!item.name;
+            const cardMovie: Movie = {
+              ...item, title, overview: "", release_date: item.release_date || item.first_air_date || "",
+              vote_count: 0, adult: false, genre_ids: [], original_language: "",
+              original_title: title, popularity: 0, video: false,
+            };
 
             return (
               <div
                 key={item.id}
-                className="flex-shrink-0 w-72 cursor-pointer group"
-                onClick={() => navigate(isTV ? `/tv/${item.id}` : `/movie/${item.id}`)}
+                className="media-card-slot"
               >
-                <div className="relative rounded-lg overflow-hidden bg-secondary/20 aspect-video">
-                  {posterUrl ? (
-                    <img
-                      src={posterUrl}
-                      alt={title}
-                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-secondary/30">
-                      <span className="text-muted-foreground text-xs">No image</span>
-                    </div>
-                  )}
-
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
-
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <div className="bg-white/10 backdrop-blur-sm rounded-full p-3 border border-white/20">
-                      <Play className="h-6 w-6 text-white fill-white" />
-                    </div>
-                  </div>
-
-                  <div className="absolute bottom-0 left-0 right-0 p-3">
-                    <p className="text-white font-medium text-sm line-clamp-1 mb-2">{title}</p>
-                    <div className="flex items-center gap-2 text-xs text-gray-400 mb-2">
-                      <Clock className="h-3 w-3" />
-                      <span>{formatTimeLeft(item.watchData.watchProgress, item.runtime)}</span>
-                    </div>
-                    <div className="w-full bg-gray-700 rounded-full h-1">
-                      <div
-                        className="bg-red-600 h-1 rounded-full transition-all duration-300"
-                        style={{ width: `${item.watchData.watchProgress}%` }}
-                      />
-                    </div>
-                  </div>
-                </div>
+                <MovieCard movie={cardMovie}
+                  mediaType={isTV ? "tv" : "movie"} watchProgress={item.watchData.watchProgress} />
+                <p className="mt-2 text-card-title font-medium line-clamp-1">{title}</p>
+                <p className="mt-0.5 text-caption text-gray-400">{formatTimeLeft(item.watchData.watchProgress, item.runtime)}</p>
               </div>
             );
           })}

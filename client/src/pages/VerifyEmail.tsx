@@ -66,7 +66,7 @@ const VerifyEmail = () => {
               <div className="w-16 h-16 rounded-full bg-gray-800 flex items-center justify-center animate-pulse">
                 <Mail className="h-8 w-8 text-gray-400" />
               </div>
-              <h1 className="text-2xl font-bold tracking-tight text-center">Verifying your email...</h1>
+              <h1 className="text-page-title font-bold tracking-tight text-center">Verifying your email...</h1>
               <p className="text-gray-400 text-center">
                 Please wait while we verify your email address.
               </p>
@@ -83,7 +83,7 @@ const VerifyEmail = () => {
               <div className="w-16 h-16 rounded-full bg-green-900/30 flex items-center justify-center">
                 <CheckCircle className="h-10 w-10 text-green-500" />
               </div>
-              <h1 className="text-2xl font-bold tracking-tight text-center">Email Verified!</h1>
+              <h1 className="text-page-title font-bold tracking-tight text-center">Email Verified!</h1>
               <p className="text-gray-400 text-center">
                 Your email has been verified successfully. You can now sign in to your account.
               </p>
@@ -110,7 +110,7 @@ const VerifyEmail = () => {
               <div className="w-16 h-16 rounded-full bg-red-900/30 flex items-center justify-center">
                 <XCircle className="h-10 w-10 text-red-500" />
               </div>
-              <h1 className="text-2xl font-bold tracking-tight text-center">Verification Failed</h1>
+              <h1 className="text-page-title font-bold tracking-tight text-center">Verification Failed</h1>
               <p className="text-gray-400 text-center">
                 The verification link is invalid or has expired. Please request a new verification link.
               </p>

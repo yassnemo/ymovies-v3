@@ -8,7 +8,7 @@ const Privacy = () => {
         {/* Header */}
         <div className="mb-12">
           <Link href="/home" className="text-red-500 hover:text-red-400 text-sm mb-6 inline-block">&larr; Back to YMovies</Link>
-          <h1 className="text-4xl md:text-5xl font-light tracking-wide mb-4">
+          <h1 className="text-page-title font-light tracking-wide mb-4">
             Privacy Policy
           </h1>
           <p className="text-gray-400 text-sm">
@@ -19,7 +19,7 @@ const Privacy = () => {
         {/* Content */}
         <div className="space-y-10">
           <section>
-            <h2 className="text-xl font-semibold text-white mb-4 border-b border-gray-800 pb-2">
+            <h2 className="text-section-title font-semibold text-white mb-4 border-b border-gray-800 pb-2">
               1. Introduction
             </h2>
             <p className="text-gray-300 leading-relaxed">
@@ -28,7 +28,7 @@ const Privacy = () => {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-white mb-4 border-b border-gray-800 pb-2">
+            <h2 className="text-section-title font-semibold text-white mb-4 border-b border-gray-800 pb-2">
               2. Information We Collect
             </h2>
             <p className="text-gray-300 leading-relaxed mb-4">
@@ -54,7 +54,7 @@ const Privacy = () => {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-white mb-4 border-b border-gray-800 pb-2">
+            <h2 className="text-section-title font-semibold text-white mb-4 border-b border-gray-800 pb-2">
               3. How We Use Your Information
             </h2>
             <p className="text-gray-300 leading-relaxed mb-4">
@@ -77,7 +77,7 @@ const Privacy = () => {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-white mb-4 border-b border-gray-800 pb-2">
+            <h2 className="text-section-title font-semibold text-white mb-4 border-b border-gray-800 pb-2">
               4. Data Sharing
             </h2>
             <p className="text-gray-300 leading-relaxed">
@@ -86,7 +86,7 @@ const Privacy = () => {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-white mb-4 border-b border-gray-800 pb-2">
+            <h2 className="text-section-title font-semibold text-white mb-4 border-b border-gray-800 pb-2">
               5. Data Storage & Security
             </h2>
             <p className="text-gray-300 leading-relaxed">
@@ -95,7 +95,7 @@ const Privacy = () => {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-white mb-4 border-b border-gray-800 pb-2">
+            <h2 className="text-section-title font-semibold text-white mb-4 border-b border-gray-800 pb-2">
               6. Your Rights
             </h2>
             <p className="text-gray-300 leading-relaxed mb-4">You can at any time:</p>
@@ -121,7 +121,7 @@ const Privacy = () => {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-white mb-4 border-b border-gray-800 pb-2">
+            <h2 className="text-section-title font-semibold text-white mb-4 border-b border-gray-800 pb-2">
               7. Changes to This Policy
             </h2>
             <p className="text-gray-300 leading-relaxed">
@@ -130,7 +130,7 @@ const Privacy = () => {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-white mb-4 border-b border-gray-800 pb-2">
+            <h2 className="text-section-title font-semibold text-white mb-4 border-b border-gray-800 pb-2">
               8. Contact
             </h2>
             <p className="text-gray-300 leading-relaxed">

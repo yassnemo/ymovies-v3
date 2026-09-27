@@ -153,7 +153,7 @@ const HorizontalTVShowCard: React.FC<HorizontalTVShowCardProps> = ({ show, class
         {(() => { const displayName = show.original_name || show.name; return (
         <div className={`absolute bottom-0 left-0 right-0 p-4 z-10 transition-all duration-700 ${isHovered ? 'opacity-0 transform translate-y-6' : 'opacity-100 transform translate-y-0'}`}>
           <div className="h-24 w-full absolute bottom-0 left-0 bg-gradient-to-t from-black/95 via-black/70 to-transparent"></div>
-          <h3 className="relative text-xl font-bold line-clamp-1 text-white drop-shadow-lg">{displayName}</h3>
+          <h3 className="text-section-title relative font-bold line-clamp-1 text-white drop-shadow-lg">{displayName}</h3>
           <div className="relative mt-1 overflow-hidden h-0.5">
             <div className={`bg-red-500 h-0.5 w-12 transform transition-all duration-700 ease-out ${isHovered ? 'translate-x-full' : 'translate-x-0'}`}></div>
           </div>
@@ -171,7 +171,7 @@ const HorizontalTVShowCard: React.FC<HorizontalTVShowCardProps> = ({ show, class
             
             {/* Animated TV title with enhanced styling */}
             <div className="overflow-hidden">
-              <h3 className="text-lg font-bold text-white">{show.original_name || show.name}</h3>
+              <h3 className="text-section-title font-bold text-white">{show.original_name || show.name}</h3>
               <div className={`bg-red-500 h-0.5 w-16 mt-1 transform transition-all duration-700 delay-100 ease-out ${isHovered ? 'translate-x-0 opacity-100' : 'translate-x-[-100%] opacity-0'}`}></div>
             </div>
             

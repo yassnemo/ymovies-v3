@@ -49,6 +49,7 @@ const TVShowCard = ({ show, hideInfo = false, className }: TVShowCardProps) => {
   const releaseYear = show.first_air_date ? new Date(show.first_air_date).getFullYear() : null;
 
   const handleMouseEnter = useCallback(() => {
+    if (!window.matchMedia('(hover: hover) and (min-width: 640px)').matches) return;
     setIsHovered(true);
     hoverTimer.current = setTimeout(() => setShowPreview(true), 350);
   }, []);
@@ -117,6 +118,12 @@ const TVShowCard = ({ show, hideInfo = false, className }: TVShowCardProps) => {
   return (
     <div
       className={cn("movie-card relative cursor-pointer w-full", className)}
+      role="link"
+      tabIndex={0}
+      aria-label={`View ${displayName}`}
+      onKeyDown={event => {
+        if (event.key === 'Enter' && event.target === event.currentTarget) navigate(`/tv/${show.id}`);
+      }}
       style={{ zIndex: isHovered ? 30 : 1 }}
       onClick={handleCardClick}
       onMouseEnter={handleMouseEnter}
@@ -140,7 +147,7 @@ const TVShowCard = ({ show, hideInfo = false, className }: TVShowCardProps) => {
           <img
             src={imagePath}
             srcSet={imageSrcSet}
-            sizes="(max-width: 768px) 45vw, (max-width: 1280px) 22vw, 185px"
+            sizes="(max-width: 639px) 112px, (max-width: 767px) 144px, (max-width: 1279px) 176px, 192px"
             alt={displayName}
             className="w-full h-full object-cover"
             loading="lazy"
@@ -151,15 +158,15 @@ const TVShowCard = ({ show, hideInfo = false, className }: TVShowCardProps) => {
         </div>
 
         {/* TV badge — top left */}
-        <div className="absolute top-2 left-2">
-          <div className="h-6 w-6 rounded-full bg-black/60 backdrop-blur-sm border border-white/10 grid place-items-center text-white/90">
+        <div className="absolute top-1.5 left-1.5 md:top-2 md:left-2">
+          <div className="h-5 w-5 md:h-6 md:w-6 rounded-full bg-black/60 backdrop-blur-sm border border-white/10 grid place-items-center text-white/90">
             <Tv className="h-3 w-3" />
           </div>
         </div>
 
         {/* Rating badge — top right, hidden during preview */}
         {!showPreview && show.vote_average > 0 && (
-          <div className="absolute top-2 right-2 bg-black/70 text-white px-2 py-0.5 rounded-full text-xs font-semibold flex items-center gap-1">
+          <div className="absolute top-1.5 right-1.5 md:top-2 md:right-2 bg-black/70 text-white px-1.5 md:px-2 py-0.5 rounded-full text-caption font-semibold flex items-center gap-1">
             <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
             {show.vote_average.toFixed(1)}
           </div>
@@ -181,7 +188,7 @@ const TVShowCard = ({ show, hideInfo = false, className }: TVShowCardProps) => {
               >
                 <div className="px-3 pb-3 pt-0">
                   {/* Title */}
-                  <p className="text-white font-semibold text-sm leading-snug line-clamp-2 mb-1.5">
+                  <p className="text-white font-semibold text-card-title leading-snug line-clamp-2 mb-1.5">
                     {displayName}
                   </p>
 
@@ -195,7 +202,7 @@ const TVShowCard = ({ show, hideInfo = false, className }: TVShowCardProps) => {
                     {releaseYear && (
                       <span className="text-gray-300 text-xs">{releaseYear}</span>
                     )}
-                    <span className="border border-gray-500 text-gray-400 px-1 text-[10px] rounded leading-4">HD</span>
+                    <span className="border border-gray-500 text-gray-400 px-1 text-caption rounded leading-4">HD</span>
                   </div>
 
                   {/* Genre tags */}
@@ -203,9 +210,9 @@ const TVShowCard = ({ show, hideInfo = false, className }: TVShowCardProps) => {
                     <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 mb-3">
                       {genreNames.map((genre, i) => (
                         <React.Fragment key={genre}>
-                          <span className="text-[11px] text-gray-300">{genre}</span>
+                          <span className="text-caption text-gray-300">{genre}</span>
                           {i < genreNames.length - 1 && (
-                            <span className="text-gray-600 text-[11px]">•</span>
+                            <span className="text-gray-600 text-caption">•</span>
                           )}
                         </React.Fragment>
                       ))}

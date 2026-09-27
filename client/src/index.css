@@ -68,6 +68,7 @@
   --input: 240 3.7% 15.9%;
   --ring: 240 4.9% 83.9%;
   --radius: 0.5rem;
+  --media-card-width: clamp(80px, calc((100vw - 72px) / 3), 112px);
 
   --sidebar-background: 240 10% 3.9%;
   --sidebar-foreground: 0 0% 98%;
@@ -100,7 +101,7 @@ select:focus-visible, textarea:focus-visible {
   }
 
   body {
-    @apply font-sans antialiased bg-background text-foreground;
+    @apply font-sans antialiased bg-background text-foreground text-body;
     font-family: 'Montserrat', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
   }
 }
@@ -109,7 +110,8 @@ select:focus-visible, textarea:focus-visible {
 .movie-card {
   transition: box-shadow 0.3s ease;
   overflow: visible !important;
-  max-width: none !important;
+  width: var(--media-card-width);
+  max-width: 100%;
 }
 
 /* ── Micro-interaction: heart burst particles ── */
@@ -270,4 +272,24 @@ main, section {
 * {
   scrollbar-width: thin;
   scrollbar-color: hsl(var(--primary)) hsla(var(--background) / 0.6);
+}
+
+/* Catalog cards keep the same dimensions in every page and loading state. */
+.media-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, var(--media-card-width));
+  justify-content: space-between;
+  gap: 16px 12px;
+}
+.media-card-slot { width: var(--media-card-width); flex: 0 0 var(--media-card-width); }
+@media (min-width: 640px) { :root { --media-card-width: 144px; } }
+@media (min-width: 768px) { :root { --media-card-width: 176px; } }
+@media (min-width: 1280px) { :root { --media-card-width: 192px; } }
+@media (hover: none) { .media-remove { opacity: 1; } }
+/* Keep phone form fields readable without Safari zooming on focus. */
+@media (max-width: 767px) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), textarea, select { font-size: 1rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*), ::view-transition-old(root), ::view-transition-new(root) { animation-duration: 0.01ms; }
 }

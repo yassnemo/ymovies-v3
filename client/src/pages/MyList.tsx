@@ -24,8 +24,6 @@ import {
   Heart,
   Bookmark,
   Play,
-  Grid3X3,
-  List,
   Clock,
   Search,
   Star,
@@ -35,6 +33,7 @@ import {
   Library,
 } from "lucide-react";
 import MediaGrid from "@/components/MediaGrid";
+import MovieCard from "@/components/MovieCard";
 import MasonryMediaGrid from "@/components/MasonryMediaGrid";
 
 type MediaItem = Movie | TVShow;
@@ -64,7 +63,7 @@ interface WatchHistoryItem {
 const TABS_LIST_CLASS =
   "w-max sm:w-auto h-auto bg-white/[0.03] border border-white/10 rounded-sm p-1 gap-1";
 const TABS_TRIGGER_CLASS =
-  "rounded-sm px-3 py-1.5 text-xs sm:text-sm text-gray-400 gap-1.5 data-[state=active]:bg-red-600 data-[state=active]:text-white data-[state=active]:shadow-none";
+  "rounded-sm px-3 py-1.5 text-body text-gray-400 gap-1.5 data-[state=active]:bg-red-600 data-[state=active]:text-white data-[state=active]:shadow-none";
 const FIELD_CLASS = "bg-white/5 border-white/10 text-white";
 
 const MyList = () => {
@@ -72,7 +71,6 @@ const MyList = () => {
   const { toast } = useToast();
   const [location] = useLocation();
   const [activeTab, setActiveTab] = useState("overview");
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
   const {
     preferences,
@@ -338,7 +336,7 @@ const MyList = () => {
                   <Skeleton key={i} className="h-10 w-24 bg-white/5" />
                 ))}
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            <div className="media-grid">
               {Array(10)
                 .fill(0)
                 .map((_, i) => (
@@ -384,7 +382,7 @@ const MyList = () => {
               <Library className="w-3.5 h-3.5" />
               Your Library
             </p>
-            <h1 className="font-logo tracking-wide text-5xl sm:text-7xl leading-[0.9]">
+            <h1 className="text-page-title font-semibold tracking-tight">
               My List
             </h1>
             <p className="text-gray-400 text-sm mt-3">
@@ -399,7 +397,7 @@ const MyList = () => {
                 { label: "In Progress", value: inProgress.length },
               ].map((stat) => (
                 <div key={stat.label} className="bg-[#0a0a0a] px-4 py-4 text-center">
-                  <div className="font-logo text-3xl sm:text-4xl leading-none text-white">
+                  <div className="text-page-title font-semibold text-white">
                     {stat.value}
                   </div>
                   <div className="mt-1 text-[10px] sm:text-xs uppercase tracking-[0.2em] text-gray-500">
@@ -464,7 +462,7 @@ const MyList = () => {
                       variant={selectionMode ? "secondary" : "outline"}
                       size="sm"
                       onClick={() => setSelectionMode(!selectionMode)}
-                      className={`text-xs h-8 rounded-sm ${
+                      className={`text-body h-8 rounded-sm ${
                         selectionMode
                           ? ""
                           : "border-white/15 text-white hover:bg-white/10"
@@ -472,32 +470,6 @@ const MyList = () => {
                     >
                       {selectionMode ? "Done" : "Select"}
                     </Button>
-                    <div className="flex bg-white/[0.03] rounded-sm border border-white/10 p-0.5">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className={`h-7 w-7 p-0 rounded-sm ${
-                          viewMode === "grid"
-                            ? "bg-red-600 text-white hover:bg-red-700"
-                            : "text-gray-400 hover:text-white hover:bg-white/10"
-                        }`}
-                        onClick={() => setViewMode("grid")}
-                      >
-                        <Grid3X3 className="w-3.5 h-3.5" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className={`h-7 w-7 p-0 rounded-sm ${
-                          viewMode === "list"
-                            ? "bg-red-600 text-white hover:bg-red-700"
-                            : "text-gray-400 hover:text-white hover:bg-white/10"
-                        }`}
-                        onClick={() => setViewMode("list")}
-                      >
-                        <List className="w-3.5 h-3.5" />
-                      </Button>
-                    </div>
                   </div>
                 )}
               </div>
@@ -509,7 +481,7 @@ const MyList = () => {
                       value={typeFilter}
                       onValueChange={(v: any) => setTypeFilter(v)}
                     >
-                      <SelectTrigger className={`w-[120px] h-9 text-xs rounded-sm ${FIELD_CLASS}`}>
+                      <SelectTrigger className={`w-[120px] h-9 text-body rounded-sm ${FIELD_CLASS}`}>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -522,7 +494,7 @@ const MyList = () => {
                       value={sortBy}
                       onValueChange={(v: any) => setSortBy(v)}
                     >
-                      <SelectTrigger className={`w-[140px] h-9 text-xs rounded-sm ${FIELD_CLASS}`}>
+                      <SelectTrigger className={`w-[140px] h-9 text-body rounded-sm ${FIELD_CLASS}`}>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -539,7 +511,7 @@ const MyList = () => {
                       value={query}
                       onChange={(e) => setQuery(e.target.value)}
                       placeholder="Search your list..."
-                      className={`h-9 text-xs pl-8 rounded-sm ${FIELD_CLASS}`}
+                      className={`h-9 text-body pl-8 rounded-sm ${FIELD_CLASS}`}
                     />
                   </div>
                 </div>
@@ -557,7 +529,7 @@ const MyList = () => {
                     <Button
                       variant="secondary"
                       size="sm"
-                      className="text-xs h-8 rounded-sm"
+                      className="text-body h-8 rounded-sm"
                       onClick={selectAllVisible}
                     >
                       Select All
@@ -565,7 +537,7 @@ const MyList = () => {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="text-xs h-8 rounded-sm text-gray-400 hover:text-white hover:bg-white/10"
+                      className="text-body h-8 rounded-sm text-gray-400 hover:text-white hover:bg-white/10"
                       onClick={clearSelection}
                     >
                       Clear
@@ -573,7 +545,7 @@ const MyList = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="text-xs h-8 rounded-sm border-white/15 text-white hover:bg-white/10"
+                      className="text-body h-8 rounded-sm border-white/15 text-white hover:bg-white/10"
                       onClick={bulkAddToOther}
                     >
                       {activeTab === "watchlist"
@@ -583,7 +555,7 @@ const MyList = () => {
                     <Button
                       variant="destructive"
                       size="sm"
-                      className="text-xs h-8 rounded-sm"
+                      className="text-body h-8 rounded-sm"
                       onClick={bulkRemove}
                     >
                       Remove
@@ -597,7 +569,7 @@ const MyList = () => {
               {inProgress.length > 0 && (
                 <section>
                   <div className="flex items-center justify-between mb-4">
-                    <h2 className="font-logo tracking-wide text-2xl sm:text-3xl">
+                    <h2 className="text-section-title font-semibold">
                       Continue Watching
                     </h2>
                     <Button
@@ -609,66 +581,16 @@ const MyList = () => {
                       View All <ChevronRight className="w-3.5 h-3.5" />
                     </Button>
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {inProgress.slice(0, 3).map((item) => {
-                      const title = item.title || item.name || "Untitled";
-                      const isTV = !!item.name;
-                      const backdropUrl = item.backdrop_path
-                        ? `https://image.tmdb.org/t/p/w780${item.backdrop_path}`
-                        : item.poster_path
-                          ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
-                          : null;
-                      return (
-                        <Link
-                          key={item.id}
-                          href={isTV ? `/tv/${item.id}` : `/movie/${item.id}`}
-                          className="group block overflow-hidden rounded-sm border border-white/10 bg-[#0b0b0b] hover:border-white/25 transition-all"
-                        >
-                          <div className="relative aspect-video bg-white/5">
-                            {backdropUrl ? (
-                              <img
-                                src={backdropUrl}
-                                alt={title}
-                                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                                loading="lazy"
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center">
-                                <Film className="w-8 h-8 text-gray-600" />
-                              </div>
-                            )}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
-                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                              <div className="bg-white/15 backdrop-blur-sm rounded-full p-3 border border-white/30">
-                                <Play className="w-5 h-5 text-white fill-white" />
-                              </div>
-                            </div>
-                            <div className="absolute bottom-0 left-0 right-0 p-3">
-                              <p className="text-white font-medium text-sm line-clamp-1 mb-1">
-                                {title}
-                              </p>
-                              <div className="flex items-center gap-2 text-xs text-gray-300 mb-2">
-                                <Clock className="w-3 h-3" />
-                                <span>
-                                  {formatTimeLeft(
-                                    item.watchData.watchProgress,
-                                    item.runtime,
-                                  )}
-                                </span>
-                              </div>
-                              <div className="w-full bg-white/20 rounded-full h-1">
-                                <div
-                                  className="bg-red-600 h-1 rounded-full"
-                                  style={{
-                                    width: `${item.watchData.watchProgress}%`,
-                                  }}
-                                />
-                              </div>
-                            </div>
-                          </div>
-                        </Link>
-                      );
-                    })}
+                  <div className="media-grid">
+                    {inProgress.slice(0, 3).map(item => (
+                      <div key={item.id}>
+                      <MovieCard movie={item as any}
+                        mediaType={item.name !== undefined ? "tv" : "movie"}
+                        watchProgress={item.watchData.watchProgress} />
+                      <p className="mt-2 text-card-title font-medium line-clamp-1">{item.title || item.name || "Untitled"}</p>
+                      <p className="mt-0.5 text-caption text-gray-400">{formatTimeLeft(item.watchData.watchProgress, item.runtime)}</p>
+                      </div>
+                    ))}
                   </div>
                 </section>
               )}
@@ -683,7 +605,7 @@ const MyList = () => {
                     <Bookmark className="w-5 h-5 text-red-500" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-logo text-2xl leading-none">
+                    <p className="text-body font-semibold">
                       {watchlist.length}
                     </p>
                     <p className="text-sm text-gray-500 mt-1">In your watchlist</p>
@@ -699,7 +621,7 @@ const MyList = () => {
                     <Heart className="w-5 h-5 text-red-500" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-logo text-2xl leading-none">
+                    <p className="text-body font-semibold">
                       {favorites.length}
                     </p>
                     <p className="text-sm text-gray-500 mt-1">Favorites</p>
@@ -710,53 +632,21 @@ const MyList = () => {
 
               {(watchlist.length > 0 || favorites.length > 0) && (
                 <section>
-                  <h2 className="font-logo tracking-wide text-2xl sm:text-3xl mb-4">
+                  <h2 className="text-section-title font-semibold mb-4">
                     Recently Added
                   </h2>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                  <div className="media-grid">
                     {[...favorites.slice(0, 3), ...watchlist.slice(0, 3)]
                       .filter(
                         (item, index, self) =>
                           self.findIndex((i) => i.id === item.id) === index,
                       )
                       .slice(0, 6)
-                      .map((item) => {
-                        const title = getMediaTitle(item);
-                        const isTv = isTVItem(item);
-                        const progress = watchProgressMap[item.id];
-                        return (
-                          <Link
-                            key={item.id}
-                            href={isTv ? `/tv/${item.id}` : `/movie/${item.id}`}
-                            className="group block"
-                          >
-                            <div className="relative overflow-hidden rounded-sm border border-white/10">
-                              <img
-                                src={getMediaPosterUrl(item)}
-                                alt={title}
-                                className="w-full aspect-[2/3] object-cover transition-transform duration-300 group-hover:scale-105"
-                                loading="lazy"
-                              />
-                              {progress !== undefined && progress > 0 && (
-                                <div className="absolute bottom-0 left-0 right-0">
-                                  <div className="w-full bg-black/60 h-1">
-                                    <div
-                                      className="bg-red-600 h-1"
-                                      style={{ width: `${progress}%` }}
-                                    />
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                            <p className="text-xs font-medium mt-1.5 line-clamp-1 group-hover:text-red-500 transition-colors">
-                              {title}
-                            </p>
-                            <p className="text-[10px] text-gray-500">
-                              {getMediaReleaseYear(item)}
-                            </p>
-                          </Link>
-                        );
-                      })}
+                      .map(item => (
+                        <MovieCard key={item.id} movie={item as any}
+                          mediaType={isTVItem(item) ? "tv" : "movie"}
+                          watchProgress={watchProgressMap[item.id]} />
+                      ))}
                   </div>
                 </section>
               )}
@@ -766,7 +656,7 @@ const MyList = () => {
                   <div className="w-20 h-20 bg-white/5 border border-white/10 rounded-full flex items-center justify-center mx-auto mb-5">
                     <Bookmark className="w-8 h-8 text-gray-500" />
                   </div>
-                  <h3 className="font-logo tracking-wide text-3xl mb-2">
+                  <h3 className="text-section-title font-semibold mb-2">
                     Your list is empty
                   </h3>
                   <p className="text-gray-400 text-sm mb-6 max-w-sm mx-auto">
@@ -792,81 +682,23 @@ const MyList = () => {
             {/* Watching */}
             <TabsContent value="watching" className="mt-0">
               {inProgress.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {inProgress.map((item) => {
-                    const title = item.title || item.name || "Untitled";
-                    const isTV = !!item.name;
-                    const backdropUrl = item.backdrop_path
-                      ? `https://image.tmdb.org/t/p/w780${item.backdrop_path}`
-                      : item.poster_path
-                        ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
-                        : null;
-                    return (
-                      <Link
-                        key={item.id}
-                        href={isTV ? `/tv/${item.id}` : `/movie/${item.id}`}
-                        className="group block overflow-hidden rounded-sm border border-white/10 bg-[#0b0b0b] hover:border-white/25 transition-all"
-                      >
-                        <div className="relative aspect-video bg-white/5">
-                          {backdropUrl ? (
-                            <img
-                              src={backdropUrl}
-                              alt={title}
-                              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                              loading="lazy"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center">
-                              <Film className="w-8 h-8 text-gray-600" />
-                            </div>
-                          )}
-                          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
-                          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                            <div className="bg-white/15 backdrop-blur-sm rounded-full p-3 border border-white/30">
-                              <Play className="w-6 h-6 text-white fill-white" />
-                            </div>
-                          </div>
-                          {isTV && (
-                            <Badge className="absolute top-2 left-2 bg-black/60 text-white text-[10px] border-0">
-                              TV
-                            </Badge>
-                          )}
-                          <div className="absolute bottom-0 left-0 right-0 p-3">
-                            <p className="text-white font-medium text-sm line-clamp-1 mb-1">
-                              {title}
-                            </p>
-                            <div className="flex items-center justify-between text-xs text-gray-300 mb-2">
-                              <div className="flex items-center gap-1.5">
-                                <Clock className="w-3 h-3" />
-                                <span>
-                                  {formatTimeLeft(
-                                    item.watchData.watchProgress,
-                                    item.runtime,
-                                  )}
-                                </span>
-                              </div>
-                              <span>{item.watchData.watchProgress}%</span>
-                            </div>
-                            <div className="w-full bg-white/20 rounded-full h-1">
-                              <div
-                                className="bg-red-600 h-1 rounded-full"
-                                style={{
-                                  width: `${item.watchData.watchProgress}%`,
-                                }}
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      </Link>
-                    );
-                  })}
+                <div className="media-grid">
+                  {inProgress.map(item => (
+                      <div key={item.id}>
+                      <MovieCard movie={item as any}
+                        mediaType={item.name !== undefined ? "tv" : "movie"}
+                        watchProgress={item.watchData.watchProgress} />
+                      <p className="mt-2 text-card-title font-medium line-clamp-1">{item.title || item.name || "Untitled"}</p>
+                      <p className="mt-0.5 text-caption text-gray-400">{formatTimeLeft(item.watchData.watchProgress, item.runtime)}</p>
+                      </div>
+                    ))}
                 </div>
               ) : (
                 <div className="text-center py-20">
                   <div className="w-20 h-20 bg-white/5 border border-white/10 rounded-full flex items-center justify-center mx-auto mb-5">
                     <Play className="w-8 h-8 text-gray-500" />
                   </div>
-                  <h3 className="font-logo tracking-wide text-3xl mb-2">
+                  <h3 className="text-section-title font-semibold mb-2">
                     Nothing in progress
                   </h3>
                   <p className="text-gray-400 text-sm mb-6 max-w-sm mx-auto">
@@ -899,7 +731,6 @@ const MyList = () => {
                 getMediaTitle={getMediaTitle}
                 getMediaPosterUrl={getMediaPosterUrl}
                 getMediaReleaseYear={getMediaReleaseYear}
-                viewMode={viewMode}
                 selectable={selectionMode}
                 selectedIds={selectedIds}
                 onToggleSelect={toggleSelect}
@@ -922,7 +753,6 @@ const MyList = () => {
                 getMediaTitle={getMediaTitle}
                 getMediaPosterUrl={getMediaPosterUrl}
                 getMediaReleaseYear={getMediaReleaseYear}
-                viewMode={viewMode}
                 selectable={selectionMode}
                 selectedIds={selectedIds}
                 onToggleSelect={toggleSelect}
@@ -969,7 +799,7 @@ const MyList = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="text-xs h-8 rounded-sm border-white/15 text-white hover:bg-white/10"
+                      className="text-body h-8 rounded-sm border-white/15 text-white hover:bg-white/10"
                       onClick={async () => {
                         const col = collections.find(
                           (c) => c.id === activeCollectionId,
@@ -985,7 +815,7 @@ const MyList = () => {
                     <Button
                       variant="destructive"
                       size="sm"
-                      className="text-xs h-8 rounded-sm"
+                      className="text-body h-8 rounded-sm"
                       onClick={async () => {
                         if (!confirm("Delete this collection?")) return;
                         await deleteCollection(activeCollectionId);

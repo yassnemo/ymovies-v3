@@ -111,7 +111,7 @@ const ResetPassword = () => {
               )}
             </div>
             
-            <h1 className="text-3xl font-bold tracking-tight text-white">
+            <h1 className="text-page-title font-bold tracking-tight text-white">
               {!isSubmitted ? "Reset Password" : "Check Your Email"}
             </h1>
             

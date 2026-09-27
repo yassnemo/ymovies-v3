@@ -1,3 +1,5 @@
+import type { Movie } from "@/types/movie";
+import MovieCard from "@/components/MovieCard";
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
@@ -890,49 +892,10 @@ const Landing = () => {
               </Link>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-              {trendingMovies
-                .filter((m) => m.poster_path)
-                .slice(0, 6)
-                .map((movie, i) => (
-                  <Link key={movie.id} href={`/movie/${movie.id}`}>
-                    <div
-                      className={`group relative transition-all duration-600 ease-out ${
-                        trending.visible
-                          ? "opacity-100 translate-y-0"
-                          : "opacity-0 translate-y-6"
-                      }`}
-                      style={{ transitionDelay: trending.visible ? `${i * 100}ms` : "0ms" }}
-                    >
-                      <div className="relative overflow-hidden rounded-lg">
-                        <img
-                          src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
-                          alt={getTitle(movie)}
-                          className="w-full aspect-[2/3] object-cover transition-transform duration-500 group-hover:scale-105"
-                          loading="lazy"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                        <div className="absolute top-2 left-2">
-                          <span className="font-logo text-3xl text-white/20 group-hover:text-white/60 transition-colors">
-                            {String(i + 1).padStart(2, "0")}
-                          </span>
-                        </div>
-                      </div>
-                      <p className="text-sm font-medium mt-2 truncate group-hover:text-red-500 transition-colors">
-                        {getTitle(movie)}
-                      </p>
-                      <div className="flex items-center gap-2 text-xs text-gray-500">
-                        <span>{getYear(movie)}</span>
-                        {movie.genre_ids?.[0] && GENRE_MAP[movie.genre_ids[0]] && (
-                          <>
-                            <span className="w-1 h-1 bg-gray-600 rounded-full" />
-                            <span>{GENRE_MAP[movie.genre_ids[0]]}</span>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </Link>
-                ))}
+            <div className="media-grid">
+              {trendingMovies.filter(movie => movie.poster_path).slice(0, 6).map(movie => (
+                <MovieCard key={movie.id} movie={movie as Movie} />
+              ))}
             </div>
           </div>
         </section>

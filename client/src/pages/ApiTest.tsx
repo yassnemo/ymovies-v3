@@ -54,7 +54,7 @@ export default function ApiTest() {
 
   return (
     <main className="mx-auto max-w-2xl px-4 py-24 text-white">
-      <h1 className="mb-3 text-3xl font-bold">Movie API diagnostics</h1>
+      <h1 className="text-page-title mb-3 font-bold">Movie API diagnostics</h1>
       <p className="mb-6 text-gray-300">
         This checks the application&apos;s server-side TMDB gateway. API credentials are never sent to this browser.
       </p>
@@ -70,7 +70,7 @@ export default function ApiTest() {
 
       {result && (
         <section className="mt-6 rounded border border-green-600 bg-green-950/40 p-4">
-          <h2 className="font-semibold text-green-300">Gateway is responding</h2>
+          <h2 className="text-section-title font-semibold text-green-300">Gateway is responding</h2>
           <p className="mt-2">Latency: {result.elapsedMs} ms</p>
           <p>Cache: {result.cacheStatus}</p>
           <p>Sample: {result.title}</p>
@@ -89,7 +89,7 @@ export default function ApiTest() {
 
       {error && (
         <section className="mt-6 rounded border border-red-600 bg-red-950/40 p-4" role="alert">
-          <h2 className="font-semibold text-red-300">Gateway check failed</h2>
+          <h2 className="text-section-title font-semibold text-red-300">Gateway check failed</h2>
           <p className="mt-2">{error}</p>
         </section>
       )}

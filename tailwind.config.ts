@@ -4,6 +4,13 @@ export default {
   content: ["./client/index.html", "./client/src/**/*.{js,jsx,ts,tsx}"],
   theme: {
     extend: {
+      fontSize: {
+        body: ["0.875rem", { lineHeight: "1.5" }],
+        caption: ["0.75rem", { lineHeight: "1.4" }],
+        "card-title": ["0.875rem", { lineHeight: "1.4" }],
+        "section-title": ["1.25rem", { lineHeight: "1.3" }],
+        "page-title": ["1.875rem", { lineHeight: "1.2" }],
+      },
       fontFamily: {
         // Set Montserrat as the default sans used by font-sans
         sans: ["Montserrat", "ui-sans-serif", "system-ui", "-apple-system", "Segoe UI", "Roboto", "Helvetica Neue", "Arial", "Noto Sans", "sans-serif"],

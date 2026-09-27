@@ -86,7 +86,7 @@ const WatchProviders = ({ mediaId, mediaType }: WatchProvidersProps) => {
   return (
     <div className="rounded-lg border border-border bg-card/50 p-4">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-bold">Where to Watch</h3>
+        <h3 className="text-section-title font-bold">Where to Watch</h3>
         {providerData.link && (
           <a
             href={providerData.link}

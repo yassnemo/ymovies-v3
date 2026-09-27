@@ -6,7 +6,7 @@ const Terms = () => {
       <div className="max-w-4xl mx-auto px-6 py-20">
         {/* Header */}
         <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-light tracking-wide mb-4">
+          <h1 className="text-page-title font-light tracking-wide mb-4">
             Terms of Service
           </h1>
           <p className="text-gray-400 text-sm">
@@ -18,7 +18,7 @@ const Terms = () => {
         <div className="prose prose-lg max-w-none">
           <div className="space-y-12">
             <section>
-              <h2 className="text-2xl font-light text-white mb-6 border-b border-gray-800 pb-2">
+              <h2 className="text-section-title font-light text-white mb-6 border-b border-gray-800 pb-2">
                 1. Acceptance of Terms
               </h2>
               <p className="text-gray-300 leading-relaxed">
@@ -28,7 +28,7 @@ const Terms = () => {
             </section>
 
             <section>
-              <h2 className="text-2xl font-light text-white mb-6 border-b border-gray-800 pb-2">
+              <h2 className="text-section-title font-light text-white mb-6 border-b border-gray-800 pb-2">
                 2. Description of Service
               </h2>
               <p className="text-gray-300 leading-relaxed">
@@ -38,7 +38,7 @@ const Terms = () => {
             </section>
 
             <section>
-              <h2 className="text-2xl font-light text-white mb-6 border-b border-gray-800 pb-2">
+              <h2 className="text-section-title font-light text-white mb-6 border-b border-gray-800 pb-2">
                 3. User Accounts
               </h2>
               <p className="text-gray-300 leading-relaxed">
@@ -48,7 +48,7 @@ const Terms = () => {
             </section>
 
             <section>
-              <h2 className="text-2xl font-light text-white mb-6 border-b border-gray-800 pb-2">
+              <h2 className="text-section-title font-light text-white mb-6 border-b border-gray-800 pb-2">
                 4. User Conduct
               </h2>
               <p className="text-gray-300 leading-relaxed mb-6">You agree not to use the service to:</p>
@@ -73,7 +73,7 @@ const Terms = () => {
             </section>
 
             <section>
-              <h2 className="text-2xl font-light text-white mb-6 border-b border-gray-800 pb-2">
+              <h2 className="text-section-title font-light text-white mb-6 border-b border-gray-800 pb-2">
                 5. Intellectual Property
               </h2>
               <p className="text-gray-300 leading-relaxed">
@@ -83,7 +83,7 @@ const Terms = () => {
             </section>
 
             <section>
-              <h2 className="text-2xl font-light text-white mb-6 border-b border-gray-800 pb-2">
+              <h2 className="text-section-title font-light text-white mb-6 border-b border-gray-800 pb-2">
                 6. Contact Us
               </h2>
               <p className="text-gray-300 leading-relaxed">

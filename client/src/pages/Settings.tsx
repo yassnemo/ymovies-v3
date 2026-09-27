@@ -63,7 +63,7 @@ const Panel = ({
         <p className="text-red-500 text-[10px] font-semibold uppercase tracking-[0.25em] mb-1">
           {eyebrow}
         </p>
-        <h2 className="font-logo tracking-wide text-2xl leading-none">{title}</h2>
+        <h2 className="text-section-title font-semibold tracking-tight">{title}</h2>
         {description && (
           <p className="text-sm text-gray-500 mt-1.5">{description}</p>
         )}
@@ -201,7 +201,7 @@ const Settings = () => {
             <SlidersHorizontal className="w-3.5 h-3.5" />
             Account
           </p>
-          <h1 className="font-logo tracking-wide text-4xl sm:text-6xl leading-none">
+          <h1 className="text-page-title font-semibold tracking-tight">
             Settings
           </h1>
           <p className="text-gray-500 mt-3 text-sm">

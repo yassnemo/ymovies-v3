@@ -234,7 +234,7 @@ const Home = () => {
               )}
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-red-400">{usingMockData ? "Using Mock Data" : "API Connection Error"}</h3>
+              <h3 className="text-section-title font-semibold text-red-400">{usingMockData ? "Using Mock Data" : "API Connection Error"}</h3>
               <p className="text-muted-foreground">{apiError}</p>
             </div>
           </div>

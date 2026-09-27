@@ -123,7 +123,7 @@ const Profile = () => {
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-red-400">Your profile</p>
-              <h1 className="mt-1 truncate text-2xl font-semibold tracking-tight sm:text-4xl">{displayName}</h1>
+              <h1 className="text-page-title mt-1 truncate font-semibold tracking-tight">{displayName}</h1>
               {user?.email && <p className="mt-1 truncate text-sm text-gray-400">{user.email}</p>}
             </div>
           </div>
@@ -202,7 +202,7 @@ const Profile = () => {
         <div className="max-w-7xl mx-auto">
           <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">Your library</h2>
+              <h2 className="text-section-title font-semibold tracking-tight">Your library</h2>
               <p className="mt-1 text-sm text-gray-400">The titles you want to keep close.</p>
             </div>
 

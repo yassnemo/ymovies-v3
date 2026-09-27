@@ -54,7 +54,7 @@ const DynamicSectionRenderer: React.FC<DynamicSectionRendererProps> = ({
     <div className="relative">
       {/* Section header */}
       <div className="px-4 mb-2">
-        <h2 className="text-lg md:text-2xl font-bold text-white">{section.title}</h2>
+        <h2 className="text-section-title font-bold text-white">{section.title}</h2>
       </div>
 
       {/* Error state */}
@@ -145,7 +145,7 @@ const DynamicSections: React.FC<DynamicSectionsProps> = ({
       {/* Encourage non-authenticated users to sign up for more content */}
       {!isAuthenticated && sections.length > 0 && (
         <div className="px-4 py-8 text-center bg-gradient-to-r from-red-900/20 to-red-800/20 rounded-lg mx-4 border border-red-700/30">
-          <h3 className="text-xl font-semibold text-white mb-2">
+          <h3 className="text-section-title font-semibold text-white mb-2">
             Want to see more personalized content?
           </h3>
           <p className="text-gray-300 mb-4">

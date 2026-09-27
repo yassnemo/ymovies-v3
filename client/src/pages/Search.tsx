@@ -23,6 +23,10 @@ import {
 const Search = () => {
   const [, navigate] = useLocation();
   const urlSearch = useSearch();
+  const typeParam = new URLSearchParams(urlSearch).get("type");
+  const mediaType = typeParam === "movie" || typeParam === "tv" ? typeParam : "all";
+  const includeMovies = mediaType !== "tv";
+  const includeTV = mediaType !== "movie";
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [filters, setFilters] = useState<SearchFiltersType>({});
@@ -65,6 +69,7 @@ const Search = () => {
   // Push URL whenever query or filters change
   const syncUrl = (q: string, f: SearchFiltersType, replace = false) => {
     const params = new URLSearchParams();
+    if (mediaType !== "all") params.set("type", mediaType);
     if (q)         params.set("q",        q);
     if (f.year)    params.set("year",     f.year.toString());
     if (f.rating)  params.set("rating",   f.rating.toString());
@@ -96,7 +101,7 @@ const Search = () => {
       if (hasQuery)               return searchMovies(debouncedQuery);
       return discoverMoviesWithFilters(filters);
     },
-    enabled: showResults,
+    enabled: showResults && includeMovies,
     retry: 1,
   });
 
@@ -108,7 +113,7 @@ const Search = () => {
       if (hasQuery)               return searchTVShows(debouncedQuery);
       return discoverTVShowsWithFilters(filters);
     },
-    enabled: showResults,
+    enabled: showResults && includeTV,
     retry: 1,
   });
 
@@ -116,19 +121,19 @@ const Search = () => {
   const { data: popularMovies, isLoading: isPopularMoviesLoading } = useQuery({
     queryKey: ["/api/movies/popular"],
     queryFn: getPopularMovies,
-    enabled: !showResults,
+    enabled: !showResults && includeMovies,
   });
 
   const { data: popularTVShows, isLoading: isPopularTVLoading } = useQuery({
     queryKey: ["/api/tv/popular"],
     queryFn: getPopularTVShows,
-    enabled: !showResults,
+    enabled: !showResults && includeTV,
   });
 
   const isLoading = isMovieLoading || isTVLoading;
   const noResults = !isLoading && showResults &&
-    (!movieResults || movieResults.length === 0) &&
-    (!tvResults    || tvResults.length === 0);
+    (!includeMovies || !movieResults || movieResults.length === 0) &&
+    (!includeTV || !tvResults || tvResults.length === 0);
 
   const resultsHeading = hasQuery
     ? `Results for "${debouncedQuery}"`
@@ -137,7 +142,7 @@ const Search = () => {
   return (
     <div className="container mx-auto px-4 pb-28 pt-24 md:pb-12">
       <header className="mb-7">
-        <h1 className="text-3xl font-semibold tracking-tight text-white">Search</h1>
+        <h1 className="text-page-title font-semibold tracking-tight text-white">Search</h1>
         <p className="mt-1 text-sm text-gray-400">Find something worth watching.</p>
         <form onSubmit={handleSearchSubmit} role="search" className="mt-5 max-w-xl">
           <div className="relative">
@@ -145,8 +150,8 @@ const Search = () => {
             <Input
               type="search"
               enterKeyHint="search"
-              placeholder="Movies and TV shows"
-              className="h-12 w-full rounded-2xl border-white/10 bg-white/[0.06] pl-12 pr-4 text-base text-white placeholder:text-gray-500 focus-visible:ring-red-500/50"
+              placeholder={mediaType === "movie" ? "Search movies" : mediaType === "tv" ? "Search TV shows" : "Movies and TV shows"}
+              className="h-12 w-full rounded-2xl border-white/10 bg-white/[0.06] pl-12 pr-4 text-base md:text-body text-white placeholder:text-gray-500 focus-visible:ring-red-500/50"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -160,10 +165,10 @@ const Search = () => {
       {/* Results */}
       {showResults ? (
         <div>
-          <h2 className="text-xl font-bold mb-6">{resultsHeading}</h2>
+          <h2 className="text-section-title font-bold mb-6">{resultsHeading}</h2>
 
           {isLoading && (
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            <div className="media-grid">
               {[...Array(12)].map((_, i) => (
                 <LoadingSkeleton key={i} variant="movie-card" />
               ))}
@@ -172,10 +177,10 @@ const Search = () => {
 
           {!isLoading && (
             <div className="space-y-8">
-              {movieResults && movieResults.length > 0 && (
+              {includeMovies && movieResults && movieResults.length > 0 && (
                 <div>
-                  <h3 className="text-lg font-semibold mb-4">Movies</h3>
-                  <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                  <h3 className="text-section-title font-semibold mb-4">Movies</h3>
+                  <div className="media-grid">
                     {movieResults.slice(0, 18).map((movie: Movie) => (
                       <MovieCard key={movie.id} movie={movie} />
                     ))}
@@ -183,10 +188,10 @@ const Search = () => {
                 </div>
               )}
 
-              {tvResults && tvResults.length > 0 && (
+              {includeTV && tvResults && tvResults.length > 0 && (
                 <div>
-                  <h3 className="text-lg font-semibold mb-4">TV Shows</h3>
-                  <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                  <h3 className="text-section-title font-semibold mb-4">TV Shows</h3>
+                  <div className="media-grid">
                     {tvResults.slice(0, 18).map((show: TVShow) => (
                       <MovieCard
                         key={show.id}
@@ -200,7 +205,7 @@ const Search = () => {
 
               {noResults && (
                 <div className="text-center py-12">
-                  <p className="text-lg font-semibold mb-1">Nothing found</p>
+                  <p className="text-body font-semibold mb-1">Nothing found</p>
                   <p className="text-muted-foreground text-sm">
                     Try a different search term or adjust the filters.
                   </p>
@@ -212,33 +217,33 @@ const Search = () => {
       ) : (
         /* Popular — shown only when no query and no filters */
         <div className="space-y-8">
-          <div>
-            <h2 className="text-2xl font-bold mb-6">Popular Movies</h2>
+          {includeMovies && <div>
+            <h2 className="text-section-title font-bold mb-6">Popular Movies</h2>
             {isPopularMoviesLoading ? (
-              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+              <div className="media-grid">
                 {[...Array(12)].map((_, i) => (
                   <LoadingSkeleton key={i} variant="movie-card" />
                 ))}
               </div>
             ) : (
-              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+              <div className="media-grid">
                 {popularMovies?.slice(0, 12).map((movie: Movie) => (
                   <MovieCard key={movie.id} movie={movie} />
                 ))}
               </div>
             )}
-          </div>
+          </div>}
 
-          <div>
-            <h2 className="text-2xl font-bold mb-6">Popular TV Shows</h2>
+          {includeTV && <div>
+            <h2 className="text-section-title font-bold mb-6">Popular TV Shows</h2>
             {isPopularTVLoading ? (
-              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+              <div className="media-grid">
                 {[...Array(12)].map((_, i) => (
                   <LoadingSkeleton key={i} variant="movie-card" />
                 ))}
               </div>
             ) : (
-              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+              <div className="media-grid">
                 {popularTVShows?.slice(0, 12).map((show: TVShow) => (
                   <MovieCard
                     key={show.id}
@@ -248,7 +253,7 @@ const Search = () => {
                 ))}
               </div>
             )}
-          </div>
+          </div>}
         </div>
       )}
     </div>

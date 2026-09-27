@@ -8,22 +8,13 @@ interface TVShowListProps {
   className?: string;
 }
 
-const TVShowList = ({ title, shows, className }: TVShowListProps) => {
-  
-  if (!shows || shows.length === 0) return null;
-  
-  return (
-    <div className={className}>
-      {title && <h2 className="text-lg md:text-2xl font-bold mb-6">{title}</h2>}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 place-items-center">
-        {(shows || []).slice(0, 20).map((show) => (
-          <div key={show.id} className="w-full max-w-48 md:max-w-56">
-            <TVShowCard show={show} className="w-full" />
-          </div>
-        ))}
-      </div>
+const TVShowList = ({ title, shows, className }: TVShowListProps) => (
+  <div className={className}>
+    {title && <h2 className="text-section-title font-bold mb-4">{title}</h2>}
+    <div className="media-grid">
+      {shows.map(show => <TVShowCard key={show.id} show={show} />)}
     </div>
-  );
-};
+  </div>
+);
 
 export default TVShowList;

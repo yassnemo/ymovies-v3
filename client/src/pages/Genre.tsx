@@ -131,7 +131,7 @@ const Genre = () => {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-red-500 mb-4">Genre Not Found</h1>
+          <h1 className="text-page-title font-bold text-red-500 mb-4">Genre Not Found</h1>
           <p className="text-muted-foreground">
             The genre "{genre}" is not available for {mediaType}.
           </p>
@@ -152,7 +152,7 @@ const Genre = () => {
               <Tv className="h-6 w-6 shrink-0 text-red-500 sm:h-8 sm:w-8" />
             )}
             <div>
-              <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+              <h1 className="text-page-title font-semibold tracking-tight">
                 {currentGenre.name} {isMovie ? "Movies" : "TV Shows"}
               </h1>
               <p className="text-sm text-muted-foreground">
@@ -189,14 +189,14 @@ const Genre = () => {
         {/* Content Grid */}
         {error ? (
           <div className="text-center py-12">
-            <h3 className="text-lg font-semibold text-red-500 mb-2">Error loading content</h3>
+            <h3 className="text-section-title font-semibold text-red-500 mb-2">Error loading content</h3>
             <p className="text-muted-foreground">
               Unable to load {currentGenre.name.toLowerCase()} {isMovie ? "movies" : "TV shows"}. Please try again later.
             </p>
           </div>
         ) : allContent.length > 0 ? (
           <>
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-8">
+            <div className="media-grid mb-8">
               {allContent.map((item) => (
                 <div key={item.id}>
                   {isMovie ? (
@@ -221,14 +221,14 @@ const Genre = () => {
               </div>
             )}
           </>        ) : isLoading && currentPage === 1 ? (
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          <div className="media-grid">
             {[...Array(18)].map((_, i) => (
               <LoadingSkeleton key={i} variant={isMovie ? "movie-card" : "tv-card"} />
             ))}
           </div>
         ) : (
           <div className="text-center py-12">
-            <h3 className="text-lg font-semibold mb-2">No content found</h3>
+            <h3 className="text-section-title font-semibold mb-2">No content found</h3>
             <p className="text-muted-foreground">
               No {currentGenre.name.toLowerCase()} {isMovie ? "movies" : "TV shows"} available at the moment.
             </p>

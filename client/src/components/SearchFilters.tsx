@@ -121,7 +121,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
         <PopoverContent className="w-80 p-4" align="start">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="font-semibold">Search Filters</h3>
+              <h3 className="text-section-title font-semibold">Search Filters</h3>
               {hasActiveFilters && (
                 <Button
                   variant="ghost"

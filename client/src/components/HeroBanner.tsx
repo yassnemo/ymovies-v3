@@ -285,7 +285,7 @@ const HeroBanner = ({ content, onNext, onPrevious, onIndicatorClick, currentInde
           
           {/* Description with smooth fade-in animation */}
           <p 
-            className={`mb-4 line-clamp-2 text-sm md:mb-8 md:line-clamp-3 md:text-lg delay-300 ${isLoaded && !isTransitioning ? 'translate-y-0 opacity-90' : 'translate-y-4 opacity-0'}`}
+            className={`mb-4 line-clamp-2 text-body md:mb-8 md:line-clamp-3 delay-300 ${isLoaded && !isTransitioning ? 'translate-y-0 opacity-90' : 'translate-y-4 opacity-0'}`}
             style={{
               maxWidth: '700px',
               lineHeight: '1.6',
@@ -307,7 +307,7 @@ const HeroBanner = ({ content, onNext, onPrevious, onIndicatorClick, currentInde
               type="button"
               onClick={() => navigate(isTVShow(displayedContent) ? `/tv/${displayedContent.id}` : `/movie/${displayedContent.id}`)}
               className={
-                `inline-flex items-center gap-2 rounded-full px-5 md:px-6 py-2.5 md:py-3 text-sm md:text-base
+                `inline-flex items-center gap-2 rounded-full px-5 md:px-6 py-2.5 md:py-3 text-body
                  bg-red-600 text-white font-medium
                  hover:bg-red-700 active:bg-red-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500/50
                  transition-colors duration-200`
@@ -321,7 +321,7 @@ const HeroBanner = ({ content, onNext, onPrevious, onIndicatorClick, currentInde
               type="button"
               onClick={() => navigate(isTVShow(displayedContent) ? `/tv/${displayedContent.id}` : `/movie/${displayedContent.id}`)}
               className={
-                `inline-flex items-center gap-2 rounded-full px-5 md:px-6 py-2.5 md:py-3 text-sm md:text-base
+                `inline-flex items-center gap-2 rounded-full px-5 md:px-6 py-2.5 md:py-3 text-body
                  bg-white/10 text-white border border-white/20 backdrop-blur-sm font-medium
                  hover:bg-white/20 active:bg-white/25 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30
                  transition-colors duration-200`

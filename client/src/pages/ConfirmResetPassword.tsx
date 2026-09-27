@@ -108,7 +108,7 @@ const ConfirmResetPassword: React.FC = () => {
         <div className="bg-black bg-opacity-75 p-8 rounded-lg max-w-md w-full mx-4">
           <div className="text-center">
             <div className="text-green-500 text-6xl mb-4">✓</div>
-            <h2 className="text-white text-2xl font-bold mb-4">Password Reset Successful!</h2>
+            <h2 className="text-section-title text-white font-bold mb-4">Password Reset Successful!</h2>
             <p className="text-gray-300 mb-4">
               Your password has been successfully reset. You will be redirected to the login page shortly.
             </p>
@@ -124,7 +124,7 @@ const ConfirmResetPassword: React.FC = () => {
   return (
     <div className="min-h-screen bg-black flex items-center justify-center">
       <div className="bg-black bg-opacity-75 p-8 rounded-lg max-w-md w-full mx-4">
-        <h2 className="text-white text-3xl font-bold mb-6 text-center">
+        <h2 className="text-section-title text-white font-bold mb-6 text-center">
           Reset Your Password
         </h2>
         

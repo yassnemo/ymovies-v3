@@ -28,7 +28,7 @@ const Footer = () => {
         <div className="grid grid-cols-2 md:grid-cols-5 lg:grid-cols-6 gap-8 mb-10">
           {/* About */}
           <div className="col-span-2 md:col-span-5 lg:col-span-2">
-            <h3 className="font-semibold text-white text-sm uppercase tracking-wider mb-4">About</h3>
+            <h3 className="text-body font-semibold text-white uppercase tracking-wider mb-4">About</h3>
             <p className="text-gray-400 text-sm leading-relaxed">
               Discover movies and TV shows, keep track of what you want to watch, and find where titles are available. YMovies does not host or stream video.
             </p>
@@ -36,7 +36,7 @@ const Footer = () => {
 
           {/* Browse */}
           <div>
-            <h3 className="font-semibold text-white text-sm uppercase tracking-wider mb-4">Browse</h3>
+            <h3 className="text-body font-semibold text-white uppercase tracking-wider mb-4">Browse</h3>
             <ul className="space-y-2.5">
               <li>
                 <Link href="/home" className="text-gray-400 hover:text-white transition-colors text-sm">
@@ -63,7 +63,7 @@ const Footer = () => {
 
           {/* Genres */}
           <div>
-            <h3 className="font-semibold text-white text-sm uppercase tracking-wider mb-4">Genres</h3>
+            <h3 className="text-body font-semibold text-white uppercase tracking-wider mb-4">Genres</h3>
             <ul className="space-y-2.5">
               <li>
                 <Link href="/genre/movie/action" className="text-gray-400 hover:text-white transition-colors text-sm">
@@ -100,7 +100,7 @@ const Footer = () => {
 
           {/* Account */}
           <div>
-            <h3 className="font-semibold text-white text-sm uppercase tracking-wider mb-4">Account</h3>
+            <h3 className="text-body font-semibold text-white uppercase tracking-wider mb-4">Account</h3>
             <ul className="space-y-2.5">
               <li>
                 <Link href="/signin" className="text-gray-400 hover:text-white transition-colors text-sm">
@@ -132,7 +132,7 @@ const Footer = () => {
 
           {/* Socials */}
           <div>
-            <h3 className="font-semibold text-white text-sm uppercase tracking-wider mb-4">Socials</h3>
+            <h3 className="text-body font-semibold text-white uppercase tracking-wider mb-4">Socials</h3>
             <ul className="space-y-2.5">
               <li>
                 <a href="https://github.com/yassnemo" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors text-sm">

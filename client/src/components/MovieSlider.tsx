@@ -87,9 +87,9 @@ const MovieSlider = ({
         {showTitle && <LoadingSkeleton variant="slider-title" />}
         
         {/* Enhanced movie/TV card skeletons based on media type */}
-        <div className="flex overflow-x-auto gap-4 md:gap-8 pb-6 pt-2 px-2 scrollbar-hide">
+        <div className="flex overflow-x-auto gap-3 pb-6 pt-2 px-2 scrollbar-hide">
           {[...Array(6)].map((_, i) => (
-            <div key={i} className="flex-shrink-0 w-48 md:w-56">
+            <div key={i} className="media-card-slot">
               {/* TV sliders now use the same vertical card size as movies */}
               <LoadingSkeleton 
                 variant="movie-card"
@@ -116,7 +116,7 @@ const MovieSlider = ({
     >
       {showTitle && (
         <div className="flex items-center mb-2">
-          <h2 className="text-lg md:text-2xl font-bold ml-2 group-hover/slider:text-red-600 transition-colors duration-300">{title}</h2>
+          <h2 className="text-section-title font-bold ml-2 group-hover/slider:text-red-600 transition-colors duration-300">{title}</h2>
           <div className="h-px flex-grow bg-gray-800 ml-4 opacity-0 group-hover/slider:opacity-100 transition-opacity duration-300"></div>
         </div>
       )}
@@ -140,7 +140,7 @@ const MovieSlider = ({
         {/* Movie slider */}
         <div 
           ref={sliderRef}
-          className="slider-container category-slider flex overflow-x-auto gap-4 md:gap-8 pb-8 pt-8 px-2 scrollbar-hide max-w-full"
+          className="slider-container category-slider flex overflow-x-auto gap-3 pb-8 pt-8 px-2 scrollbar-hide max-w-full"
           style={{ 
             scrollbarWidth: 'none',
             msOverflowStyle: 'none',
@@ -156,7 +156,7 @@ const MovieSlider = ({
             return (
               <div 
                 key={item.id} 
-                className="flex-shrink-0 w-48 transition-transform duration-500 ease-out md:w-56"
+                className="media-card-slot transition-transform duration-500 ease-out"
                 style={{ animationDelay: `${index * 0.05}s` }}
               >
                 {isTV ? (

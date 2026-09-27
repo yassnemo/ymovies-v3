@@ -43,7 +43,7 @@ export function LoadingSkeleton({
               <div
                 key={i}
                 className={cn(
-                  "relative w-full aspect-[2/3.2] rounded-lg overflow-hidden",
+                  "media-card-slot relative aspect-[2/3] rounded-lg overflow-hidden",
                   className,
                 )}
                 {...props}
@@ -74,7 +74,7 @@ export function LoadingSkeleton({
               <div
                 key={i}
                 className={cn(
-                  "relative w-full aspect-[16/9] rounded-lg overflow-hidden",
+                  "media-card-slot relative aspect-[2/3] rounded-lg overflow-hidden",
                   className,
                 )}
                 {...props}

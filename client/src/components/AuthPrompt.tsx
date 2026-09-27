@@ -49,7 +49,7 @@ const AuthPrompt = () => {
         {/* Body */}
         <div className="px-6 pt-1 pb-6 space-y-4">
           <div>
-            <h2 className="text-lg font-bold text-white">
+            <h2 className="text-section-title font-bold text-white">
               There's more here for you
             </h2>
             <p className="text-zinc-400 text-sm mt-1 leading-relaxed">

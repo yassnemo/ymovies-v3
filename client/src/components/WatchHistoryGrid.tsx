@@ -57,7 +57,7 @@ const WatchHistoryGrid: React.FC<WatchHistoryGridProps> = ({
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <h2 className="text-lg md:text-2xl font-bold">{title}</h2>
+        <h2 className="text-section-title font-bold">{title}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {Array.from({ length: 6 }).map((_, index) => (
             <Card key={index} className="bg-card/50 backdrop-blur-sm border-border/50">
@@ -86,7 +86,7 @@ const WatchHistoryGrid: React.FC<WatchHistoryGridProps> = ({
           <div className="w-24 h-24 bg-muted/20 rounded-full flex items-center justify-center mx-auto mb-4">
             <Clock className="w-8 h-8 text-muted-foreground" />
           </div>
-          <h3 className="text-xl font-semibold mb-2">{emptyMessage}</h3>
+          <h3 className="text-section-title font-semibold mb-2">{emptyMessage}</h3>
           <p className="text-muted-foreground mb-6">
             Your viewing history will appear here
           </p>
@@ -99,7 +99,7 @@ const WatchHistoryGrid: React.FC<WatchHistoryGridProps> = ({
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg md:text-2xl font-bold">{title}</h2>
+        <h2 className="text-section-title font-bold">{title}</h2>
         <div className="text-sm text-muted-foreground">
           {items.length} {items.length === 1 ? 'item' : 'items'}
         </div>
@@ -126,7 +126,7 @@ const WatchHistoryGrid: React.FC<WatchHistoryGridProps> = ({
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-medium text-sm truncate mb-1">
+                      <h3 className="text-card-title font-medium truncate mb-1">
                         {getMediaTitle(media)}
                       </h3>
                       <p className="text-xs text-muted-foreground mb-2">

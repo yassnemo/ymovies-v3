@@ -312,7 +312,7 @@ const TVShowDetail = () => {
   if (isError || !tvShow || !tvShowId) {
     return (
       <div className="pt-20 pb-12 px-4 text-center">
-        <h2 className="text-2xl font-bold mb-4">TV Show Not Found</h2>
+        <h2 className="text-section-title font-bold mb-4">TV Show Not Found</h2>
         <p className="text-muted-foreground mb-6">
           {!tvShowId 
             ? "Invalid TV show ID provided." 
@@ -395,7 +395,7 @@ const TVShowDetail = () => {
                   )}
                 </div>
                 
-                <h1 className="text-4xl md:text-5xl font-bold mb-3">{tvShow.name}</h1>
+                <h1 className="text-page-title font-bold mb-3">{tvShow.name}</h1>
                 
                 <div className="flex flex-wrap gap-2 mb-4">
                   {tvShow.genres?.map((genre) => (
@@ -428,7 +428,7 @@ const TVShowDetail = () => {
                   )}
                 </div>
                 
-                <p className="text-base text-gray-300 mb-6 max-w-2xl">{tvShow.overview}</p>
+                <p className="text-body text-gray-300 mb-6 max-w-2xl">{tvShow.overview}</p>
                   <div className="flex flex-wrap gap-3">
                   {trailer ? (
                     <Button 
@@ -490,7 +490,7 @@ const TVShowDetail = () => {
           
           {/* Cast & Crew Tab */}
           <TabsContent value="cast" className="mt-8">
-            <h2 className="text-2xl font-bold mb-6">Cast</h2>
+            <h2 className="text-section-title font-bold mb-6">Cast</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
               {tvShow.credits?.cast?.slice(0, 12).map((person) => (
                 <Card key={person.id} className="overflow-hidden bg-secondary/10">
@@ -508,21 +508,21 @@ const TVShowDetail = () => {
                     )}
                   </div>
                   <div className="p-3">
-                    <h3 className="font-bold text-sm line-clamp-1">{person.name}</h3>
+                    <h3 className="text-card-title font-bold line-clamp-1">{person.name}</h3>
                     <p className="text-xs text-muted-foreground line-clamp-1">{person.character}</p>
                   </div>
                 </Card>
               ))}
             </div>
             
-            <h2 className="text-2xl font-bold mt-12 mb-6">Crew</h2>
+            <h2 className="text-section-title font-bold mt-12 mb-6">Crew</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {tvShow.credits?.crew?.filter(person => 
                 ["Director", "Producer", "Writer", "Creator", "Executive Producer"].includes(person.job)
               ).slice(0, 8).map((person) => (
                 <Card key={`${person.id}-${person.job}`} className="bg-secondary/10">
                   <div className="p-4">
-                    <h3 className="font-bold text-base">{person.name}</h3>
+                    <h3 className="text-card-title font-bold">{person.name}</h3>
                     <p className="text-sm text-muted-foreground">{person.job}</p>
                   </div>
                 </Card>
@@ -532,7 +532,7 @@ const TVShowDetail = () => {
             {/* Episodes Tab */}
           <TabsContent value="episodes" className="mt-8">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold">Episodes</h2>
+              <h2 className="text-section-title font-bold">Episodes</h2>
               {tvShow.number_of_seasons && tvShow.number_of_seasons > 1 && (
                 <select 
                   value={selectedSeason} 
@@ -565,7 +565,7 @@ const TVShowDetail = () => {
           </TabsContent>
             {/* Reviews Tab */}
           <TabsContent value="reviews" className="mt-8">
-            <h2 className="text-2xl font-bold mb-6">Reviews</h2>
+            <h2 className="text-section-title font-bold mb-6">Reviews</h2>
             {reviews && reviews.length > 0 ? (
               <div className="space-y-8">
                 {reviews.slice(0, 5).map((review) => (
@@ -634,7 +634,7 @@ const TVShowDetail = () => {
           </TabsContent>
             {/* Videos Tab */}
           <TabsContent value="videos" className="mt-8">
-            <h2 className="text-2xl font-bold mb-6">Videos</h2>
+            <h2 className="text-section-title font-bold mb-6">Videos</h2>
             {videos && videos.length > 0 ? (
               <div>
                 {['Trailer', 'Teaser', 'Clip', 'Behind the Scenes', 'Featurette'].map(videoType => {
@@ -646,7 +646,7 @@ const TVShowDetail = () => {
                   
                   return (
                     <div key={videoType} className="mb-8">
-                      <h3 className="text-xl font-semibold mb-4">{videoType}s</h3>
+                      <h3 className="text-section-title font-semibold mb-4">{videoType}s</h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {typeVideos.slice(0, 6).map((video) => (
                           <TrailerPlayer key={video.id} videoKey={video.key} title={video.name} />
@@ -673,13 +673,13 @@ const TVShowDetail = () => {
         
         {/* Similar TV Shows - horizontal scroller */}
         <div className="mt-12">
-          <h3 className="text-xl font-bold mb-4">More shows like this</h3>
+          <h3 className="text-section-title font-bold mb-4">More shows like this</h3>
           {similarShows && similarShows.length > 0 ? (
             <div className="relative">
               <div className="overflow-x-auto overflow-y-visible scrollbar-hide">
                 <div className="flex gap-4 pb-2">
                   {similarShows.slice(0, 20).map((s) => (
-                    <div key={s.id} className="flex-shrink-0 w-48 overflow-visible md:w-56">
+                    <div key={s.id} className="media-card-slot overflow-visible">
                       <TVShowCard show={s} />
                     </div>
                   ))}
@@ -696,13 +696,13 @@ const TVShowDetail = () => {
 
         {/* Recommended TV Shows - horizontal scroller */}
         <div className="mt-12">
-          <h3 className="text-xl font-bold mb-4">Recommended TV Shows</h3>
+          <h3 className="text-section-title font-bold mb-4">Recommended TV Shows</h3>
           {recommendedShows && recommendedShows.length > 0 ? (
             <div className="relative">
               <div className="overflow-x-auto overflow-y-visible scrollbar-hide">
                 <div className="flex gap-4 pb-2">
                   {recommendedShows.slice(0, 20).map((s) => (
-                    <div key={s.id} className="flex-shrink-0 w-48 overflow-visible md:w-56">
+                    <div key={s.id} className="media-card-slot overflow-visible">
                       <TVShowCard show={s} />
                     </div>
                   ))}

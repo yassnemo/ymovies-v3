@@ -1,3 +1,4 @@
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
@@ -547,6 +548,7 @@ const Navbar = () => {
 const MobileBottomNav = () => {
   const [location, navigate] = useLocation();
   const { isAuthenticated, signOut } = useAuth();
+  const reduceMotion = useReducedMotion();
   const [browseMenuOpen, setBrowseMenuOpen] = useState(false);
   const [browseCategory, setBrowseCategory] = useState<"movie" | "tv">("movie");
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
@@ -664,7 +666,7 @@ const MobileBottomNav = () => {
             <div className="flex items-center justify-between px-5 pb-5 pt-[calc(env(safe-area-inset-top)+1.5rem)]">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-red-400">Explore</p>
-                <h2 className="mt-1 text-3xl font-semibold tracking-tight">Browse</h2>
+                <h2 className="text-page-title mt-1 font-semibold tracking-tight">Browse</h2>
               </div>
               <button
                 type="button"
@@ -677,29 +679,29 @@ const MobileBottomNav = () => {
             </div>
 
             <div className="px-5">
-              <div role="tablist" aria-label="Browse media type" className="grid grid-cols-2 rounded-2xl bg-white/[0.07] p-1">
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={browseCategory === "movie"}
-                  onClick={() => setBrowseCategory("movie")}
-                  className={browseCategory === "movie" ? "flex h-11 items-center justify-center gap-2 rounded-xl bg-white text-sm font-semibold text-black shadow-sm" : "flex h-11 items-center justify-center gap-2 rounded-xl text-sm font-medium text-gray-400"}
-                >
-                  <Film className="h-4 w-4" /> Movies
-                </button>
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={browseCategory === "tv"}
-                  onClick={() => setBrowseCategory("tv")}
-                  className={browseCategory === "tv" ? "flex h-11 items-center justify-center gap-2 rounded-xl bg-white text-sm font-semibold text-black shadow-sm" : "flex h-11 items-center justify-center gap-2 rounded-xl text-sm font-medium text-gray-400"}
-                >
-                  <Tv className="h-4 w-4" /> TV Shows
-                </button>
+              <div role="tablist" aria-label="Browse media type" className="relative grid grid-cols-2 rounded-2xl bg-white/[0.07] p-1">
+                <motion.div aria-hidden="true" className="pointer-events-none absolute bottom-1 left-1 top-1 w-[calc(50%-4px)] rounded-xl bg-white shadow-sm"
+                  initial={false} animate={{ x: browseCategory === "movie" ? "0%" : "100%" }}
+                  transition={reduceMotion ? { duration: 0 } : { type: "spring", stiffness: 380, damping: 34 }} />
+                {(["movie", "tv"] as const).map(type => (
+                  <button key={type} type="button" role="tab" id={`browse-tab-${type}`}
+                    aria-selected={browseCategory === type} aria-controls="browse-panel"
+                    onClick={() => setBrowseCategory(type)}
+                    className={`relative z-10 flex h-11 items-center justify-center gap-2 rounded-xl text-body font-semibold transition-colors duration-200 ${browseCategory === type ? "text-black" : "text-gray-400"}`}>
+                    {type === "movie" ? <Film className="h-4 w-4" /> : <Tv className="h-4 w-4" />}
+                    {type === "movie" ? "Movies" : "TV Shows"}
+                  </button>
+                ))}
               </div>
             </div>
 
-            <div key={browseCategory} className="min-h-0 flex-1 overflow-y-auto px-5 pb-[calc(env(safe-area-inset-bottom)+2rem)]">
+            <div className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto">
+              <AnimatePresence initial={false} mode="wait">
+                <motion.div key={browseCategory} id="browse-panel" role="tabpanel" aria-labelledby={`browse-tab-${browseCategory}`}
+                  initial={reduceMotion ? false : { opacity: 0, x: browseCategory === "tv" ? 10 : -10 }}
+                  animate={{ opacity: 1, x: 0 }} exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
+                  transition={{ duration: reduceMotion ? 0 : 0.16, ease: [0.22, 1, 0.36, 1] }}
+                  className="px-5 pb-[calc(env(safe-area-inset-bottom)+2rem)]">
               <Link
                 href={browseCategory === "movie" ? "/movies" : "/tv"}
                 onClick={() => setBrowseMenuOpen(false)}
@@ -716,7 +718,7 @@ const MobileBottomNav = () => {
               </Link>
 
               <div className="mb-3 mt-7 flex items-center justify-between">
-                <h3 className="text-base font-semibold">Genres</h3>
+                <h3 className="text-section-title font-semibold">Genres</h3>
                 <span className="text-xs text-gray-500">Pick a mood</span>
               </div>
               <div className="space-y-2">
@@ -732,6 +734,8 @@ const MobileBottomNav = () => {
                   </Link>
                 ))}
               </div>
+                </motion.div>
+              </AnimatePresence>
             </div>
           </div>
         </div>
@@ -747,7 +751,7 @@ const MobileBottomNav = () => {
                   <UserIcon className="h-3.5 w-3.5" />
                   Account
                 </div>
-                <h2 className="mt-2 text-3xl font-semibold tracking-tight">More</h2>
+                <h2 className="text-page-title mt-2 font-semibold tracking-tight">More</h2>
               </div>
               <button
                 onClick={() => setProfileMenuOpen(false)}

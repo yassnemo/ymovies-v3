@@ -12,10 +12,10 @@ export default function NotFound() {
           >
             404
           </h1>
-          <p className="text-gray-500 text-base md:text-lg mt-1">
+          <p className="text-gray-500 text-body mt-1">
             Error: redacted
           </p>
-          <p className="text-gray-300 text-sm md:text-base leading-relaxed mt-5">
+          <p className="text-gray-300 text-body leading-relaxed mt-5">
             This page could not be found. It either doesn&apos;t exist or was
             deleted. Or perhaps you don&apos;t exist and this webpage
             couldn&apos;t find you.

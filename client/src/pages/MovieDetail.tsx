@@ -4,7 +4,7 @@ import { useParams, useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Play, Plus, Check, Heart } from "lucide-react";
+import MovieDetailIntro, { MovieDetailIntroSkeleton } from "@/components/MovieDetailIntro";
 import TrailerPlayer from "@/components/TrailerPlayer";
 import WatchProviders from "@/components/WatchProviders";
 
@@ -51,7 +51,6 @@ interface Genre {
   name: string;
 }
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import { LoadingSkeleton } from "@/components/LoadingSkeleton";
 import MovieCard from "@/components/MovieCard";
 import { Movie } from "@/types/movie";
@@ -205,14 +204,6 @@ const MovieDetail = () => {
       console.error("Failed to update watch progress:", error);
     }
   });
-  // Get backdrop URL
-  const backdropUrl = useMemo(() => {
-    if (movie?.backdrop_path) {
-      return `https://image.tmdb.org/t/p/original${movie.backdrop_path}`;
-    }
-    return 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&h=600&q=80';
-  }, [movie]);
-  
   // Handle watchlist toggle - updated to use useUserPreferences hook
   const handleWatchlistToggle = () => {
     if (!isAuthenticated) {
@@ -231,13 +222,6 @@ const MovieDetail = () => {
     } else {
       addToWatchlist(movie);
     }
-  };
-  
-  // Format runtime
-  const formatRuntime = (minutes: number) => {
-    const hours = Math.floor(minutes / 60);
-    const remainingMinutes = minutes % 60;
-    return `${hours}h ${remainingMinutes}m`;
   };
   
   const [showTrailerModal, setShowTrailerModal] = useState(false);
@@ -280,55 +264,7 @@ const MovieDetail = () => {
 
   // No longer need to refresh watchlist status as useUserPreferences handles it
 
-  if (isMovieLoading) {
-    return (
-      <div className="pb-12">
-        {/* Hero Banner Skeleton */}
-        <LoadingSkeleton variant="hero-banner" />
-        
-        {/* Movie Details Skeleton */}
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex flex-col md:flex-row gap-6">
-            <div className="md:w-2/3">
-              <div className="flex items-center space-x-2 mb-4">
-                <Skeleton className="h-6 w-20" />
-                <Skeleton className="h-6 w-12" />
-                <Skeleton className="h-6 w-8" />
-                <Skeleton className="h-6 w-16" />
-                <Skeleton className="h-6 w-8" />
-              </div>
-              
-              <Skeleton className="h-4 w-full mb-2" />
-              <Skeleton className="h-4 w-full mb-2" />
-              <Skeleton className="h-4 w-2/3 mb-6" />
-              
-              <div className="mb-6">
-                <Skeleton className="h-6 w-16 mb-2" />
-                <Skeleton className="h-4 w-full" />
-              </div>
-              
-              <div className="mb-6">
-                <Skeleton className="h-6 w-20 mb-2" />
-                <Skeleton className="h-4 w-1/2" />
-              </div>
-            </div>
-            
-            <div className="md:w-1/3">
-              <div className="mb-4">
-                <Skeleton className="h-6 w-16 mb-2" />
-                <Skeleton className="h-4 w-full" />
-              </div>
-              
-              <div>
-                <Skeleton className="h-6 w-24 mb-2" />
-                <Skeleton className="h-4 w-full" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  if (isMovieLoading) return <MovieDetailIntroSkeleton />;
 
   if (!movie) {
     return (
@@ -341,7 +277,7 @@ const MovieDetail = () => {
   }
 
   return (
-    <div className="pb-12">
+    <div className="pb-28 md:pb-12">
       {/* Trailer Modal */}
       {showTrailerModal && mainTrailer && (
         <div className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4">
@@ -356,121 +292,29 @@ const MovieDetail = () => {
         </div>
       )}
 
-      {/* Hero — backdrop with title + meta + actions pinned to bottom */}
-      <div
-        className="relative h-[50vh] md:h-[60vh] bg-cover bg-center bg-no-repeat"
-        style={{
-          backgroundImage: `url('${backdropUrl}')`,
-          backgroundPosition: 'center 20%',
-          viewTransitionName: `movie-poster-${movieId}`,
-        } as React.CSSProperties}
-      >
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/55 to-black/10" />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/30 to-transparent" />
-
-        <div className="absolute bottom-0 left-0 right-0 px-6 pb-8">
-          <div className="container mx-auto">
-            <h1 className="text-page-title font-bold text-white mb-2 drop-shadow-lg">
-              {movie.title}
-            </h1>
-
-            <div className="flex items-center flex-wrap gap-2.5 mb-5 text-sm">
-              <span className="text-green-400 font-bold">{Math.round(movie.vote_average * 10)}% Match</span>
-              <span className="text-gray-300">{new Date(movie.release_date).getFullYear()}</span>
-              <span className="border border-gray-500 px-1.5 py-0.5 text-xs text-gray-300 rounded">
-                {movie.adult ? "R" : "PG-13"}
-              </span>
-              {movie.runtime && <span className="text-gray-300">{formatRuntime(movie.runtime)}</span>}
-              <span className="border border-gray-500 px-1.5 py-0.5 text-xs text-gray-300 rounded">HD</span>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <Button className="bg-white text-black hover:bg-gray-200 font-semibold" onClick={startWatching}>
-                <Play className="mr-2 h-4 w-4" />
-                {mainTrailer ? "Play Trailer" : "Play"}
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={handleWatchlistToggle}
-                title={isMovieInWatchlist ? "Remove from My List" : "Add to My List"}
-              >
-                {isMovieInWatchlist ? <Check className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={handleFavoriteToggle}
-                title={favoriteStatus ? "Remove from Favorites" : "Add to Favorites"}
-                className={favoriteStatus ? "bg-red-600 border-red-600 hover:bg-red-700" : ""}
-              >
-                <Heart className={`h-4 w-4 ${favoriteStatus ? 'text-white fill-current' : ''}`} />
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <MovieDetailIntro key={movie.id} movie={movie} hasTrailer={Boolean(mainTrailer)}
+        inWatchlist={isMovieInWatchlist} favorite={favoriteStatus} onTrailer={startWatching}
+        onWatchlist={handleWatchlistToggle} onFavorite={handleFavoriteToggle} />
 
       {/* Main content */}
-      <div className="container mx-auto px-4 py-8">
+      <div className="catalog-container py-4">
 
-        {/* Overview + details grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-          {/* Left: overview + compact meta rows */}
-          <div className="md:col-span-2 space-y-3">
-            <p className="text-gray-300 leading-relaxed">{movie.overview}</p>
-
-            {movie.credits?.cast && Array.isArray(movie.credits.cast) && (
-              <div className="flex gap-2 text-sm">
-                <span className="text-muted-foreground shrink-0">Cast:</span>
-                <span className="text-foreground">
-                  {movie.credits.cast.slice(0, 6).map((p: CastMember) => p.name).join(", ")}
-                </span>
-              </div>
-            )}
-
-            {movie.credits?.crew && Array.isArray(movie.credits.crew) && (
-              <div className="flex gap-2 text-sm">
-                <span className="text-muted-foreground shrink-0">Director:</span>
-                <span className="text-foreground">
-                  {movie.credits.crew
-                    .filter((p: CrewMember) => p.job === "Director")
-                    .map((p: CrewMember) => p.name)
-                    .join(", ") || "Unknown"}
-                </span>
-              </div>
-            )}
-
-            {movie.genres && (
-              <div className="flex gap-2 text-sm">
-                <span className="text-muted-foreground shrink-0">Genres:</span>
-                <span className="text-foreground">{movie.genres.map((g: Genre) => g.name).join(", ")}</span>
-              </div>
-            )}
-          </div>
-
-          {/* Right sidebar: quick facts */}
-          <div className="space-y-4 text-sm border-l border-border pl-6 hidden md:block">
-            {movie.vote_average > 0 && (
-              <div>
-                <p className="text-muted-foreground text-xs uppercase tracking-wide mb-0.5">Rating</p>
-                <p className="font-semibold">{movie.vote_average.toFixed(1)} / 10</p>
-              </div>
-            )}
-            {movie.release_date && (
-              <div>
-                <p className="text-muted-foreground text-xs uppercase tracking-wide mb-0.5">Released</p>
-                <p>{new Date(movie.release_date).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</p>
-              </div>
-            )}
-            {movie.runtime && (
-              <div>
-                <p className="text-muted-foreground text-xs uppercase tracking-wide mb-0.5">Runtime</p>
-                <p>{formatRuntime(movie.runtime)}</p>
-              </div>
-            )}
-          </div>
-        </div>
+        {movie.credits?.cast && movie.credits.cast.length > 0 && (
+          <section aria-labelledby="movie-cast-title" className="mb-10">
+            <h2 id="movie-cast-title" className="mb-4 text-section-title font-semibold">Cast</h2>
+            <div className="flex gap-5 overflow-x-auto pb-3 pt-1 scrollbar-hide">
+              {movie.credits.cast.slice(0, 12).map(person => (
+                <div key={person.id} className="w-20 shrink-0 text-center md:w-24">
+                  {person.profile_path ? <img src={`https://image.tmdb.org/t/p/w185${person.profile_path}`}
+                    alt="" loading="lazy" width="96" height="96" className="mb-3 aspect-square w-full rounded-full object-cover" />
+                    : <div aria-hidden="true" className="mb-3 grid aspect-square place-items-center rounded-full bg-white/[0.06] text-section-title text-gray-500">{person.name.charAt(0)}</div>}
+                  <p className="text-card-title font-medium line-clamp-2">{person.name}</p>
+                  <p className="mt-1 text-caption text-gray-500 line-clamp-2">{person.character}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* Trailer */}
         {mainTrailer && (

@@ -58,11 +58,12 @@ const TrailerPlayer = ({ videoKey, title, onClose, inline = false }: TrailerPlay
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
         allowFullScreen
       />
-      <div className="absolute top-3 right-3 flex items-center gap-2 opacity-0 hover:opacity-100 transition-opacity duration-300">
+      <div className="absolute top-3 right-3 flex items-center gap-2">
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8 bg-black/60 hover:bg-black/80 text-white rounded-full"
+          className="h-11 w-11 bg-black/60 hover:bg-black/80 text-white rounded-full"
+          aria-label={isMuted ? "Unmute trailer" : "Mute trailer"}
           onClick={(e) => { e.stopPropagation(); setIsMuted(!isMuted); }}
         >
           {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
@@ -70,7 +71,8 @@ const TrailerPlayer = ({ videoKey, title, onClose, inline = false }: TrailerPlay
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8 bg-black/60 hover:bg-black/80 text-white rounded-full"
+          className="h-11 w-11 bg-black/60 hover:bg-black/80 text-white rounded-full"
+          aria-label="Fullscreen trailer"
           onClick={(e) => { e.stopPropagation(); handleFullscreen(); }}
         >
           <Maximize2 className="h-4 w-4" />
@@ -79,7 +81,8 @@ const TrailerPlayer = ({ videoKey, title, onClose, inline = false }: TrailerPlay
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 bg-black/60 hover:bg-black/80 text-white rounded-full"
+            className="h-11 w-11 bg-black/60 hover:bg-black/80 text-white rounded-full"
+            aria-label="Close trailer"
             onClick={(e) => { e.stopPropagation(); onClose(); }}
           >
             <X className="h-4 w-4" />

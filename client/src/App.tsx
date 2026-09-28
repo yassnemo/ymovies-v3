@@ -53,12 +53,12 @@ function Router({ noticeOpen }: { noticeOpen: boolean }) {
 
   const isLandingPage = location === '/';
 
-  if (isLoading && !isError) {
-    return <LoadingScreen />;
-  }
-
   if (isLandingPage) {
     return <Landing />;
+  }
+
+  if (isLoading && !isError) {
+    return <LoadingScreen />;
   }
 
   return (
@@ -140,6 +140,7 @@ function AuthRequired({ message }: { message: string }) {
 }
 
 const App: React.FC = () => {
+  const [location] = useLocation();
   const { isOpen: noticeOpen, dismiss: dismissNotice } = useServiceNotice();
 
   return (
@@ -151,7 +152,7 @@ const App: React.FC = () => {
             <AuthProvider>
               <UserPreferencesProvider>
                 <Router noticeOpen={noticeOpen} />
-                <ServiceNotice isOpen={noticeOpen} onDismiss={dismissNotice} />
+                <ServiceNotice isOpen={noticeOpen && location !== "/"} onDismiss={dismissNotice} />
               </UserPreferencesProvider>
             </AuthProvider>
           </TooltipProvider>

@@ -132,10 +132,11 @@
   flex: 1 0 auto;
   align-items: center;
   justify-content: center;
+  column-gap: 14px;
   margin: 20px 0;
 }
-.landing-preview-icons { display: flex; align-items: center; justify-content: center; color: rgb(255 255 255 / 0.8); }
-.landing-preview-icons svg { margin-right: 15px; }
+.landing-preview-icons { display: flex; align-items: center; justify-content: center; gap: 12px; color: rgb(255 255 255 / 0.8); }
+.landing-preview-icons svg { display: block; flex-shrink: 0; width: 24px; height: 24px; }
 .landing-preview-caption p { padding: 6px 10px 8px; border-radius: 6px; background: rgb(0 0 0 / 0.16); color: rgb(255 255 255 / 0.9); font-size: 16px; font-weight: 500; line-height: 1; }
 
 .landing-artwork {
@@ -201,8 +202,7 @@
   .landing-angle-top { display: block; top: 0; bottom: auto; }
   .landing-preview-caption { position: relative; flex-direction: column-reverse; margin-top: 50px; }
   .landing-preview-caption p { margin-bottom: 20px; }
-  .landing-preview-icons svg { margin-right: 0; }
-  .landing-preview-icons svg:first-child { margin-right: 20px; }
+  .landing-preview-icons { gap: 16px; }
   .landing-footer { display: none; }
   .landing-footer-mobile { position: relative; display: flex; }
 }

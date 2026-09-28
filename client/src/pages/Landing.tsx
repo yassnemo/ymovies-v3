@@ -18,7 +18,7 @@ function LandingFooter({ mobile = false }: { mobile?: boolean }) {
         <Link href="/terms">Terms</Link>
         <a href="https://yerradouani.me" target="_blank" rel="noopener noreferrer">Website</a>
         <a className="landing-creator" href="https://yerradouani.me" target="_blank" rel="noopener noreferrer">
-          Crafted by yassineerradouani
+          Crafted by Yassine Erradouani
         </a>
       </nav>
     </footer>
@@ -33,7 +33,7 @@ export default function Landing() {
 
   useEffect(() => {
     const previousTitle = document.title;
-    document.title = "YMovies — Track your movies";
+    document.title = "YMovies — Find your next favorite";
     document.body.classList.add("ymovies-landing");
     if (artworkRef.current?.complete && artworkRef.current.naturalWidth > 0) setArtworkReady(true);
     return () => {
@@ -52,7 +52,7 @@ export default function Landing() {
             <img src="/logo.png" width="62" height="50" alt="" />
             <span>YMovies</span>
           </Link>
-          <h1 id="landing-title" tabIndex={-1}>Track your movies</h1>
+          <h1 id="landing-title" tabIndex={-1}>Find your next favorite</h1>
           <p className="landing-description">
             Discover movies and TV shows. Track your watchlist, favorites, and episode progress.
           </p>
@@ -86,7 +86,10 @@ export default function Landing() {
         </div>
 
         <div className="landing-preview-caption">
-          <div className="landing-preview-icons" aria-hidden="true"><Film size={35} /><Tv size={35} /></div>
+          <div className="landing-preview-icons" aria-hidden="true">
+            <Film size={24} strokeWidth={1.75} />
+            <Tv size={24} strokeWidth={1.75} />
+          </div>
           <p>Movies &amp; TV shows</p>
         </div>
 

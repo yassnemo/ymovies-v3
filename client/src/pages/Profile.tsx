@@ -198,8 +198,8 @@ const Profile = () => {
       )}
 
       {/* ===== LIBRARY ===== */}
-      <section className="px-4 py-8 sm:px-12 sm:py-16 lg:px-20">
-        <div className="max-w-7xl mx-auto">
+      <section className="py-8 sm:py-16">
+        <div className="catalog-container">
           <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <h2 className="text-section-title font-semibold tracking-tight">Your library</h2>

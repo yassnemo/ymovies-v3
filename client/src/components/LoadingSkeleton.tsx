@@ -37,62 +37,19 @@ export function LoadingSkeleton({
   const renderSkeleton = () => {
     switch (variant) {
       case "movie-card":
-        return (
-          <div className="space-y-4">
-            {Array.from({ length: count }).map((_, i) => (
-              <div
-                key={i}
-                className={cn(
-                  "media-card-slot relative aspect-[2/3] rounded-lg overflow-hidden",
-                  className,
-                )}
-                {...props}
-              >
-                <Bone className="absolute inset-0 rounded-lg" style={{ animationDelay: `${i * 120}ms` }} />
-
-                <div className="absolute inset-0 p-4 flex flex-col justify-between pointer-events-none">
-                  {/* top row — badge + bookmark */}
-                  <div className="flex justify-between">
-                    <Bone className="w-9 h-4 rounded-sm" />
-                    <Bone className="w-5 h-5 rounded-full" />
-                  </div>
-                  {/* bottom — title area */}
-                  <div className="space-y-2">
-                    <Bone className="h-3 w-3/4 rounded-sm" />
-                    <Bone className="h-2 w-1/2 rounded-sm" />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        );
-
       case "tv-card":
         return (
           <div className="space-y-4">
             {Array.from({ length: count }).map((_, i) => (
-              <div
-                key={i}
-                className={cn(
-                  "media-card-slot relative aspect-[2/3] rounded-lg overflow-hidden",
-                  className,
-                )}
-                {...props}
-              >
-                <Bone className="absolute inset-0 rounded-lg" style={{ animationDelay: `${i * 120}ms` }} />
-
-                <div className="absolute inset-0 p-5 flex flex-col justify-between pointer-events-none">
-                  <div className="flex gap-2">
-                    <Bone className="w-12 h-5 rounded-sm" />
-                    <Bone className="w-8 h-5 rounded-sm" />
-                  </div>
-                  <div className="space-y-2.5">
-                    <Bone className="h-5 w-2/3 rounded-sm" />
-                    <Bone className="h-3 w-full rounded-sm" />
-                    <div className="flex gap-2 mt-2">
-                      <Bone className="w-16 h-7 rounded" />
-                      <Bone className="w-20 h-7 rounded" />
-                    </div>
+              <div key={i} className={cn("media-card-slot", className)} {...props}>
+                <div className="relative aspect-[2/3] overflow-hidden rounded-xl">
+                  <Bone className="absolute inset-0 rounded-xl" style={{ animationDelay: `${i * 120}ms` }} />
+                  <Bone className="absolute left-2 top-2 h-5 w-5 rounded-full" />
+                </div>
+                <div className="mt-3 px-0.5">
+                  <Bone className="h-5 w-3/4" />
+                  <div className="mt-1 flex h-4 justify-between">
+                    <Bone className="h-4 w-8" /><Bone className="h-4 w-8" />
                   </div>
                 </div>
               </div>

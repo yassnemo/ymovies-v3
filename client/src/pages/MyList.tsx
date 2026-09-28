@@ -411,8 +411,8 @@ const MyList = () => {
       </section>
 
       {/* ===== CONTENT ===== */}
-      <div className="px-6 sm:px-12 lg:px-20 py-10 pb-20">
-        <div className="max-w-7xl mx-auto">
+      <div className="py-10 pb-20">
+        <div className="catalog-container">
           <Tabs
             value={activeTab}
             onValueChange={(v) => {
@@ -587,7 +587,6 @@ const MyList = () => {
                       <MovieCard movie={item as any}
                         mediaType={item.name !== undefined ? "tv" : "movie"}
                         watchProgress={item.watchData.watchProgress} />
-                      <p className="mt-2 text-card-title font-medium line-clamp-1">{item.title || item.name || "Untitled"}</p>
                       <p className="mt-0.5 text-caption text-gray-400">{formatTimeLeft(item.watchData.watchProgress, item.runtime)}</p>
                       </div>
                     ))}
@@ -688,7 +687,6 @@ const MyList = () => {
                       <MovieCard movie={item as any}
                         mediaType={item.name !== undefined ? "tv" : "movie"}
                         watchProgress={item.watchData.watchProgress} />
-                      <p className="mt-2 text-card-title font-medium line-clamp-1">{item.title || item.name || "Untitled"}</p>
                       <p className="mt-0.5 text-caption text-gray-400">{formatTimeLeft(item.watchData.watchProgress, item.runtime)}</p>
                       </div>
                     ))}

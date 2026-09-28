@@ -55,7 +55,7 @@ const MediaGrid: React.FC<MediaGridProps> = ({
             )}
             {onRemove && (
               <Button variant="ghost" size="sm" aria-label={`Remove ${getMediaTitle(media)}`}
-                className="media-remove absolute bottom-2 right-2 z-40 h-8 w-8 rounded-full bg-black/70 p-0 text-white opacity-0 transition-opacity hover:bg-red-600 group-hover:opacity-100 focus-visible:opacity-100"
+                className="media-remove absolute top-2 right-2 z-40 h-8 w-8 rounded-full bg-black/70 p-0 text-white opacity-0 transition-opacity hover:bg-red-600 group-hover:opacity-100 focus-visible:opacity-100"
                 onClick={() => onRemove(media.id)}><X className="h-4 w-4" /></Button>
             )}
           </div>

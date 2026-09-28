@@ -142,7 +142,7 @@ const Genre = () => {
 
   return (
     <div className="min-h-screen pb-28 pt-24 md:pb-12">
-      <div className="container mx-auto px-4">
+      <div className="catalog-container">
         {/* Header */}
         <div className="mb-7 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">

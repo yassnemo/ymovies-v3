@@ -8,6 +8,7 @@ import { useUserPreferences } from "@/hooks/useUserPreferences";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { getGenreNames } from "@/lib/genres";
+import MediaCardCaption from "./MediaCardCaption";
 
 interface TVShowCardProps {
   show: TVShow;
@@ -147,7 +148,7 @@ const TVShowCard = ({ show, hideInfo = false, className }: TVShowCardProps) => {
           <img
             src={imagePath}
             srcSet={imageSrcSet}
-            sizes="(max-width: 639px) 112px, (max-width: 767px) 144px, (max-width: 1279px) 176px, 192px"
+            sizes="(max-width: 639px) 50vw, (max-width: 767px) 33vw, (max-width: 1023px) 25vw, 240px"
             alt={displayName}
             className="w-full h-full object-cover"
             loading="lazy"
@@ -165,7 +166,7 @@ const TVShowCard = ({ show, hideInfo = false, className }: TVShowCardProps) => {
         </div>
 
         {/* Rating badge — top right, hidden during preview */}
-        {!showPreview && show.vote_average > 0 && (
+        {hideInfo && !showPreview && show.vote_average > 0 && (
           <div className="absolute top-1.5 right-1.5 md:top-2 md:right-2 bg-black/70 text-white px-1.5 md:px-2 py-0.5 rounded-full text-caption font-semibold flex items-center gap-1">
             <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
             {show.vote_average.toFixed(1)}
@@ -228,7 +229,7 @@ const TVShowCard = ({ show, hideInfo = false, className }: TVShowCardProps) => {
                       aria-label="Play"
                     >
                       <Play className="h-3.5 w-3.5 fill-current" />
-                      Play
+                      <span className="hidden xl:inline">Play</span>
                     </button>
 
                     {/* Watchlist */}
@@ -287,6 +288,7 @@ const TVShowCard = ({ show, hideInfo = false, className }: TVShowCardProps) => {
           </AnimatePresence>
         )}
       </motion.div>
+      {!hideInfo && <MediaCardCaption title={displayName} year={releaseYear || null} rating={show.vote_average} />}
     </div>
   );
 };

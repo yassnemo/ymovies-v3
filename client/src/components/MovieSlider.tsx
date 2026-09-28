@@ -87,7 +87,7 @@ const MovieSlider = ({
         {showTitle && <LoadingSkeleton variant="slider-title" />}
         
         {/* Enhanced movie/TV card skeletons based on media type */}
-        <div className="flex overflow-x-auto gap-3 pb-6 pt-2 px-2 scrollbar-hide">
+        <div className="flex overflow-x-auto gap-4 pb-6 pt-2 px-2 scrollbar-hide">
           {[...Array(6)].map((_, i) => (
             <div key={i} className="media-card-slot">
               {/* TV sliders now use the same vertical card size as movies */}
@@ -140,7 +140,7 @@ const MovieSlider = ({
         {/* Movie slider */}
         <div 
           ref={sliderRef}
-          className="slider-container category-slider flex overflow-x-auto gap-3 pb-8 pt-8 px-2 scrollbar-hide max-w-full"
+          className="slider-container category-slider flex overflow-x-auto gap-4 pb-8 pt-8 px-2 scrollbar-hide max-w-full"
           style={{ 
             scrollbarWidth: 'none',
             msOverflowStyle: 'none',

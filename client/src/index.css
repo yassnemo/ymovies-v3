@@ -68,7 +68,7 @@
   --input: 240 3.7% 15.9%;
   --ring: 240 4.9% 83.9%;
   --radius: 0.5rem;
-  --media-card-width: clamp(80px, calc((100vw - 72px) / 3), 112px);
+  --media-card-width: 140px;
 
   --sidebar-background: 240 10% 3.9%;
   --sidebar-foreground: 0 0% 98%;
@@ -274,17 +274,22 @@ main, section {
   scrollbar-color: hsl(var(--primary)) hsla(var(--background) / 0.6);
 }
 
-/* Catalog cards keep the same dimensions in every page and loading state. */
+/* Scrolling rows use fixed cards; catalogues use responsive grid cells. */
 .media-grid {
+  --media-card-width: 100%;
   display: grid;
-  grid-template-columns: repeat(auto-fill, var(--media-card-width));
-  justify-content: space-between;
-  gap: 16px 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px 16px;
 }
 .media-card-slot { width: var(--media-card-width); flex: 0 0 var(--media-card-width); }
-@media (min-width: 640px) { :root { --media-card-width: 144px; } }
-@media (min-width: 768px) { :root { --media-card-width: 176px; } }
-@media (min-width: 1280px) { :root { --media-card-width: 192px; } }
+.catalog-container { width: 100%; max-width: 1440px; margin-inline: auto; padding-inline: 24px; }
+@media (min-width: 640px) { .media-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (min-width: 768px) { .media-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (min-width: 1024px) {
+  :root { --media-card-width: 200px; }
+  .media-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .catalog-container { padding-inline: 64px; }
+}
 @media (hover: none) { .media-remove { opacity: 1; } }
 /* Keep phone form fields readable without Safari zooming on focus. */
 @media (max-width: 767px) {

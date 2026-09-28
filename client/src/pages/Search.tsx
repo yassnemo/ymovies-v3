@@ -140,7 +140,7 @@ const Search = () => {
     : "Filtered results";
 
   return (
-    <div className="container mx-auto px-4 pb-28 pt-24 md:pb-12">
+    <div className="catalog-container pb-28 pt-24 md:pb-12">
       <header className="mb-7">
         <h1 className="text-page-title font-semibold tracking-tight text-white">Search</h1>
         <p className="mt-1 text-sm text-gray-400">Find something worth watching.</p>

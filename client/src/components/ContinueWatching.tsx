@@ -93,7 +93,6 @@ const ContinueWatching = () => {
               >
                 <MovieCard movie={cardMovie}
                   mediaType={isTV ? "tv" : "movie"} watchProgress={item.watchData.watchProgress} />
-                <p className="mt-2 text-card-title font-medium line-clamp-1">{title}</p>
                 <p className="mt-0.5 text-caption text-gray-400">{formatTimeLeft(item.watchData.watchProgress, item.runtime)}</p>
               </div>
             );

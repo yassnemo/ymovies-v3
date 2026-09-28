@@ -8,6 +8,7 @@ import { useUserPreferences } from "@/hooks/useUserPreferences";
 import { Play, Plus, Check, Film, Tv, Heart, Star } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getGenreNames } from "@/lib/genres";
+import MediaCardCaption from "./MediaCardCaption";
 
 interface MovieCardProps {
   movie: Movie | (TVShow & { title: string });
@@ -151,7 +152,7 @@ const MovieCard = ({ movie, hideInfo = false, mediaType, watchProgress }: MovieC
           <img
             src={posterUrl}
             srcSet={posterSrcSet}
-            sizes="(max-width: 639px) 112px, (max-width: 767px) 144px, (max-width: 1279px) 176px, 192px"
+            sizes="(max-width: 639px) 50vw, (max-width: 767px) 33vw, (max-width: 1023px) 25vw, 240px"
             alt={displayTitle}
             className="w-full h-full object-cover"
             loading="lazy"
@@ -169,7 +170,7 @@ const MovieCard = ({ movie, hideInfo = false, mediaType, watchProgress }: MovieC
         </div>
 
         {/* Rating badge — top right, hidden during preview */}
-        {!showPreview && movie.vote_average > 0 && (
+        {hideInfo && !showPreview && movie.vote_average > 0 && (
           <div className="absolute top-1.5 right-1.5 md:top-2 md:right-2 bg-black/70 text-white px-1.5 md:px-2 py-0.5 rounded-full text-caption font-semibold flex items-center gap-1">
             <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
             {movie.vote_average.toFixed(1)}
@@ -239,7 +240,7 @@ const MovieCard = ({ movie, hideInfo = false, mediaType, watchProgress }: MovieC
                       aria-label="Play"
                     >
                       <Play className="h-3.5 w-3.5 fill-current" />
-                      Play
+                      <span className="hidden xl:inline">Play</span>
                     </button>
 
                     {/* Watchlist */}
@@ -298,6 +299,7 @@ const MovieCard = ({ movie, hideInfo = false, mediaType, watchProgress }: MovieC
           </AnimatePresence>
         )}
       </motion.div>
+      {!hideInfo && <MediaCardCaption title={displayTitle} year={releaseYear || null} rating={movie.vote_average} />}
     </div>
   );
 };

@@ -185,6 +185,15 @@
 
 @media (max-width: 1024px) {
   .landing-shell { flex-direction: column; }
+  /* Cover the fractional pixel seam at the artwork edge. */
+  .landing-hero::after {
+    content: "";
+    position: absolute;
+    inset: auto 0 -1px;
+    height: 2px;
+    background: hsl(var(--background));
+    pointer-events: none;
+  }
   .landing-copy { max-width: 500px; padding: 80px 20px 40px; text-align: center; }
   .landing-brand { justify-content: center; }
   .landing-description { margin-inline: auto; font-size: 18px; }

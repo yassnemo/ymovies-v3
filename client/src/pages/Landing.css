@@ -185,8 +185,9 @@
 
 @media (max-width: 1024px) {
   .landing-shell { flex-direction: column; }
-  /* Cover the fractional pixel seam at the artwork edge. */
-  .landing-hero::after {
+  /* Cover the fractional pixel seams at the artwork edges. */
+  .landing-hero::after,
+  .landing-footer-mobile::before {
     content: "";
     position: absolute;
     inset: auto 0 -1px;
@@ -194,6 +195,8 @@
     background: hsl(var(--background));
     pointer-events: none;
   }
+  /* Bridge the footer's 20px margin and overlap the bottom edge by 1px. */
+  .landing-footer-mobile::before { inset: -21px 0 auto; z-index: 30; }
   .landing-copy { max-width: 500px; padding: 80px 20px 40px; text-align: center; }
   .landing-brand { justify-content: center; }
   .landing-description { margin-inline: auto; font-size: 18px; }

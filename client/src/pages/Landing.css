@@ -34,9 +34,9 @@
   justify-content: center;
   padding: 100px 0;
 }
-.landing-brand { display: flex; align-items: center; }
-.landing-brand img { width: 62px; height: 50px; margin-right: 16px; object-fit: contain; }
-.landing-brand span { font-size: 24px; font-weight: 300; }
+.landing-brand { display: flex; min-height: 50px; align-items: center; gap: 12px; }
+.landing-brand img { display: block; flex-shrink: 0; width: 44px; height: 36px; object-fit: contain; }
+.landing-brand span { display: block; font-size: 24px; font-weight: 300; line-height: 1; }
 .landing-copy h1 { margin: 20px 0 5px; font-size: 56px; font-weight: 600; line-height: 1; }
 .landing-description { margin: 1em 0 40px; font-size: 22px; line-height: 1.5; color: rgb(255 255 255 / 0.8); }
 .landing-actions { display: grid; width: 100%; max-width: 480px; grid-template-columns: auto; gap: 10px; }
@@ -132,11 +132,8 @@
   flex: 1 0 auto;
   align-items: center;
   justify-content: center;
-  column-gap: 14px;
   margin: 20px 0;
 }
-.landing-preview-icons { display: flex; align-items: center; justify-content: center; gap: 12px; color: rgb(255 255 255 / 0.8); }
-.landing-preview-icons svg { display: block; flex-shrink: 0; width: 24px; height: 24px; }
 .landing-preview-caption p { padding: 6px 10px 8px; border-radius: 6px; background: rgb(0 0 0 / 0.16); color: rgb(255 255 255 / 0.9); font-size: 16px; font-weight: 500; line-height: 1; }
 
 .landing-artwork {
@@ -200,9 +197,7 @@
   .landing-artwork-mask { display: none; }
   .landing-angle { left: 0; bottom: 0; width: 100vw; height: 20vw; min-height: 0; }
   .landing-angle-top { display: block; top: 0; bottom: auto; }
-  .landing-preview-caption { position: relative; flex-direction: column-reverse; margin-top: 50px; }
-  .landing-preview-caption p { margin-bottom: 20px; }
-  .landing-preview-icons { gap: 16px; }
+  .landing-preview-caption { position: relative; margin-top: 50px; }
   .landing-footer { display: none; }
   .landing-footer-mobile { position: relative; display: flex; }
 }
@@ -213,7 +208,8 @@
 
 @media (max-width: 400px) {
   .landing-copy { padding-top: 60px; }
-  .landing-brand img { width: 56px; margin-right: 10px; }
+  .landing-brand { gap: 10px; }
+  .landing-brand img { width: 38px; height: 32px; }
   .landing-brand span { font-size: 20px; }
   .landing-copy h1 { font-size: 32px; }
   .landing-actions { max-width: 100%; }

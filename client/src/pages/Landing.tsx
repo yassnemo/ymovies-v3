@@ -1,12 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
-import { Film, Play, Tv } from "lucide-react";
+import { Play } from "lucide-react";
 import { useReducedMotion } from "framer-motion";
 import "./Landing.css";
 
 // Replace these local assets to change the preview without changing the phone frame.
-const APP_PREVIEW = "/images/landing/app-preview.jpg";
-const APP_PREVIEW_VIDEO = "/images/landing/app-preview.webm";
+const APP_PREVIEW = "/images/landing/app-walkthrough.jpg";
+const APP_PREVIEW_VIDEO = "/images/landing/app-walkthrough.webm";
 const BACKGROUND_ARTWORK = "/images/sign-background-large.jpg";
 const BACKGROUND_PLACEHOLDER = "/images/sign-background-large-placeholder.jpg";
 
@@ -33,7 +33,7 @@ export default function Landing() {
 
   useEffect(() => {
     const previousTitle = document.title;
-    document.title = "YMovies — Find your next favorite";
+    document.title = "YMovies — Find your next movie";
     document.body.classList.add("ymovies-landing");
     if (artworkRef.current?.complete && artworkRef.current.naturalWidth > 0) setArtworkReady(true);
     return () => {
@@ -49,10 +49,10 @@ export default function Landing() {
       <section className="landing-hero" aria-labelledby="landing-title">
         <div className="landing-copy">
           <Link href="/" className="landing-brand" aria-label="YMovies home">
-            <img src="/logo.png" width="62" height="50" alt="" />
+            <img src="/images/landing/brand-mark.svg" width="44" height="36" alt="" />
             <span>YMovies</span>
           </Link>
-          <h1 id="landing-title" tabIndex={-1}>Find your next favorite</h1>
+          <h1 id="landing-title" tabIndex={-1}>Find your next movie</h1>
           <p className="landing-description">
             Discover movies and TV shows. Track your watchlist, favorites, and episode progress.
           </p>
@@ -74,22 +74,18 @@ export default function Landing() {
           <div className="landing-phone">
             <div className="landing-phone-screen">
               {!reduceMotion && <video autoPlay muted loop playsInline preload="metadata" poster={APP_PREVIEW}
-                aria-label="A preview of browsing movies and opening movie details in YMovies"
+                aria-label="A walkthrough of the YMovies home page, movie catalogue, movie details, and TV shows"
                 onPlaying={() => setVideoPlaying(true)} onError={() => setVideoPlaying(false)}>
                 <source src={APP_PREVIEW_VIDEO} type="video/webm" />
               </video>}
               <img className={videoPlaying && !reduceMotion ? "landing-phone-placeholder is-hidden" : "landing-phone-placeholder"}
                 src={APP_PREVIEW} width="360" height="640" fetchPriority="high"
-                alt="YMovies movie catalogue with filters, movie cards, and mobile navigation" />
+                alt="YMovies home page with a featured movie, browse controls, and mobile navigation" />
             </div>
           </div>
         </div>
 
         <div className="landing-preview-caption">
-          <div className="landing-preview-icons" aria-hidden="true">
-            <Film size={24} strokeWidth={1.75} />
-            <Tv size={24} strokeWidth={1.75} />
-          </div>
           <p>Movies &amp; TV shows</p>
         </div>
 

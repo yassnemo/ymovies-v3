@@ -81,6 +81,7 @@
   justify-content: center;
   padding: 40px 0 80px;
 }
+/* The device frame is drawn in CSS around the separate video or poster. */
 .landing-phone {
   position: relative;
   display: flex;
@@ -89,8 +90,8 @@
   height: auto;
   justify-content: center;
   border-radius: 54px;
-  background: linear-gradient(#2e3747, #21252b);
-  box-shadow: 0 40px 50px rgb(0 0 0 / 0.25), 0 10px 20px rgb(0 21 64 / 0.5), 0 2px 6px rgb(0 21 64 / 0.15), inset 0 -5px 38px #21262f, inset 0 4px 7px 1px rgb(0 0 0 / 0.23);
+  background: linear-gradient(#151515, #050505);
+  box-shadow: 0 40px 50px rgb(0 0 0 / 0.35), 0 10px 20px rgb(0 0 0 / 0.3), 0 2px 6px rgb(0 0 0 / 0.2), inset 0 0 0 1px rgb(255 255 255 / 0.07), inset 0 -5px 38px #000, inset 0 4px 7px 1px rgb(255 255 255 / 0.04);
 }
 .landing-phone::before {
   content: "";
@@ -101,7 +102,8 @@
   height: 6px;
   margin-left: -30px;
   border-radius: 3px;
-  background: rgb(0 0 0 / 0.3);
+  background: #020202;
+  box-shadow: 0 1px 0 rgb(255 255 255 / 0.05);
 }
 .landing-phone-screen {
   display: grid;
@@ -118,7 +120,7 @@
   width: 320px;
   height: 568px;
   border-radius: 4px;
-  box-shadow: 0 0 0 2px #21252b;
+  box-shadow: 0 0 0 2px #050505;
   object-fit: cover;
   object-position: top;
 }

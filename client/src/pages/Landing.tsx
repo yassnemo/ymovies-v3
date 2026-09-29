@@ -5,8 +5,8 @@ import { useReducedMotion } from "framer-motion";
 import "./Landing.css";
 
 // Replace these local assets to change the preview without changing the phone frame.
-const APP_PREVIEW = "/images/landing/app-walkthrough.jpg";
-const APP_PREVIEW_VIDEO = "/images/landing/app-walkthrough.webm";
+const APP_PREVIEW = "/images/landing/app-walkthrough-hd.jpg";
+const APP_PREVIEW_VIDEO = "/images/landing/app-walkthrough-hd.webm";
 const BACKGROUND_ARTWORK = "/images/sign-background-large.jpg";
 const BACKGROUND_PLACEHOLDER = "/images/sign-background-large-placeholder.jpg";
 
@@ -79,7 +79,7 @@ export default function Landing() {
                 <source src={APP_PREVIEW_VIDEO} type="video/webm" />
               </video>}
               <img className={videoPlaying && !reduceMotion ? "landing-phone-placeholder is-hidden" : "landing-phone-placeholder"}
-                src={APP_PREVIEW} width="360" height="640" fetchPriority="high"
+                src={APP_PREVIEW} width="720" height="1280" fetchPriority="high"
                 alt="YMovies home page with a featured movie, browse controls, and mobile navigation" />
             </div>
           </div>

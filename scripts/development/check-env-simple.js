@@ -1,38 +1,26 @@
 #!/usr/bin/env node
-
-// Environment Checker for YMovies
-// This script checks if required environment variables are set
-// Run with: node --env-file=.env check-env-simple.js
-
-const requiredVars = [
-    'TMDB_API_KEY',
-    'VITE_SUPABASE_URL',
-    'VITE_SUPABASE_ANON_KEY'
-];
-
-const optionalVars = [
-    'DATABASE_URL',
-    'JWT_SECRET',
-    'SUPABASE_URL',
-    'SUPABASE_SERVICE_ROLE_KEY'
-];
-
-let missingRequired = [];
-
-// Check required variables silently
-requiredVars.forEach(varName => {
-    if (!process.env[varName] || process.env[varName].includes('your_') || process.env[varName].includes('_here')) {
-        missingRequired.push(varName);
-    }
-});
-
-if (missingRequired.length > 0) {
-    console.error('\nMissing required environment variables:');
-    missingRequired.forEach(varName => {
-        console.error(`  ${varName}`);
-    });
-    console.error('\nGet API keys from:');
-    console.error('  TMDB: https://www.themoviedb.org/settings/api');
-    console.error('  Supabase: https://supabase.com/dashboard\n');
-    process.exit(1);
+// Run with: node --env-file-if-exists=.env scripts/development/check-env-simple.js
+const configured = (value) =>
+  Boolean(value && !value.includes('your_') && !value.includes('_here'));
+const catalog =
+  configured(process.env.TMDB_API_KEY) ||
+  configured(process.env.TMDB_BEARER_TOKEN);
+const publicUrl =
+  process.env.PUBLIC_SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+const publicKey =
+  process.env.PUBLIC_SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+console.log('Catalog credential configured:', catalog);
+console.log(
+  'Browser accounts configured:',
+  configured(publicUrl) && configured(publicKey)
+);
+console.log(
+  'Account sync configured:',
+  ['DATABASE_URL', 'SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY'].every((key) =>
+    configured(process.env[key])
+  )
+);
+if (!catalog) {
+  console.error('Set TMDB_API_KEY or TMDB_BEARER_TOKEN for catalog browsing.');
+  process.exitCode = 1;
 }

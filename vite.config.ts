@@ -1,34 +1,30 @@
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
-import path from "path";
+import { defineConfig, loadEnv } from 'vite';
+import { sveltekit } from '@sveltejs/kit/vite';
+import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
+import node from '@sveltejs/adapter-node';
+import vercel from '@sveltejs/adapter-vercel';
 
-export default defineConfig(() => {
+export default defineConfig(({ mode }) => {
+  // Database/recommendation services consume server-only process.env.
+  const environment = loadEnv(mode, process.cwd(), '');
+  for (const [key, value] of Object.entries(environment)) {
+    if (key !== 'NODE_ENV') process.env[key] ??= value;
+  }
+  // Vite owns NODE_ENV; an old deployment .env must not switch dev into production.
+  if (mode === 'development') process.env.VITE_USER_NODE_ENV = 'development';
+  else delete process.env.VITE_USER_NODE_ENV;
   return {
     plugins: [
-      react(),
+      sveltekit({
+        adapter: process.env.VERCEL ? vercel() : node(),
+        preprocess: vitePreprocess(),
+        files: { assets: 'client/public' }
+      })
     ],
-    resolve: {
-      alias: {
-        "@": path.resolve(import.meta.dirname, "client", "src"),
-        "@shared": path.resolve(import.meta.dirname, "shared"),
-        "@assets": path.resolve(import.meta.dirname, "attached_assets"),
-      },
-    },
-    root: path.resolve(import.meta.dirname, "client"),
     server: {
-      host: "0.0.0.0",
-      // When Vite runs on its own, keep API calls on the same origin as the page.
-      proxy: {
-        "/api": {
-          target: `http://127.0.0.1:${process.env.PORT || 5000}`,
-          changeOrigin: true,
-        },
-      },
-    },
-    build: {
-      outDir: path.resolve(import.meta.dirname, "dist/public"),
-      emptyOutDir: true,
-    },
-    base: "/",
+      host: true,
+      port: 5000,
+      watch: { ignored: ['**/.temp/**', '**/build/**', '**/dist/**'] }
+    }
   };
 });

@@ -1,0 +1,131 @@
+/* Let the artwork dissolve into the page's ambient image, without an opaque edge. */
+.cine-hero {
+  --hero-art-height: 945px;
+}
+.detail-hero {
+  --hero-art-height: 675px;
+}
+.cine-hero,
+.detail-hero {
+  --hero-glow-tail: 320px;
+  background: transparent;
+  overflow: visible;
+}
+.home-rows,
+.cine-hero + .browse-content,
+.detail-hero + .page-container {
+  position: relative;
+  z-index: 1;
+}
+.cine-hero-image,
+.cine-hero-scrim,
+.detail-hero > .hero-backdrop,
+.detail-hero > .hero-shade {
+  height: var(--hero-art-height);
+}
+.cine-hero-image,
+.detail-hero > .hero-backdrop {
+  mask-image: linear-gradient(
+    to bottom,
+    #000 0%,
+    #000 48%,
+    #000000eb 58%,
+    #000000ad 68%,
+    #00000052 80%,
+    #00000014 92%,
+    transparent 100%
+  );
+}
+.cine-hero-scrim,
+.detail-hero > .hero-shade {
+  mask-image: linear-gradient(
+    to bottom,
+    #000 40%,
+    #000000d9 62%,
+    #00000059 82%,
+    transparent 100%
+  );
+}
+.hero-background-glow {
+  position: absolute;
+  top: 0;
+  left: -5%;
+  width: 110%;
+  height: calc(var(--hero-art-height) + var(--hero-glow-tail));
+  z-index: -5;
+  pointer-events: none;
+  background-size: cover;
+  background-position: center top;
+  filter: blur(64px) saturate(1.12) brightness(0.6);
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 24%,
+    #00000099 48%,
+    #000 66%,
+    #000000b3 82%,
+    transparent 100%
+  );
+  animation: hero-glow-in 0.8s ease both;
+}
+.hero-background-glow.outgoing {
+  z-index: -6;
+}
+.hero-background-glow.outgoing,
+.cine-hero-image.outgoing {
+  animation: hero-art-out 0.8s ease both;
+}
+@keyframes hero-glow-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes hero-art-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+@media (min-width: 1600px) {
+  .cine-hero {
+    --hero-art-height: 1100px;
+  }
+}
+@media (max-width: 1023px) {
+  .cine-hero {
+    --hero-art-height: 830px;
+  }
+}
+@media (max-width: 639px) {
+  .cine-hero {
+    --hero-art-height: 105svh;
+  }
+  .detail-hero {
+    --hero-art-height: 620px;
+  }
+  .cine-hero,
+  .detail-hero {
+    --hero-glow-tail: 240px;
+  }
+  .hero-background-glow {
+    filter: blur(48px) saturate(1.12) brightness(0.55);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-background-glow {
+    animation: none;
+  }
+  .hero-background-glow.outgoing,
+  .cine-hero-image.outgoing {
+    opacity: 0;
+    animation: none;
+  }
+}
+html[data-reduced-motion='true'] .hero-background-glow.outgoing,
+html[data-reduced-motion='true'] .cine-hero-image.outgoing {
+  opacity: 0;
+}

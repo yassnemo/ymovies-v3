@@ -43,3 +43,9 @@ temp/
 tmp/
 *.log
 *.cache
+
+# Local migration snapshots and framework output
+.temp/
+.astro/
+.svelte-kit/
+dist/

@@ -1,0 +1,372 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Import Schkorycza Regular font */
+@font-face {
+  font-family: 'Schkorycza Regular';
+  src: url('/fonts/Schkorycza.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Import Typogama Ahsing font (alternative option) */
+@font-face {
+  font-family: 'Typogama Ahsing';
+  src: url('/fonts/typogama-ahsing.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Import Akaya Kanadaka font for the main logo */
+@font-face {
+  font-family: 'Akaya Kanadaka';
+  src: url('/fonts/AkayaKanadaka-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Import BebasNeue Regular font for YMovies title */
+@font-face {
+  font-family: 'Bebas Neue';
+  src: url('/fonts/BebasNeue-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Import Montserrat font */
+@font-face {
+  font-family: 'Montserrat';
+  src: url('/fonts/Montserratt.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --background: 240 10% 3.9%;
+  --foreground: 0 0% 98%;
+  --card: 240 10% 3.9%;
+  --card-foreground: 0 0% 98%;
+  --popover: 240 10% 3.9%;
+  --popover-foreground: 0 0% 98%;
+  --primary: 359 91% 54%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 240 3.7% 15.9%;
+  --secondary-foreground: 0 0% 98%;
+  --muted: 240 3.7% 15.9%;
+  --muted-foreground: 240 5% 64.9%;
+  --accent: 240 3.7% 15.9%;
+  --accent-foreground: 0 0% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 240 3.7% 15.9%;
+  --input: 240 3.7% 15.9%;
+  --ring: 240 4.9% 83.9%;
+  --radius: 0.5rem;
+  --media-card-width: 140px;
+
+  --sidebar-background: 240 10% 3.9%;
+  --sidebar-foreground: 0 0% 98%;
+  --sidebar-primary: 359 91% 54%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 240 3.7% 15.9%;
+  --sidebar-accent-foreground: 0 0% 98%;
+  --sidebar-border: 240 3.7% 15.9%;
+  --sidebar-ring: 240 4.9% 83.9%;
+}
+
+/* Prevent horizontal overflow and scrollbar for the entire page */
+html,
+body {
+  overflow-x: hidden;
+  width: 100%;
+  position: relative;
+  margin: 0;
+  padding: 0;
+}
+
+/* Remove focus outline for clicked elements */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  @apply outline-none ring-2 ring-ring ring-offset-2;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground text-body;
+    font-family:
+      'Montserrat',
+      ui-sans-serif,
+      system-ui,
+      -apple-system,
+      'Segoe UI',
+      Roboto,
+      'Helvetica Neue',
+      Arial,
+      'Noto Sans',
+      sans-serif;
+  }
+}
+
+/* Shared poster sizing. Interaction styles live in app.css. */
+.movie-card {
+  transition: box-shadow 0.3s ease;
+  overflow: visible !important;
+  width: var(--media-card-width);
+  max-width: 100%;
+}
+
+/* ── Micro-interaction: heart burst particles ── */
+@keyframes burst-particle {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) translate(0, 0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) translate(var(--burst-x), var(--burst-y))
+      scale(0);
+  }
+}
+
+.animate-burst-particle {
+  animation: burst-particle 0.6s ease-out forwards;
+}
+
+/* ── Micro-interaction: heart pop ── */
+@keyframes heart-pop {
+  0% {
+    transform: scale(1);
+  }
+  30% {
+    transform: scale(1.4);
+  }
+  60% {
+    transform: scale(0.85);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.animate-heart-pop {
+  animation: heart-pop 0.5s ease-out;
+}
+
+/* ── Micro-interaction: bookmark bounce ── */
+@keyframes bookmark-bounce {
+  0% {
+    transform: scale(1);
+  }
+  25% {
+    transform: scale(1.3) rotate(-5deg);
+  }
+  50% {
+    transform: scale(0.9) rotate(3deg);
+  }
+  75% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.animate-bookmark-bounce {
+  animation: bookmark-bounce 0.4s ease-out;
+}
+
+/* ── View Transitions API (progressive enhancement) ── */
+::view-transition-group(*) {
+  animation-duration: 0.35s;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.25s;
+}
+
+/* Slider container styling */
+.slider-container {
+  scroll-behavior: smooth;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.slider-container::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hero gradient */
+.hero-gradient {
+  background: linear-gradient(
+    to top,
+    hsl(var(--background)) 0%,
+    hsla(var(--background) / 0) 100%
+  );
+}
+
+.movie-info-gradient {
+  background: linear-gradient(
+    to bottom,
+    hsla(var(--background) / 0) 0%,
+    hsla(var(--background) / 0.7) 50%,
+    hsla(var(--background) / 0.9) 80%,
+    hsl(var(--background)) 100%
+  );
+  padding-top: 6rem;
+  padding-bottom: 2rem;
+}
+
+/* Category slider */
+.category-slider {
+  scroll-snap-type: x mandatory;
+}
+
+.category-slider .movie-card {
+  scroll-snap-align: start;
+}
+
+/* Global container rules */
+#root {
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100vw;
+}
+
+main,
+section {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Fix for negative margins causing horizontal scrollbar */
+.app-wrapper > * {
+  max-width: 100vw;
+  margin-left: 0;
+  margin-right: 0;
+}
+
+/* Utility class to fix any component causing overflow */
+.overflow-fix {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* Mobile bottom navigation padding */
+@media (max-width: 768px) {
+  body {
+    padding-bottom: 70px; /* Account for mobile bottom nav */
+  }
+
+  /* Additional space for better mobile UX */
+  .mobile-content-padding {
+    padding-bottom: 2rem;
+  }
+
+  /* Hero banner height adjustment for mobile */
+  .hero-banner-mobile {
+    height: calc(100vh - 70px) !important;
+  }
+
+  /* Footer adjustments for mobile */
+  footer {
+    padding-bottom: 85px; /* Extra padding for mobile nav */
+  }
+}
+
+/* Themed scrollbar (subtle, red accent) */
+/* WebKit browsers */
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-track {
+  background: hsla(var(--background) / 0.6);
+}
+*::-webkit-scrollbar-thumb {
+  background: hsl(var(--primary));
+  border-radius: 9999px;
+  border: 2px solid hsla(var(--background) / 0.6);
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: hsl(359 91% 60%);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--primary)) hsla(var(--background) / 0.6);
+}
+
+/* Scrolling rows use fixed cards; catalogues use responsive grid cells. */
+.media-grid {
+  --media-card-width: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px 16px;
+}
+.media-card-slot {
+  width: var(--media-card-width);
+  flex: 0 0 var(--media-card-width);
+}
+.catalog-container {
+  width: 100%;
+  max-width: 1440px;
+  margin-inline: auto;
+  padding-inline: 24px;
+}
+@media (min-width: 640px) {
+  .media-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (min-width: 768px) {
+  .media-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+@media (min-width: 1024px) {
+  :root {
+    --media-card-width: 200px;
+  }
+  .media-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+  .catalog-container {
+    padding-inline: 64px;
+  }
+}
+@media (hover: none) {
+  .media-remove {
+    opacity: 1;
+  }
+}
+/* Keep phone form fields readable without Safari zooming on focus. */
+@media (max-width: 767px) {
+  input:not([type='checkbox']):not([type='radio']):not([type='range']),
+  textarea,
+  select {
+    font-size: 1rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 0.01ms;
+  }
+}

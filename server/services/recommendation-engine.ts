@@ -1,26 +1,30 @@
-import { db } from "../db";
-import { TMDBService } from "./tmdb";
-import { storage } from "../storage";
-import { UserPreferences, WatchHistory } from "@shared/schema";
-import { Movie } from "@/types/movie";
-import { sql } from "drizzle-orm";
+import { db } from '../db';
+import { TMDBService } from './tmdb';
+import { storage } from '../storage';
+import { type UserPreferences, type WatchHistory } from '#shared/schema.ts';
+import { type Movie } from '#lib/types/movie.ts';
+import { sql } from 'drizzle-orm';
 
 // Import our new modular components
-import { 
-  RecommendationQuery, 
-  UserProfile, 
-  MovieCandidate, 
-  PersonalizedCategory,
-  RecommendationFilters
-} from "./recommendation/types";
-import { ContentAnalyzer, TemporalCalculator, GenreAnalyzer } from "./recommendation/content-helpers";
-import { FilterBuilder } from "./recommendation/filter-builder";
-import { RelevanceScorer } from "./recommendation/relevance-scorer";
-import { PreferenceFilter } from "./recommendation/preference-filter";
-import { RecommendationBlender } from "./recommendation/recommendation-blender";
-import { UserPreferenceAnalyzer } from "./recommendation/user-analyzer";
-import { CategoryGenerator } from "./recommendation/category-generator";
-import { MovieMatcher } from "./recommendation/movie-matcher";
+import {
+  type RecommendationQuery,
+  type UserProfile,
+  type MovieCandidate,
+  type PersonalizedCategory,
+  type RecommendationFilters
+} from './recommendation/types';
+import {
+  ContentAnalyzer,
+  TemporalCalculator,
+  GenreAnalyzer
+} from './recommendation/content-helpers';
+import { FilterBuilder } from './recommendation/filter-builder';
+import { RelevanceScorer } from './recommendation/relevance-scorer';
+import { PreferenceFilter } from './recommendation/preference-filter';
+import { RecommendationBlender } from './recommendation/recommendation-blender';
+import { UserPreferenceAnalyzer } from './recommendation/user-analyzer';
+import { CategoryGenerator } from './recommendation/category-generator';
+import { MovieMatcher } from './recommendation/movie-matcher';
 
 type UserMovieRating = {
   userId: string;
@@ -38,7 +42,7 @@ export class RecommendationEngine {
   private userAnalyzer: UserPreferenceAnalyzer;
   private categoryGenerator: CategoryGenerator;
   private movieMatcher: MovieMatcher;
-  
+
   constructor(tmdbApiKey: string) {
     this.tmdbService = new TMDBService(tmdbApiKey);
     this.userAnalyzer = new UserPreferenceAnalyzer(this.tmdbService);
@@ -49,7 +53,10 @@ export class RecommendationEngine {
   /**
    * Get recommendations for a user based on collaborative filtering
    */
-  async getPersonalizedRecommendations(userId: string, limit: number = 20): Promise<Movie[]> {
+  async getPersonalizedRecommendations(
+    userId: string,
+    limit: number = 20
+  ): Promise<Movie[]> {
     try {
       const query: RecommendationQuery = {
         userId,
@@ -57,10 +64,10 @@ export class RecommendationEngine {
         excludeWatched: true,
         excludeWatchlist: true
       };
-      
+
       return await this.generateRecommendations(query);
     } catch (error) {
-      console.error("Error generating personalized recommendations:", error);
+      console.error('Error generating personalized recommendations:', error);
       // Fallback to trending movies
       return this.tmdbService.getTrending();
     }
@@ -69,33 +76,56 @@ export class RecommendationEngine {
   /**
    * Get Netflix-style personalized recommendation categories
    */
-  async getPersonalizedCategories(userId: string): Promise<PersonalizedCategory[]> {
+  async getPersonalizedCategories(
+    userId: string
+  ): Promise<PersonalizedCategory[]> {
     return await this.categoryGenerator.getPersonalizedCategories(userId);
   }
 
   /**
    * Get enhanced "Because You Watched" recommendations with sophisticated matching
    */
-  async getEnhancedBecauseYouWatched(userId: string, sourceMovieId: number, limit: number = 15): Promise<Movie[]> {
+  async getEnhancedBecauseYouWatched(
+    userId: string,
+    sourceMovieId: number,
+    limit: number = 15
+  ): Promise<Movie[]> {
     try {
       const sourceMovie = await this.tmdbService.getMovieDetails(sourceMovieId);
       if (!sourceMovie) {
         console.error(`Source movie ${sourceMovieId} not found`);
         return [];
       }
-      
-      const userProfile = await this.userAnalyzer.analyzeUserPreferences(userId);
+
+      const userProfile =
+        await this.userAnalyzer.analyzeUserPreferences(userId);
       const watchHistory = await storage.getWatchHistory(userId);
-      const watchedMovieIds = new Set(watchHistory.map(item => item.movieId));
-      
-  const allCandidates: MovieCandidate[] = [];
-      
+      const watchedMovieIds = new Set(watchHistory.map((item) => item.movieId));
+
+      const allCandidates: MovieCandidate[] = [];
+
       // Find different types of similar movies
-      await this.movieMatcher.findFranchiseMovies(sourceMovie, allCandidates, userProfile);
-      await this.movieMatcher.findSameTitleMovies(sourceMovie, allCandidates, userProfile);
+      await this.movieMatcher.findFranchiseMovies(
+        sourceMovie,
+        allCandidates,
+        userProfile
+      );
+      await this.movieMatcher.findSameTitleMovies(
+        sourceMovie,
+        allCandidates,
+        userProfile
+      );
       await this.findSimilarByGenre(sourceMovie, allCandidates, userProfile);
-      await this.movieMatcher.findDirectorAndCastMatches(sourceMovie, allCandidates, userProfile);
-      await this.movieMatcher.findLanguageAndEraMatches(sourceMovie, allCandidates, userProfile);
+      await this.movieMatcher.findDirectorAndCastMatches(
+        sourceMovie,
+        allCandidates,
+        userProfile
+      );
+      await this.movieMatcher.findLanguageAndEraMatches(
+        sourceMovie,
+        allCandidates,
+        userProfile
+      );
       // Add TMDB native similar + recommendations as candidates (fast, high recall like Google panel)
       const [tmdbSimilar, tmdbRecs] = await Promise.all([
         this.tmdbService.getSimilarMovies(sourceMovieId),
@@ -104,13 +134,31 @@ export class RecommendationEngine {
       const blendedNative = [...(tmdbSimilar || []), ...(tmdbRecs || [])];
       for (const m of blendedNative) {
         if (!m || m.id === sourceMovie.id) continue;
-        const relevanceScore = RelevanceScorer.calculateRelevanceScore(m as any, sourceMovie, userProfile) + 0.1; // small boost
-        allCandidates.push({ movie: m as any, relevanceScore, source: 'tmdb_native' });
+        const relevanceScore =
+          RelevanceScorer.calculateRelevanceScore(
+            m as any,
+            sourceMovie,
+            userProfile
+          ) + 0.1; // small boost
+        allCandidates.push({
+          movie: m as any,
+          relevanceScore,
+          source: 'tmdb_native'
+        });
       }
-      
-      return this.processCandidates(allCandidates, sourceMovie, userProfile, watchedMovieIds, limit);
+
+      return this.processCandidates(
+        allCandidates,
+        sourceMovie,
+        userProfile,
+        watchedMovieIds,
+        limit
+      );
     } catch (error) {
-      console.error("Error getting enhanced because you watched recommendations:", error);
+      console.error(
+        'Error getting enhanced because you watched recommendations:',
+        error
+      );
       return [];
     }
   }
@@ -118,37 +166,61 @@ export class RecommendationEngine {
   /**
    * Main recommendation generation logic
    */
-  private async generateRecommendations(query: RecommendationQuery): Promise<Movie[]> {
+  private async generateRecommendations(
+    query: RecommendationQuery
+  ): Promise<Movie[]> {
     const userPreferences = await storage.getUserPreferences(query.userId);
     const watchHistory = await storage.getWatchHistory(query.userId);
     const watchlist = await storage.getWatchlistItems(query.userId);
-    
-    const exclusionSets = this.createExclusionSets(watchHistory, watchlist, query);
-    
+
+    const exclusionSets = this.createExclusionSets(
+      watchHistory,
+      watchlist,
+      query
+    );
+
     if (userPreferences && this.hasValidPreferences(userPreferences)) {
-      const contentBasedRecs = await this.generateContentBasedRecommendations(userPreferences, exclusionSets, query.limit);
-      
+      const contentBasedRecs = await this.generateContentBasedRecommendations(
+        userPreferences,
+        exclusionSets,
+        query.limit
+      );
+
       if (watchHistory.length > 0) {
-        const collaborativeRecs = await this.generateCollaborativeRecommendations(query, exclusionSets);
-        return RecommendationBlender.blendRecommendations(contentBasedRecs, collaborativeRecs, query.limit);
+        const collaborativeRecs =
+          await this.generateCollaborativeRecommendations(query, exclusionSets);
+        return RecommendationBlender.blendRecommendations(
+          contentBasedRecs,
+          collaborativeRecs,
+          query.limit
+        );
       }
-      
+
       return contentBasedRecs;
     }
-    
+
     if (watchHistory.length > 0) {
-      return await this.generateCollaborativeRecommendations(query, exclusionSets);
+      return await this.generateCollaborativeRecommendations(
+        query,
+        exclusionSets
+      );
     }
-    
+
     return await this.getFallbackRecommendations(exclusionSets, query.limit);
   }
 
-  private createExclusionSets(watchHistory: WatchHistory[], watchlist: any[], query: RecommendationQuery) {
-    const watchedMovieIds = query.excludeWatched ? 
-      new Set(watchHistory.map(item => item.movieId)) : new Set();
-    const watchlistMovieIds = query.excludeWatchlist ? 
-      new Set(watchlist.map(item => item.movieId)) : new Set();
-    
+  private createExclusionSets(
+    watchHistory: WatchHistory[],
+    watchlist: any[],
+    query: RecommendationQuery
+  ) {
+    const watchedMovieIds = query.excludeWatched
+      ? new Set(watchHistory.map((item) => item.movieId))
+      : new Set();
+    const watchlistMovieIds = query.excludeWatchlist
+      ? new Set(watchlist.map((item) => item.movieId))
+      : new Set();
+
     return { watchedMovieIds, watchlistMovieIds };
   }
 
@@ -157,19 +229,23 @@ export class RecommendationEngine {
   }
 
   private async generateContentBasedRecommendations(
-    preferences: UserPreferences, 
-    exclusionSets: any, 
+    preferences: UserPreferences,
+    exclusionSets: any,
     limit: number
   ): Promise<Movie[]> {
     const discoverParams = this.buildContentBasedFilters(preferences);
-    const recommendedMovies = await this.tmdbService.discoverMovies(discoverParams);
-    
+    const recommendedMovies =
+      await this.tmdbService.discoverMovies(discoverParams);
+
     return this.applyExclusionFilters(recommendedMovies, exclusionSets, limit);
   }
 
-  private async generateCollaborativeRecommendations(query: RecommendationQuery, exclusionSets: any): Promise<Movie[]> {
+  private async generateCollaborativeRecommendations(
+    query: RecommendationQuery,
+    exclusionSets: any
+  ): Promise<Movie[]> {
     const watchHistory = await storage.getWatchHistory(query.userId);
-    
+
     return await this.getCollaborativeFilteringRecommendations(
       query.userId,
       watchHistory,
@@ -179,28 +255,38 @@ export class RecommendationEngine {
     );
   }
 
-  private async getFallbackRecommendations(exclusionSets: any, limit: number): Promise<Movie[]> {
+  private async getFallbackRecommendations(
+    exclusionSets: any,
+    limit: number
+  ): Promise<Movie[]> {
     const popularMovies = await this.tmdbService.getPopular();
     return this.applyExclusionFilters(popularMovies, exclusionSets, limit);
   }
 
-  private buildContentBasedFilters(preferences: UserPreferences): Record<string, string> {
+  private buildContentBasedFilters(
+    preferences: UserPreferences
+  ): Record<string, string> {
     const discoverParams: Record<string, string> = {};
-    
+
     if (preferences.likedGenres && preferences.likedGenres.length > 0) {
       discoverParams.with_genres = preferences.likedGenres.join(',');
     }
-    
+
     discoverParams.sort_by = 'popularity.desc';
-    
+
     return discoverParams;
   }
 
-  private applyExclusionFilters(movies: Movie[], exclusionSets: any, limit: number): Movie[] {
+  private applyExclusionFilters(
+    movies: Movie[],
+    exclusionSets: any,
+    limit: number
+  ): Movie[] {
     return movies
-      .filter(movie => 
-        !exclusionSets.watchedMovieIds.has(movie.id) && 
-        !exclusionSets.watchlistMovieIds.has(movie.id)
+      .filter(
+        (movie) =>
+          !exclusionSets.watchedMovieIds.has(movie.id) &&
+          !exclusionSets.watchlistMovieIds.has(movie.id)
       )
       .slice(0, limit);
   }
@@ -216,7 +302,7 @@ export class RecommendationEngine {
     limit: number
   ): Promise<Movie[]> {
     // Convert user's watch history to ratings
-    const userRatings: UserMovieRating[] = userWatchHistory.map(history => ({
+    const userRatings: UserMovieRating[] = userWatchHistory.map((history) => ({
       userId,
       movieId: history.movieId,
       rating: UserPreferenceAnalyzer.calculateImplicitRating(history)
@@ -224,37 +310,59 @@ export class RecommendationEngine {
 
     // Find similar users
     const similarUsers = await this.findSimilarUsers(userId, userRatings);
-    
+
     if (similarUsers.length === 0) {
-      return this.getFallbackPopularMovies(watchedMovieIds, watchlistMovieIds, limit);
+      return this.getFallbackPopularMovies(
+        watchedMovieIds,
+        watchlistMovieIds,
+        limit
+      );
     }
 
     // Get recommendations from similar users
     const recommendations = await this.generateCollaborativeFromSimilarUsers(
-      userId, 
-      similarUsers, 
-      watchedMovieIds, 
-      watchlistMovieIds, 
+      userId,
+      similarUsers,
+      watchedMovieIds,
+      watchlistMovieIds,
       limit
     );
-    
+
     return recommendations;
   }
 
-  private async findSimilarByGenre(sourceMovie: Movie, candidates: MovieCandidate[], userProfile: UserProfile): Promise<void> {
+  private async findSimilarByGenre(
+    sourceMovie: Movie,
+    candidates: MovieCandidate[],
+    userProfile: UserProfile
+  ): Promise<void> {
     try {
-      const genreFilters = FilterBuilder.buildGenreFilters(sourceMovie, userProfile);
+      const genreFilters = FilterBuilder.buildGenreFilters(
+        sourceMovie,
+        userProfile
+      );
       const cleanFilters = this.cleanFilters(genreFilters);
       const genreMovies = await this.tmdbService.discoverMovies(cleanFilters);
-      
-      const temporallyRelevantGenre = PreferenceFilter.filterTemporallyRelevant(genreMovies, sourceMovie);
-      const filteredGenre = PreferenceFilter.filterByUserPreferences(temporallyRelevantGenre, sourceMovie, userProfile);
-      
+
+      const temporallyRelevantGenre = PreferenceFilter.filterTemporallyRelevant(
+        genreMovies,
+        sourceMovie
+      );
+      const filteredGenre = PreferenceFilter.filterByUserPreferences(
+        temporallyRelevantGenre,
+        sourceMovie,
+        userProfile
+      );
+
       for (const movie of filteredGenre.slice(0, 20)) {
         if (movie.id === sourceMovie.id) continue;
-        
-        const relevanceScore = RelevanceScorer.calculateRelevanceScore(movie, sourceMovie, userProfile);
-        
+
+        const relevanceScore = RelevanceScorer.calculateRelevanceScore(
+          movie,
+          sourceMovie,
+          userProfile
+        );
+
         if (relevanceScore >= 0.2) {
           candidates.push({
             movie,
@@ -269,17 +377,20 @@ export class RecommendationEngine {
   }
 
   private processCandidates(
-    allCandidates: MovieCandidate[], 
-    sourceMovie: Movie, 
-    userProfile: UserProfile, 
-    watchedMovieIds: Set<number>, 
+    allCandidates: MovieCandidate[],
+    sourceMovie: Movie,
+    userProfile: UserProfile,
+    watchedMovieIds: Set<number>,
     limit: number
   ): Movie[] {
     // Remove duplicates and watched movies
-    let uniqueCandidates = this.removeDuplicateCandidates(allCandidates, watchedMovieIds);
+    let uniqueCandidates = this.removeDuplicateCandidates(
+      allCandidates,
+      watchedMovieIds
+    );
 
     // Filter out low-quality and low-popularity items (improves perceived accuracy)
-    uniqueCandidates = uniqueCandidates.filter(c => {
+    uniqueCandidates = uniqueCandidates.filter((c) => {
       const m: any = c.movie as any;
       const votes = typeof m.vote_count === 'number' ? m.vote_count : 0;
       const avg = typeof m.vote_average === 'number' ? m.vote_average : 0;
@@ -300,9 +411,7 @@ export class RecommendationEngine {
       return bp - ap;
     });
 
-    return uniqueCandidates
-      .slice(0, limit)
-      .map(candidate => candidate.movie);
+    return uniqueCandidates.slice(0, limit).map((candidate) => candidate.movie);
   }
 
   // Enhanced TV recommendations ("More Like This")
@@ -315,17 +424,30 @@ export class RecommendationEngine {
       ]);
       const combined = [...(similar || []), ...(recs || [])];
       // Basic scoring: genre overlap + rating + popularity
-      const genreIds: number[] = Array.isArray(source?.genres) ? source.genres.map((g: any) => g.id) : (source?.genre_ids || []);
+      const genreIds: number[] = Array.isArray(source?.genres)
+        ? source.genres.map((g: any) => g.id)
+        : source?.genre_ids || [];
       const scored = combined.map((show: any) => {
-        const sGenres: number[] = Array.isArray(show?.genres) ? show.genres.map((g: any) => g.id) : (show?.genre_ids || []);
-        const overlap = genreIds.length && sGenres.length ? sGenres.filter((g: number) => genreIds.includes(g)).length : 0;
-        const score = overlap * 0.5 + (show.vote_average || 0) * 0.35 + (show.popularity || 0) * 0.15;
+        const sGenres: number[] = Array.isArray(show?.genres)
+          ? show.genres.map((g: any) => g.id)
+          : show?.genre_ids || [];
+        const overlap =
+          genreIds.length && sGenres.length
+            ? sGenres.filter((g: number) => genreIds.includes(g)).length
+            : 0;
+        const score =
+          overlap * 0.5 +
+          (show.vote_average || 0) * 0.35 +
+          (show.popularity || 0) * 0.15;
         return { show, score };
       });
       const filtered = scored
-        .filter(s => (s.show.vote_average || 0) >= 6.0 && (s.show.vote_count || 0) >= 150)
+        .filter(
+          (s) =>
+            (s.show.vote_average || 0) >= 6.0 && (s.show.vote_count || 0) >= 150
+        )
         .sort((a, b) => b.score - a.score)
-        .map(s => s.show);
+        .map((s) => s.show);
       const seen = new Set<number>();
       const unique: any[] = [];
       for (const item of filtered) {
@@ -341,17 +463,23 @@ export class RecommendationEngine {
     }
   }
 
-  private removeDuplicateCandidates(candidates: MovieCandidate[], watchedMovieIds: Set<number>): MovieCandidate[] {
+  private removeDuplicateCandidates(
+    candidates: MovieCandidate[],
+    watchedMovieIds: Set<number>
+  ): MovieCandidate[] {
     const seenIds = new Set<number>();
     const uniqueCandidates: MovieCandidate[] = [];
-    
+
     for (const candidate of candidates) {
-      if (!seenIds.has(candidate.movie.id) && !watchedMovieIds.has(candidate.movie.id)) {
+      if (
+        !seenIds.has(candidate.movie.id) &&
+        !watchedMovieIds.has(candidate.movie.id)
+      ) {
         seenIds.add(candidate.movie.id);
         uniqueCandidates.push(candidate);
       }
     }
-    
+
     return uniqueCandidates;
   }
 
@@ -363,23 +491,34 @@ export class RecommendationEngine {
     collaborativeRecs: Movie[],
     limit: number
   ): Movie[] {
-    return RecommendationBlender.blendRecommendations(contentBasedRecs, collaborativeRecs, limit);
+    return RecommendationBlender.blendRecommendations(
+      contentBasedRecs,
+      collaborativeRecs,
+      limit
+    );
   }
 
   /**
    * Find users with similar tastes using enhanced similarity algorithms
    */
-  private async findSimilarUsers(userId: string, userRatings: UserMovieRating[]): Promise<{ userId: string; similarity: number }[]> {
+  private async findSimilarUsers(
+    userId: string,
+    userRatings: UserMovieRating[]
+  ): Promise<{ userId: string; similarity: number }[]> {
     const otherUserIds = await this.getOtherUserIds(userId);
     const similarities: { userId: string; similarity: number }[] = [];
-    
+
     for (const otherId of otherUserIds) {
-      const similarity = await this.calculateUserSimilarity(userRatings, otherId);
-      if (similarity > 0.3) { // Threshold for similarity
+      const similarity = await this.calculateUserSimilarity(
+        userRatings,
+        otherId
+      );
+      if (similarity > 0.3) {
+        // Threshold for similarity
         similarities.push({ userId: otherId, similarity });
       }
     }
-    
+
     return similarities
       .sort((a, b) => b.similarity - a.similarity)
       .slice(0, 10); // Top 10 similar users
@@ -387,25 +526,28 @@ export class RecommendationEngine {
 
   private async getOtherUserIds(userId: string): Promise<string[]> {
     const watchHistories = await db.execute(sql`
-      SELECT DISTINCT user_id 
-      FROM watch_history 
+      SELECT DISTINCT user_id
+      FROM watch_history
       WHERE user_id != ${userId}
     `);
-    
+
     return watchHistories.rows.map((row: any) => row.user_id as string);
   }
 
-  private async calculateUserSimilarity(userRatings: UserMovieRating[], otherId: string): Promise<number> {
+  private async calculateUserSimilarity(
+    userRatings: UserMovieRating[],
+    otherId: string
+  ): Promise<number> {
     const otherUserHistory = await storage.getWatchHistory(otherId);
-    
+
     if (otherUserHistory.length < 3) return 0; // Skip users with insufficient history
-    
-    const otherRatings: UserMovieRating[] = otherUserHistory.map(history => ({
+
+    const otherRatings: UserMovieRating[] = otherUserHistory.map((history) => ({
       userId: otherId,
       movieId: history.movieId,
       rating: UserPreferenceAnalyzer.calculateImplicitRating(history)
     }));
-    
+
     return this.calculatePearsonCorrelation(userRatings, otherRatings);
   }
 
@@ -417,20 +559,27 @@ export class RecommendationEngine {
     limit: number
   ): Promise<Movie[]> {
     const movieScores: Map<number, number> = new Map();
-    
+
     for (const simUser of similarUsers) {
       const otherUserHistory = await storage.getWatchHistory(simUser.userId);
-      
+
       for (const historyItem of otherUserHistory) {
         if (watchedMovieIds.includes(historyItem.movieId)) continue;
-        
-        const score = simUser.similarity * UserPreferenceAnalyzer.calculateImplicitRating(historyItem);
+
+        const score =
+          simUser.similarity *
+          UserPreferenceAnalyzer.calculateImplicitRating(historyItem);
         const currentScore = movieScores.get(historyItem.movieId) || 0;
         movieScores.set(historyItem.movieId, currentScore + score);
       }
     }
-    
-    return await this.convertScoresToMovies(movieScores, watchedMovieIds, watchlistMovieIds, limit);
+
+    return await this.convertScoresToMovies(
+      movieScores,
+      watchedMovieIds,
+      watchlistMovieIds,
+      limit
+    );
   }
 
   private async convertScoresToMovies(
@@ -442,8 +591,10 @@ export class RecommendationEngine {
     const topMovieIds = Array.from(movieScores.entries())
       .sort((a, b) => b[1] - a[1])
       .slice(0, limit * 2)
-      .map(entry => entry[0])
-      .filter(id => !watchedMovieIds.includes(id) && !watchlistMovieIds.includes(id));
+      .map((entry) => entry[0])
+      .filter(
+        (id) => !watchedMovieIds.includes(id) && !watchlistMovieIds.includes(id)
+      );
 
     const moviePromises = topMovieIds.slice(0, limit).map(async (movieId) => {
       try {
@@ -465,60 +616,65 @@ export class RecommendationEngine {
     limit: number
   ): Promise<Movie[]> {
     const popularMovies = await this.tmdbService.getPopular();
-    
+
     const filteredMovies = popularMovies.filter(
-      movie => !watchedMovieIds.includes(movie.id) && !watchlistMovieIds.includes(movie.id)
+      (movie) =>
+        !watchedMovieIds.includes(movie.id) &&
+        !watchlistMovieIds.includes(movie.id)
     );
-    
+
     return filteredMovies.slice(0, limit);
   }
 
   /**
    * Calculate Pearson correlation coefficient between two users
    */
-  private calculatePearsonCorrelation(user1Ratings: UserMovieRating[], user2Ratings: UserMovieRating[]): number {
+  private calculatePearsonCorrelation(
+    user1Ratings: UserMovieRating[],
+    user2Ratings: UserMovieRating[]
+  ): number {
     // Find common movies
-    const user1Map = new Map(user1Ratings.map(r => [r.movieId, r.rating]));
-    const user2Map = new Map(user2Ratings.map(r => [r.movieId, r.rating]));
-    
+    const user1Map = new Map(user1Ratings.map((r) => [r.movieId, r.rating]));
+    const user2Map = new Map(user2Ratings.map((r) => [r.movieId, r.rating]));
+
     const commonMovies = user1Ratings
-      .map(r => r.movieId)
-      .filter(movieId => user2Map.has(movieId));
-    
+      .map((r) => r.movieId)
+      .filter((movieId) => user2Map.has(movieId));
+
     if (commonMovies.length < 2) return 0; // Need at least 2 common movies
-    
+
     return this.computePearsonCorrelation(commonMovies, user1Map, user2Map);
   }
 
   private computePearsonCorrelation(
-    commonMovies: number[], 
-    user1Map: Map<number, number>, 
+    commonMovies: number[],
+    user1Map: Map<number, number>,
     user2Map: Map<number, number>
   ): number {
     const n = commonMovies.length;
-    
+
     // Calculate means
     const sum1 = commonMovies.reduce((sum, id) => sum + user1Map.get(id)!, 0);
     const sum2 = commonMovies.reduce((sum, id) => sum + user2Map.get(id)!, 0);
     const mean1 = sum1 / n;
     const mean2 = sum2 / n;
-    
+
     // Calculate correlation components
     let numerator = 0;
     let denominator1 = 0;
     let denominator2 = 0;
-    
+
     for (const movieId of commonMovies) {
       const rating1 = user1Map.get(movieId)!;
       const rating2 = user2Map.get(movieId)!;
       const diff1 = rating1 - mean1;
       const diff2 = rating2 - mean2;
-      
+
       numerator += diff1 * diff2;
       denominator1 += diff1 * diff1;
       denominator2 += diff2 * diff2;
     }
-    
+
     const denominator = Math.sqrt(denominator1 * denominator2);
     return denominator === 0 ? 0 : numerator / denominator;
   }
@@ -526,43 +682,46 @@ export class RecommendationEngine {
   /**
    * Calculate cosine similarity between users
    */
-  private calculateCosineSimilarity(user1Ratings: UserMovieRating[], user2Ratings: UserMovieRating[]): number {
-    const user1Map = new Map(user1Ratings.map(r => [r.movieId, r.rating]));
-    const user2Map = new Map(user2Ratings.map(r => [r.movieId, r.rating]));
-    
+  private calculateCosineSimilarity(
+    user1Ratings: UserMovieRating[],
+    user2Ratings: UserMovieRating[]
+  ): number {
+    const user1Map = new Map(user1Ratings.map((r) => [r.movieId, r.rating]));
+    const user2Map = new Map(user2Ratings.map((r) => [r.movieId, r.rating]));
+
     const commonMovies = user1Ratings
-      .map(r => r.movieId)
-      .filter(movieId => user2Map.has(movieId));
-    
+      .map((r) => r.movieId)
+      .filter((movieId) => user2Map.has(movieId));
+
     if (commonMovies.length === 0) return 0;
-    
+
     return this.computeCosineSimilarity(commonMovies, user1Map, user2Map);
   }
 
   private computeCosineSimilarity(
-    commonMovies: number[], 
-    user1Map: Map<number, number>, 
+    commonMovies: number[],
+    user1Map: Map<number, number>,
     user2Map: Map<number, number>
   ): number {
     let dotProduct = 0;
     let norm1 = 0;
     let norm2 = 0;
-    
+
     for (const movieId of commonMovies) {
       const rating1 = user1Map.get(movieId)!;
       const rating2 = user2Map.get(movieId)!;
-      
+
       dotProduct += rating1 * rating2;
       norm1 += rating1 * rating1;
       norm2 += rating2 * rating2;
     }
-    
+
     const denominator = Math.sqrt(norm1 * norm2);
     return denominator === 0 ? 0 : dotProduct / denominator;
   }
 
   // Legacy method support (delegated to helper classes)
-  
+
   /**
    * Calculate implicit rating - delegated to UserPreferenceAnalyzer
    */
@@ -573,15 +732,31 @@ export class RecommendationEngine {
   /**
    * Filter by user preferences - delegated to PreferenceFilter
    */
-  private filterByUserPreferences(movies: Movie[], sourceMovie: Movie, userProfile: UserProfile): Movie[] {
-    return PreferenceFilter.filterByUserPreferences(movies, sourceMovie, userProfile);
+  private filterByUserPreferences(
+    movies: Movie[],
+    sourceMovie: Movie,
+    userProfile: UserProfile
+  ): Movie[] {
+    return PreferenceFilter.filterByUserPreferences(
+      movies,
+      sourceMovie,
+      userProfile
+    );
   }
 
   /**
    * Calculate relevance score - delegated to RelevanceScorer
    */
-  private calculateRelevanceScore(movie: Movie, sourceMovie: Movie, userProfile: UserProfile): number {
-    return RelevanceScorer.calculateRelevanceScore(movie, sourceMovie, userProfile);
+  private calculateRelevanceScore(
+    movie: Movie,
+    sourceMovie: Movie,
+    userProfile: UserProfile
+  ): number {
+    return RelevanceScorer.calculateRelevanceScore(
+      movie,
+      sourceMovie,
+      userProfile
+    );
   }
 
   /**
@@ -601,7 +776,10 @@ export class RecommendationEngine {
   /**
    * Filter temporally relevant movies - delegated to PreferenceFilter
    */
-  private filterTemporallyRelevant(movies: Movie[], sourceMovie: Movie): Movie[] {
+  private filterTemporallyRelevant(
+    movies: Movie[],
+    sourceMovie: Movie
+  ): Movie[] {
     return PreferenceFilter.filterTemporallyRelevant(movies, sourceMovie);
   }
 
@@ -615,8 +793,16 @@ export class RecommendationEngine {
   /**
    * Calculate enhanced relevance score - delegated to RelevanceScorer
    */
-  private calculateEnhancedRelevanceScore(movie: Movie, sourceMovie: Movie, userProfile: UserProfile): number {
-    return RelevanceScorer.calculateEnhancedRelevanceScore(movie, sourceMovie, userProfile);
+  private calculateEnhancedRelevanceScore(
+    movie: Movie,
+    sourceMovie: Movie,
+    userProfile: UserProfile
+  ): number {
+    return RelevanceScorer.calculateEnhancedRelevanceScore(
+      movie,
+      sourceMovie,
+      userProfile
+    );
   }
 
   /**
@@ -650,21 +836,42 @@ export class RecommendationEngine {
   /**
    * Calculate language and era relevance - delegated to RelevanceScorer
    */
-  private calculateLanguageAndEraRelevance(movie: Movie, sourceMovie: Movie, userProfile: UserProfile): number {
-    return RelevanceScorer.calculateLanguageAndEraRelevance(movie, sourceMovie, userProfile);
+  private calculateLanguageAndEraRelevance(
+    movie: Movie,
+    sourceMovie: Movie,
+    userProfile: UserProfile
+  ): number {
+    return RelevanceScorer.calculateLanguageAndEraRelevance(
+      movie,
+      sourceMovie,
+      userProfile
+    );
   }
 
   /**
    * Calculate director/cast relevance - delegated to RelevanceScorer
    */
-  private calculateDirectorCastRelevance(movie: Movie, sourceMovie: Movie, type: 'director' | 'cast', userProfile: UserProfile): number {
-    return RelevanceScorer.calculateDirectorCastRelevance(movie, sourceMovie, type, userProfile);
+  private calculateDirectorCastRelevance(
+    movie: Movie,
+    sourceMovie: Movie,
+    type: 'director' | 'cast',
+    userProfile: UserProfile
+  ): number {
+    return RelevanceScorer.calculateDirectorCastRelevance(
+      movie,
+      sourceMovie,
+      type,
+      userProfile
+    );
   }
 
   /**
    * Build temporal genre filters - delegated to FilterBuilder
    */
-  private buildTemporalGenreFilters(sourceMovie: Movie, userProfile: UserProfile): any {
+  private buildTemporalGenreFilters(
+    sourceMovie: Movie,
+    userProfile: UserProfile
+  ): any {
     return FilterBuilder.buildTemporalGenreFilters(sourceMovie, userProfile);
   }
 
@@ -672,22 +879,30 @@ export class RecommendationEngine {
    * Find director and cast matches - delegated to MovieMatcher
    */
   private async findDirectorAndCastMatches(
-    sourceMovie: Movie, 
-    candidates: MovieCandidate[], 
+    sourceMovie: Movie,
+    candidates: MovieCandidate[],
     userProfile: UserProfile
   ): Promise<void> {
-    return await this.movieMatcher.findDirectorAndCastMatches(sourceMovie, candidates, userProfile);
+    return await this.movieMatcher.findDirectorAndCastMatches(
+      sourceMovie,
+      candidates,
+      userProfile
+    );
   }
 
   /**
    * Find same title movies - delegated to MovieMatcher
    */
   private async findSameTitleMovies(
-    sourceMovie: Movie, 
-    candidates: MovieCandidate[], 
+    sourceMovie: Movie,
+    candidates: MovieCandidate[],
     userProfile: UserProfile
   ): Promise<void> {
-    return await this.movieMatcher.findSameTitleMovies(sourceMovie, candidates, userProfile);
+    return await this.movieMatcher.findSameTitleMovies(
+      sourceMovie,
+      candidates,
+      userProfile
+    );
   }
 
   /**

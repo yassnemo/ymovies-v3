@@ -1,149 +1,64 @@
-<div align="center">
-  <h1> <strong> YMovies - A Movie Recommendation Platform </strong></h1>
-</div>
-<div align="center">
-  
-  [![Live Demo](https://img.shields.io/badge/Live%20Demo-success?style=for-the-badge)](https://ymovies.yerradouani.me)
-  [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
-  [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-  [![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/)
-  [![Node.js](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
-  [![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
-  [![TMDB](https://img.shields.io/badge/TMDB-01D277?style=for-the-badge&logo=themoviedb&logoColor=white)](https://www.themoviedb.org/)
-  
-  **A Netflix-style movie recommendation platform with intelligent AI-powered movie recommendations and modern web technologies.**
-  
-  [Live Demo](https://ymovies.yerradouani.me) • [Documentation](./docs) • [Issues](../../issues) • [Discussions](../../discussions)
-  
-</div>
+# YMovies
 
-<img width="2880" height="1695" alt="ymovies yerradouani me_" src="https://github.com/user-attachments/assets/2ef63bc8-0bc8-441e-9662-a66806a1e100" />
+Discover movies and TV shows, save a watchlist and favorites, organize collections, and track watch and episode progress.
 
-## What Makes YMovies Special
+YMovies runs on **Svelte 5, SvelteKit 3, TypeScript 6, Vite 8, and Tailwind CSS 3**. The UI is implemented in Svelte. SvelteKit serves pages and same-origin APIs; the existing TMDB gateway, Supabase authentication, PostgreSQL/Drizzle storage, and optional Python recommendation service are retained.
 
-- **Smart AI Recommendations** - 13+ personalized categories powered by content analysis.
-- **Rich Movie Database** - 800,000+ movies from TMDB with detailed information, trailers, and reviews. 
-- **Secure Authentication** - Firebase-powered user accounts with personalized watchlists and preferences. 
-- **Modern Interface** - Netflix-style responsive design with smooth animations and accessibility support. 
+## Run locally
 
-## Architecture
+Use Node.js 22.12 or newer (Node.js 24 recommended).
 
-- **Frontend**: React + TypeScript + Tailwind CSS (deployed on Vercel)
-- **Backend**: Node.js + Express + PostgreSQL (deployed on Heroku)
-- **AI Engine**: Python + Flask for machine learning recommendations
-- **External APIs**: TMDB for movie data, Firebase for authentication
-
-## Quick Start
-
-### **One-Command Setup (Recommended)**
-
-**New to the project? Start here:**
-
-```bash
-# Linux/Mac users
-git clone https://github.com/yassnemo/ymovies-v3.git
-cd ymovies-v3
-chmod +x setup.sh && ./setup.sh
-
-# Windows users
-git clone https://github.com/yassnemo/ymovies-v3.git
-cd ymovies-v3
-setup.bat
-```
-
-This automated setup will:
-- ✅ Install all dependencies
-- ✅ Create your environment file
-- ✅ Guide you through API key setup
-- ✅ Check your system requirements
-
-### **Start Development**
-
-After setup, you have options:
-
-```bash
-# Option 1: Full development (needs database setup)
+```sh
+npm ci
+cp .env.example .env
 npm run dev
-
-# Option 2: Simple mode (works without database)
-npm run dev:simple
-
-# Option 3: Frontend only (for UI development)
-npm run dev:client
 ```
 
-**For the quickest start**: Use `npm run dev:simple` - it works immediately with just TMDB API key!
+On PowerShell, use `Copy-Item .env.example .env`. Open http://localhost:5000.
 
-### **Required API Keys**
+Set `TMDB_API_KEY` or `TMDB_BEARER_TOKEN` for the catalog. Guest browsing and browser-local lists do not require a database or Supabase. Missing catalog credentials display an unavailable state.
 
-You'll need these to get started:
+For accounts, set `PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_ANON_KEY`. The existing `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` names remain supported. Account sync also needs `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and `DATABASE_URL` on the server. Never expose service-role credentials or TMDB credentials as public variables.
 
-1. **TMDB API Key** (required) - [Get it free here](https://www.themoviedb.org/settings/api)
-2. **Firebase Project** (for authentication) - [Setup guide](https://firebase.google.com/)
-3. **Database URL** (optional) - Use `npm run dev:simple` to skip this initially
+In Supabase, allow your origin's `/auth/callback` and `/auth/reset-password` redirect URLs. Enable Google in Supabase to use Google sign-in.
 
-### **Troubleshooting**
+## Commands
 
-Having issues? We've got you covered:
+| Command                | Purpose                                                                                    |
+| ---------------------- | ------------------------------------------------------------------------------------------ |
+| `npm run dev`          | Run SvelteKit locally on port 5000                                                         |
+| `npm run check`        | Generate route types and check Svelte/TypeScript                                           |
+| `npm test`             | Test gateway caching, request validation, and preference handling                          |
+| `npm run test:api`     | Check a running server's health, auth boundaries, and error routes                         |
+| `npm run test:browser` | Check desktop/mobile guest flows in a running server using Chrome                          |
+| `npm run build`        | Build a Node server into `build/`                                                          |
+| `npm start`            | Run the built server; load `.env` when present                                             |
+| `npm run preview`      | Preview the production build                                                               |
+| `npm run db:push`      | Apply the Drizzle schema to your configured database                                       |
 
-- **Setup problems**: Check `docs/TROUBLESHOOTING.md`
-- **Environment issues**: Run `node scripts/development/check-env-simple.js`
-- **Still stuck**: [Create an issue](../../issues) or check the FAQ
+Browser checks use a fresh temporary browser profile. Set `TEST_BASE_URL` to change the server URL and `CHROME_PATH` if Chrome is installed outside its default location. Real-account sign-in and email delivery require separate verification with your configured Supabase project.
 
----
-## Tech Stack
+## Routes and features
 
-- **Frontend**: React 18 + TypeScript + Vite + Tailwind CSS  
-- **Backend**: Node.js + Express + Python ML Service  
-- **Database**: PostgreSQL + Drizzle ORM  
-- **Auth**: Firebase Authentication + JWT  
-- **Deployment**: Heroku (Backend) + Vercel (Frontend)
+- `/`: the existing landing design, rebuilt in Svelte.
+- `/home`: featured titles, catalog rows, recommendations, genre onboarding, and continue watching.
+- `/movies`, `/tv`, `/genre/:mediaType/:genre`: category browsing, genre filters, sorting, and pagination.
+- `/search`: movie/TV search, release year and rating filters, and pagination.
+- `/movie/:id`, `/tv/:id`: cast and crew, trailers, reviews, related titles, providers, ratings, watch progress, and TV episode tracking.
+- `/my-list`: watchlist, favorites, history, continue watching, and editable collections.
+- `/profile`, `/settings`: account details, genre preferences, password changes, and saved activity preferences.
+- Sign-in, sign-up, email verification, OAuth callback, and password reset routes.
+- `/privacy`, `/terms`, `/api-test`, and proper error pages.
+
+Existing local favorites, watchlists, history, collections, and episode tracking are migrated when read. Movie and TV identities include media type. Guest and signed-in preference caches are isolated. Failed account saves remain on the device and retry on reconnect.
+
 
 ## Deployment
 
-**Quick Deploy**:
-- **Frontend**: [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fyassnemo%2Fymovies-v3)
-- **Backend**: Deploy to [Heroku](https://heroku.com) using `npm run build:heroku`
+Local and Heroku builds use `@sveltejs/adapter-node`. Set `PORT` and `ORIGIN` for your host, then run `npm run build && npm start`. Vercel sets `VERCEL`, selecting `@sveltejs/adapter-vercel`; `vercel.json` declares the SvelteKit framework. Configure runtime environment variables in your host's settings.
 
-**Detailed guides**: Check [`docs/deployment/`](./docs/deployment) for step-by-step instructions
+The optional Flask recommendation service remains in `recommendation_service/`. Set `RECOMMENDATION_SERVICE_URL` when deploying it separately. The TypeScript recommendation engine remains available when that service is unavailable.
 
-## Contributing
+See [architecture](docs/ARCHITECTURE.md), [API](docs/api/API_DOCUMENTATION.md), [setup](docs/setup/INSTALLATION.md), and [deployment](docs/deployment/DEPLOYMENT.md).
 
-1. Fork the repo and create a branch: `git checkout -b feature/amazing-feature`
-2. Make changes and test: `npm test`
-3. Commit: `git commit -m 'Add amazing feature'`
-4. Push and open a Pull Request
-
-**Full guidelines**: [Contributing Guide](./docs/CONTRIBUTING.md)
-
-
-## Credits
-
-- [TMDB](https://www.themoviedb.org/) for movie data
-- Open-source libraries that made this possible
-
-## Support
-
-- **Documentation**: [`docs/`](./docs)
-- **Issues**: [GitHub Issues](../../issues)
-- **Contact**: [mailbot@yerradouani.me](mailto:mailbot@yerradouani.me)
-
-##  License
-
-MIT License - see the [LICENSE](LICENSE) file for details.
-
-
----
-
-<div align="center">
-
-**Built With Love By This Guy [Yassine Erradouani](https://yerradouani.me)**
-
-⭐ **And of course, star this project if you found it helpful!**
-
-</div>
-
-
-
-
-
+Movie data comes from [TMDB](https://www.themoviedb.org/); availability data is supplied by JustWatch through TMDB. YMovies is not endorsed or certified by TMDB. Created by [Yassine Erradouani](https://yerradouani.me). [MIT license](LICENSE).

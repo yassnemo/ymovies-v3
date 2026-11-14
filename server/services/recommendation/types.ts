@@ -68,8 +68,8 @@ export interface BlendedRecommendation {
   sources: string[];
 }
 
-export type RecommendationType = 
-  | 'continue_watching' 
+export type RecommendationType =
+  | 'continue_watching'
   | 'because_you_watched'
   | 'personalized'
   | 'trending'
@@ -89,4 +89,4 @@ export interface PersonalizedCategory {
   recommendationType: RecommendationType;
 }
 
-import { Movie } from "@/types/movie";
+import { type Movie } from '#lib/types/movie.ts';

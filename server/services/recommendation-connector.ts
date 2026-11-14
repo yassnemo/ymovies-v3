@@ -1,9 +1,10 @@
 import axios from 'axios';
-import { WatchHistory } from '@shared/schema';
+import { type WatchHistory } from '#shared/schema.ts';
 import { TMDBService } from './tmdb';
 
 // Connection to the recommendation microservice
-const RECOMMENDATION_SERVICE_URL = process.env.RECOMMENDATION_SERVICE_URL || 'http://localhost:5001';
+const RECOMMENDATION_SERVICE_URL =
+  process.env.RECOMMENDATION_SERVICE_URL || 'http://localhost:5001';
 
 /**
  * Service for connecting to the Python-based recommendation microservice
@@ -16,9 +17,14 @@ export class RecommendationConnector {
   private lastHealthOkAt = 0;
   private healthTtlMs = 1000 * 60 * 5; // health-check at most once every 5 minutes
 
-  constructor(baseUrl = RECOMMENDATION_SERVICE_URL, tmdbApiKey = process.env.TMDB_API_KEY) {
+  constructor(
+    baseUrl = RECOMMENDATION_SERVICE_URL,
+    tmdbApiKey = process.env.TMDB_API_KEY
+  ) {
     this.baseUrl = baseUrl;
-    this.tmdbService = new TMDBService(tmdbApiKey || process.env.TMDB_BEARER_TOKEN || '');
+    this.tmdbService = new TMDBService(
+      tmdbApiKey || process.env.TMDB_BEARER_TOKEN || ''
+    );
   }
 
   /**
@@ -41,9 +47,13 @@ export class RecommendationConnector {
         if (attempt === retries) {
           console.error('Recommendation service health check failed:', error);
         } else {
-          console.warn(`Recommendation service health check attempt ${attempt + 1} failed, retrying...`);
+          console.warn(
+            `Recommendation service health check attempt ${attempt + 1} failed, retrying...`
+          );
           // Wait a bit before retrying (exponential backoff)
-          await new Promise(resolve => setTimeout(resolve, 500 * Math.pow(2, attempt)));
+          await new Promise((resolve) =>
+            setTimeout(resolve, 500 * Math.pow(2, attempt))
+          );
         }
       }
     }
@@ -62,7 +72,10 @@ export class RecommendationConnector {
       // Prefer v2 engine if available
       let data: any[] = [];
       try {
-        const v2 = await axios.get(`${this.baseUrl}/api/reco/v2/movie/${movieId}`, { timeout: 3500 });
+        const v2 = await axios.get(
+          `${this.baseUrl}/api/reco/v2/movie/${movieId}`,
+          { timeout: 3500 }
+        );
         if (Array.isArray(v2.data) && v2.data.length) {
           data = v2.data.slice(0, count);
         }
@@ -90,7 +103,9 @@ export class RecommendationConnector {
       if (cached && cached.expiresAt > now) return cached.data;
       let data: any[] = [];
       try {
-        const v2 = await axios.get(`${this.baseUrl}/api/reco/v2/tv/${tvId}`, { timeout: 3500 });
+        const v2 = await axios.get(`${this.baseUrl}/api/reco/v2/tv/${tvId}`, {
+          timeout: 3500
+        });
         if (Array.isArray(v2.data) && v2.data.length) {
           data = v2.data.slice(0, count);
         }
@@ -109,7 +124,10 @@ export class RecommendationConnector {
   /**
    * Get "Because you liked X" recommendations
    */
-  async getBecauseYouLikedRecommendations(movieId: number, count = 10): Promise<any> {
+  async getBecauseYouLikedRecommendations(
+    movieId: number,
+    count = 10
+  ): Promise<any> {
     try {
       const cacheKey = `because:${movieId}:${count}`;
       const cached = this.cache.get(cacheKey);
@@ -128,8 +146,15 @@ export class RecommendationConnector {
       this.cache.set(cacheKey, { data, expiresAt: now + this.defaultTtlMs });
       return data;
     } catch (error) {
-      console.error(`Failed to get "because you liked" recommendations for ${movieId}:`, error);
-      return { recommendations: [], sourceMovie: null, category: 'Recommendations' };
+      console.error(
+        `Failed to get "because you liked" recommendations for ${movieId}:`,
+        error
+      );
+      return {
+        recommendations: [],
+        sourceMovie: null,
+        category: 'Recommendations'
+      };
     }
   }
 
@@ -137,90 +162,123 @@ export class RecommendationConnector {
    * Get personalized recommendations based on liked movies and watch history
    * With improved error handling and fallback mechanism
    */
-  async getPersonalizedRecommendations(userData: any, count = 20): Promise<any> {
+  async getPersonalizedRecommendations(
+    userData: any,
+    count = 20
+  ): Promise<any> {
     try {
       // First check if the service is available before making the expensive call
       const isServiceUp = await this.isAvailable(1);
-      
+
       if (!isServiceUp) {
-        console.warn('Recommendation service is unavailable, using fallback mechanism');
-        return this.generateFallbackPersonalizedRecommendations(userData, count);
+        console.warn(
+          'Recommendation service is unavailable, using fallback mechanism'
+        );
+        return this.generateFallbackPersonalizedRecommendations(
+          userData,
+          count
+        );
       }
-      
+
       // Use a longer timeout for this potentially complex operation
       const response = await axios.post(
         `${this.baseUrl}/recommendations/personalized?count=${count}`,
         userData,
         { timeout: 9000 } // 9 second timeout for complex recommendations
       );
-      
-      if (!response.data || !response.data.recommendation_categories || 
-          response.data.recommendation_categories.length === 0) {
-        console.warn('Received empty recommendations from service, using fallback');
-        return this.generateFallbackPersonalizedRecommendations(userData, count);
+
+      if (
+        !response.data ||
+        !response.data.recommendation_categories ||
+        response.data.recommendation_categories.length === 0
+      ) {
+        console.warn(
+          'Received empty recommendations from service, using fallback'
+        );
+        return this.generateFallbackPersonalizedRecommendations(
+          userData,
+          count
+        );
       }
-      
+
       return response.data;
     } catch (error) {
       console.error('Failed to get personalized recommendations:', error);
       return this.generateFallbackPersonalizedRecommendations(userData, count);
     }
   }
-  
+
   /**
    * Generate fallback recommendations when the service is unavailable
    * This creates a more robust experience with multiple categories
    */
-  private async generateFallbackPersonalizedRecommendations(userData: any, count = 20): Promise<any> {
+  private async generateFallbackPersonalizedRecommendations(
+    userData: any,
+    count = 20
+  ): Promise<any> {
     try {
       const categories = [];
-      
+
       // Add a general recommendations category
       const popular = await this.getFallbackRecommendations();
       if (popular.length > 0) {
         categories.push({
-          category: "Popular on Netflix",
+          category: 'Popular on Netflix',
           movies: popular.slice(0, count)
         });
       }
-      
+
       // If user has liked movies, add recommendations based on a random liked movie
       if (userData.liked_movies && userData.liked_movies.length > 0) {
-        const randomLikedMovieId = userData.liked_movies[Math.floor(Math.random() * userData.liked_movies.length)];
-        const similarToLiked = await this.getFallbackRecommendations(randomLikedMovieId);
-        
+        const randomLikedMovieId =
+          userData.liked_movies[
+            Math.floor(Math.random() * userData.liked_movies.length)
+          ];
+        const similarToLiked =
+          await this.getFallbackRecommendations(randomLikedMovieId);
+
         if (similarToLiked.length > 0) {
           categories.push({
-            category: "Because You Liked Similar Movies",
+            category: 'Because You Liked Similar Movies',
             movies: similarToLiked.slice(0, count)
           });
         }
       }
-      
+
       // If the user has watch history, add trending recommendations
       if (userData.watch_history && userData.watch_history.length > 0) {
-        const trending = await this.tmdbService.getTrending('week').catch(() => []);
-        
+        const trending = await this.tmdbService
+          .getTrending('week')
+          .catch(() => []);
+
         if (trending.length > 0) {
           categories.push({
-            category: "Trending This Week",          movies: trending.slice(0, count)
+            category: 'Trending This Week',
+            movies: trending.slice(0, count)
           });
         }
       }
-      
+
       return {
-        recommendation_categories: categories.length > 0 ? categories : [{ 
-          category: "Recommended for You", 
-          movies: await this.getFallbackRecommendations() 
-        }]
+        recommendation_categories:
+          categories.length > 0
+            ? categories
+            : [
+                {
+                  category: 'Recommended for You',
+                  movies: await this.getFallbackRecommendations()
+                }
+              ]
       };
     } catch (error) {
       console.error('Error in fallback recommendations generation:', error);
-      return { 
-        recommendation_categories: [{ 
-          category: "Recommended for You", 
-          movies: await this.getFallbackRecommendations() 
-        }] 
+      return {
+        recommendation_categories: [
+          {
+            category: 'Recommended for You',
+            movies: await this.getFallbackRecommendations()
+          }
+        ]
       };
     }
   }
@@ -256,42 +314,45 @@ export class RecommendationConnector {
       const results = movieId
         ? await this.tmdbService.getMovieRecommendations(movieId)
         : await this.tmdbService.getPopular();
-      
+
       // If we didn't get enough results, supplement with popular movies
       if (results.length < 5 && movieId) {
         const popularMovies = await this.tmdbService.getPopular();
-        
+
         // Combine unique results based on movie ID
         const combinedResults = [...results];
-        
+
         for (const movie of popularMovies) {
-          if (!combinedResults.some(m => m.id === movie.id)) {
+          if (!combinedResults.some((m) => m.id === movie.id)) {
             combinedResults.push(movie);
           }
-          
+
           // Stop once we have enough movies
           if (combinedResults.length >= 20) {
             break;
           }
         }
-        
+
         return combinedResults;
       }
-      
+
       return results;
     } catch (error) {
       console.error('Failed to get fallback recommendations:', error);
-      
+
       // If the specific movie recommendation failed, try popular movies as a last resort
       if (movieId) {
         try {
           return await this.tmdbService.getPopular();
         } catch (secondError) {
-          console.error('Failed to get even popular movies as fallback:', secondError);
+          console.error(
+            'Failed to get even popular movies as fallback:',
+            secondError
+          );
           return [];
         }
       }
-      
+
       return [];
     }
   }

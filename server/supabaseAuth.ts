@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express';
+import { type Request, type Response, type NextFunction } from 'express';
 import { supabaseAdmin } from './supabaseAdmin';
 import { storage } from './storage';
 
@@ -9,20 +9,31 @@ import { storage } from './storage';
  * The client sends: Authorization: Bearer <supabase-access-token>
  * We verify it using supabaseAdmin.auth.getUser(token).
  */
-export const supabaseAuth = async (req: Request, res: Response, next: NextFunction) => {
+export const supabaseAuth = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ error: 'Unauthorized - No token provided' });
+      return res
+        .status(401)
+        .json({ error: 'Unauthorized - No token provided' });
     }
 
     const token = authHeader.split('Bearer ')[1];
     if (!token) {
-      return res.status(401).json({ error: 'Unauthorized - Invalid token format' });
+      return res
+        .status(401)
+        .json({ error: 'Unauthorized - Invalid token format' });
     }
 
     try {
-      const { data: { user }, error } = await supabaseAdmin.auth.getUser(token);
+      const {
+        data: { user },
+        error
+      } = await supabaseAdmin.auth.getUser(token);
 
       if (error || !user) {
         return res.status(401).json({ error: 'Unauthorized - Invalid token' });
@@ -34,8 +45,10 @@ export const supabaseAuth = async (req: Request, res: Response, next: NextFuncti
         uid: user.id,
         sub: user.id,
         email: user.email || undefined,
-        name: user.user_metadata?.full_name || user.user_metadata?.first_name || '',
-        picture: user.user_metadata?.avatar_url || user.user_metadata?.picture || null,
+        name:
+          user.user_metadata?.full_name || user.user_metadata?.first_name || '',
+        picture:
+          user.user_metadata?.avatar_url || user.user_metadata?.picture || null
       };
 
       // Automatically upsert user in our database
@@ -53,7 +66,7 @@ export const supabaseAuth = async (req: Request, res: Response, next: NextFuncti
           email: user.email || null,
           firstName: firstName || null,
           lastName: lastName || null,
-          profileImageUrl: meta.avatar_url || meta.picture || null,
+          profileImageUrl: meta.avatar_url || meta.picture || null
         });
       } catch (dbError) {
         // Don't block the request if user upsert fails
@@ -67,14 +80,22 @@ export const supabaseAuth = async (req: Request, res: Response, next: NextFuncti
     }
   } catch (error) {
     console.error('Authentication error:', error);
-    return res.status(500).json({ error: 'Internal server error during authentication' });
+    return res
+      .status(500)
+      .json({ error: 'Internal server error during authentication' });
   }
 };
 
 // Middleware to check if the user has the admin role (keep for future use)
-export const requireAdmin = (req: Request, res: Response, next: NextFunction) => {
+export const requireAdmin = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   if (!req.user) {
-    return res.status(401).json({ error: 'Unauthorized - User not authenticated' });
+    return res
+      .status(401)
+      .json({ error: 'Unauthorized - User not authenticated' });
   }
 
   const { admin: isAdmin } = req.user as { admin?: boolean };

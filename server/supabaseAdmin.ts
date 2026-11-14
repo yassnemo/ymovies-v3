@@ -4,7 +4,9 @@ const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!supabaseUrl || !supabaseServiceKey) {
-  console.warn('[Supabase Admin] Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY');
+  console.warn(
+    '[Supabase Admin] Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY'
+  );
 }
 
 // Service-role client bypasses RLS — use only on the server
@@ -14,8 +16,8 @@ export const supabaseAdmin = createClient(
   {
     auth: {
       autoRefreshToken: false,
-      persistSession: false,
-    },
+      persistSession: false
+    }
   }
 );
 

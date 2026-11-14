@@ -1,201 +1,219 @@
-<div class="min-h-screen bg-black text-white">
-  <div class="max-w-3xl mx-auto px-6 py-20">
-    <div class="mb-12">
-      <a
-        href="/home"
-        class="text-red-500 hover:text-red-400 text-sm mb-6 inline-block"
-        >&larr; Back to YMovies</a
-      >
-      <h1 class="text-page-title font-light tracking-wide mb-4">
-        Privacy Policy
-      </h1>
-      <p class="text-gray-400 text-sm">Effective Date: November 14, 2026</p>
-    </div>
+<script lang="ts">
+  import PolicyPage from '#lib/components/PolicyPage.svelte';
+  import { site } from '#lib/site.ts';
 
-    <div class="space-y-10">
-      <section>
-        <h2
-          class="text-section-title font-semibold text-white mb-4 border-b border-gray-800 pb-2"
-        >
-          1. Introduction
-        </h2>
-        <p class="text-gray-300 leading-relaxed">
-          YMovies ("we", "our", "us") is a personal, non-commercial project that
-          allows users to browse movie and TV show metadata sourced from the
-          TMDB API and manage their own watchlists. This Privacy Policy explains
-          what information we collect, how we use it, and your choices regarding
-          your data.
-        </p>
-      </section>
+  const sections = [
+    { id: 'who-runs-ymovies', title: 'Who runs YMovies' },
+    { id: 'information', title: 'Information you provide' },
+    { id: 'browser-storage', title: 'Browser storage' },
+    { id: 'analytics', title: 'Analytics' },
+    { id: 'service-providers', title: 'Other services' },
+    { id: 'storage-and-retention', title: 'Storage and retention' },
+    { id: 'your-choices', title: 'Your choices' },
+    { id: 'changes-and-contact', title: 'Changes and contact' }
+  ];
+</script>
 
-      <section>
-        <h2
-          class="text-section-title font-semibold text-white mb-4 border-b border-gray-800 pb-2"
-        >
-          2. Information We Collect
-        </h2>
-        <p class="text-gray-300 leading-relaxed mb-4">
-          When you sign in with your Google account, we receive and store only
-          the following information provided by Google:
-        </p>
-        <ul class="space-y-2 text-gray-300">
-          <li class="flex items-start">
-            <span class="text-red-500 mr-3 mt-0.5">-</span>
-            Your name (display name)
-          </li>
-          <li class="flex items-start">
-            <span class="text-red-500 mr-3 mt-0.5">-</span>
-            Your email address
-          </li>
-          <li class="flex items-start">
-            <span class="text-red-500 mr-3 mt-0.5">-</span>
-            Your profile picture URL
-          </li>
-        </ul>
-        <p class="text-gray-300 leading-relaxed mt-4">
-          We do not request access to your Google contacts, Google Drive, Gmail,
-          or any other Google services beyond basic profile information.
-        </p>
-        <p class="text-gray-300 leading-relaxed mt-4">
-          We also use Google Analytics to understand how the website is used.
-          This includes page views, navigation, and browser and device
-          information. Google Analytics may use cookies to measure visits and
-          interactions.
-        </p>
-      </section>
+<PolicyPage
+  title="Privacy Policy"
+  introduction="You can browse without an account. This page explains what stays on your device, what is used when you sign in, and which services help YMovies work."
+  summary={[
+    { label: 'Guest library', text: 'Saved in your browser on this device.' },
+    {
+      label: 'Account access',
+      text: 'Supabase handles email and Google sign-in.'
+    },
+    {
+      label: 'Website usage',
+      text: 'Google Analytics measures visits and navigation.'
+    }
+  ]}
+  {sections}
+  related={{
+    href: '/terms',
+    title: 'Read the Terms of Service',
+    description: 'What YMovies offers and the ground rules for using it.'
+  }}
+>
+  <section id="who-runs-ymovies">
+    <h2>1. Who runs YMovies</h2>
+    <p>
+      YMovies is a personal project operated by <a href={site.author.website}
+        >{site.author.name}</a
+      >. This policy covers information used to provide movie and TV discovery,
+      accounts, saved libraries, and website analytics.
+    </p>
+    <p>
+      If you have a question about your information, use the <a
+        href={site.author.contact}>contact page</a
+      > and mention YMovies.
+    </p>
+  </section>
 
-      <section>
-        <h2
-          class="text-section-title font-semibold text-white mb-4 border-b border-gray-800 pb-2"
-        >
-          3. How We Use Your Information
-        </h2>
-        <p class="text-gray-300 leading-relaxed mb-4">
-          Your data is used solely for the following purposes:
-        </p>
-        <ul class="space-y-2 text-gray-300">
-          <li class="flex items-start">
-            <span class="text-red-500 mr-3 mt-0.5">-</span>
-            <strong>Authentication:</strong> To identify you and allow you to sign
-            in securely.
-          </li>
-          <li class="flex items-start">
-            <span class="text-red-500 mr-3 mt-0.5">-</span>
-            <strong>Preferences:</strong> To store your movie watchlist, favorites,
-            and viewing preferences so they persist across sessions.
-          </li>
-          <li class="flex items-start">
-            <span class="text-red-500 mr-3 mt-0.5">-</span>
-            <strong>Display:</strong> To show your name and profile picture within
-            the app interface.
-          </li>
-          <li class="flex items-start">
-            <span class="text-red-500 mr-3 mt-0.5">-</span>
-            <strong>Analytics:</strong> To understand website usage and improve browsing
-            and navigation.
-          </li>
-        </ul>
-      </section>
+  <section id="information">
+    <h2>2. Information you provide</h2>
+    <ul>
+      <li>
+        <strong>Account information.</strong> When you register with email/password,
+        Supabase processes your email, password, and the profile details you supply.
+        With Google sign-in, basic account details can include your name, email, and
+        profile image. YMovies does not receive your Google password or request access
+        to Gmail, Drive, or contacts.
+      </li>
+      <li>
+        <strong>Your library and preferences.</strong> Saved titles, favorites, collections,
+        ratings, watch and episode progress, genre preferences, and appearance settings
+        are used to provide your library and recommendations. When you are signed
+        in, this information can sync with your account.
+      </li>
+      <li>
+        <strong>Messages.</strong> If you contact me, the details you provide are
+        used to respond to that request. Please do not include passwords or sign-in
+        codes.
+      </li>
+    </ul>
+  </section>
 
-      <section>
-        <h2
-          class="text-section-title font-semibold text-white mb-4 border-b border-gray-800 pb-2"
-        >
-          4. Data Sharing
-        </h2>
-        <p class="text-gray-300 leading-relaxed">
-          We do not sell or rent your account information. We use service
-          providers for authentication, data storage, and website analytics.
-          Google processes analytics data according to its
-          <a
-            href="https://policies.google.com/privacy"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="underline">Privacy Policy</a
-          >.
-        </p>
-      </section>
+  <section id="browser-storage">
+    <h2>3. Browser storage</h2>
+    <p>
+      YMovies uses local browser storage for guest libraries, appearance
+      choices, and a device copy of signed-in preferences. Supabase also uses
+      browser storage to maintain your sign-in session. This lets your account
+      and library work across visits.
+    </p>
+    <p>
+      Clearing site data can remove your guest library and sign you out. It does
+      not delete information already synced with an account or previously
+      processed by service providers. On a shared device, sign out and clear
+      site data if you do not want saved library information to remain there.
+    </p>
+  </section>
 
-      <section>
-        <h2
-          class="text-section-title font-semibold text-white mb-4 border-b border-gray-800 pb-2"
-        >
-          5. Data Storage & Security
-        </h2>
-        <p class="text-gray-300 leading-relaxed">
-          Your account data is stored in a secure PostgreSQL database hosted on
-          Neon. Authentication is handled by Supabase Auth (email/password and
-          Google OAuth). We do not store your Google password. We implement
-          reasonable security measures to protect your information, but no
-          method of electronic storage is 100% secure.
-        </p>
-      </section>
+  <section id="analytics">
+    <h2>4. Analytics</h2>
+    <p>
+      YMovies uses Google Analytics to understand page views, navigation, and
+      browser and device information. Google Analytics may use cookies and
+      similar identifiers. Requests to Google also include technical information
+      such as your IP address.
+    </p>
+    <p>
+      The page-view events sent by YMovies remove query strings and URL
+      fragments from the page and referrer URLs. Account passwords and saved
+      library contents are not included in those events.
+    </p>
+    <p>
+      Read <a href="https://policies.google.com/technologies/partner-sites"
+        >how Google uses information from sites that use its services</a
+      >. You can use browser tracking controls or Google’s
+      <a href="https://tools.google.com/dlpage/gaoptout"
+        >Analytics opt-out browser add-on</a
+      >. Availability and behavior depend on your browser.
+    </p>
+  </section>
 
-      <section>
-        <h2
-          class="text-section-title font-semibold text-white mb-4 border-b border-gray-800 pb-2"
-        >
-          6. Your Rights
-        </h2>
-        <p class="text-gray-300 leading-relaxed mb-4">You can at any time:</p>
-        <ul class="space-y-2 text-gray-300">
-          <li class="flex items-start">
-            <span class="text-red-500 mr-3 mt-0.5">-</span>
-            View and update your profile information in your account settings
-          </li>
-          <li class="flex items-start">
-            <span class="text-red-500 mr-3 mt-0.5">-</span>
-            Delete your watchlist, favorites, and watch history
-          </li>
-          <li class="flex items-start">
-            <span class="text-red-500 mr-3 mt-0.5">-</span>
-            Request complete deletion of your account and all associated data by contacting
-            us
-          </li>
-          <li class="flex items-start">
-            <span class="text-red-500 mr-3 mt-0.5">-</span>
-            Revoke YMovies access from your Google account at{' '}
-            <a
-              href="https://myaccount.google.com/permissions"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="text-red-500 hover:text-red-400 underline"
-              >myaccount.google.com/permissions</a
-            >
-          </li>
-        </ul>
-      </section>
+  <section id="service-providers">
+    <h2>5. Other services</h2>
+    <p>
+      YMovies does not sell or rent your account information. It relies on
+      services that process information to operate their part of the website:
+    </p>
+    <ul>
+      <li>
+        <strong>Sign-in and storage.</strong>
+        <a href="https://supabase.com/privacy">Supabase</a> handles authentication.
+        A PostgreSQL database stores synced library and account information.
+      </li>
+      <li>
+        <strong>Website delivery.</strong>
+        <a href="https://vercel.com/legal/privacy-notice">Vercel</a> hosts the website
+        and can process connection information and operational logs to deliver and
+        protect it.
+      </li>
+      <li>
+        <strong>Catalog and images.</strong>
+        <a href="https://www.themoviedb.org/privacy-policy">TMDB</a> supplies catalog
+        data and receives catalog search requests. Your browser also contacts its
+        image servers when loading artwork.
+      </li>
+      <li>
+        <strong>Trailers.</strong> Opening a YouTube trailer loads an embedded
+        player. Google can then receive connection and device information and
+        use cookies according to its
+        <a href="https://policies.google.com/privacy">Privacy Policy</a>.
+      </li>
+      <li>
+        <strong>Recommendations.</strong> If the optional recommendation service is
+        enabled, it receives a limited summary of watched title IDs, ratings, and
+        preferred genres. The app does not send it your account ID, email, or full
+        library records.
+      </li>
+    </ul>
+    <p>
+      These providers may process information in countries other than the one
+      where you live. Their own policies explain how they handle information
+      within their services.
+    </p>
+  </section>
 
-      <section>
-        <h2
-          class="text-section-title font-semibold text-white mb-4 border-b border-gray-800 pb-2"
-        >
-          7. Changes to This Policy
-        </h2>
-        <p class="text-gray-300 leading-relaxed">
-          We may update this Privacy Policy from time to time. Any changes will
-          be posted on this page with an updated effective date. Continued use
-          of YMovies after changes constitutes acceptance of the revised policy.
-        </p>
-      </section>
+  <section id="storage-and-retention">
+    <h2>6. Storage and retention</h2>
+    <p>
+      Guest libraries remain in browser storage until you remove them, clear
+      site data, or your browser removes that storage. Account information and
+      synced libraries remain associated with your account until they are
+      updated, removed, or a deletion request is handled.
+    </p>
+    <p>
+      Copies in provider logs, backups, or analytics systems can remain subject
+      to those services’ retention settings. Security controls help protect
+      information, but no website or storage system can guarantee complete
+      security.
+    </p>
+  </section>
 
-      <section>
-        <h2
-          class="text-section-title font-semibold text-white mb-4 border-b border-gray-800 pb-2"
-        >
-          8. Contact
-        </h2>
-        <p class="text-gray-300 leading-relaxed">
-          If you have any questions or concerns about this Privacy Policy or
-          your data, please contact us at:{' '}
-          <a
-            href="mailto:mailbot@yerradouani.me"
-            class="text-red-500 hover:text-red-400 transition-colors underline"
-          >
-            mailbot@yerradouani.me
-          </a>
-        </p>
-      </section>
-    </div>
-  </div>
-</div>
+  <section id="your-choices">
+    <h2>7. Your choices</h2>
+    <ul>
+      <li>
+        Browse without signing in and keep a guest library on your device.
+      </li>
+      <li>
+        Manage saved titles and collections in <a href="/my-list"
+          >Your library</a
+        >, and update your profile or clear library history in
+        <a href="/settings">Settings</a>.
+      </li>
+      <li>
+        Use browser controls to clear local data or manage cookies and tracking.
+        Clearing local data does not delete your account.
+      </li>
+      <li>
+        Remove YMovies access through your <a
+          href="https://myaccount.google.com/connections"
+          >Google account connections</a
+        > if you use Google sign-in. This does not itself delete YMovies account data.
+      </li>
+      <li>
+        <a href={site.author.contact}>Request access, correction, or deletion</a
+        > of your account information and saved data. I may need to verify account
+        ownership before acting on a request.
+      </li>
+    </ul>
+  </section>
+
+  <section id="changes-and-contact">
+    <h2>8. Changes and contact</h2>
+    <p>
+      This policy may change when YMovies or its services change. The revision
+      date at the top of this page will be updated when the policy is revised.
+    </p>
+    <p>
+      For privacy questions or account data requests, <a
+        href={site.author.contact}>contact Yassine Erradouani</a
+      >. Include the email address you use for YMovies so I can identify the
+      relevant account, but never include your password or authentication codes.
+    </p>
+  </section>
+</PolicyPage>

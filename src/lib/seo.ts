@@ -45,7 +45,7 @@ const pages: Record<string, [string, string]> = {
     'How YMovies handles account information, saved libraries and website analytics.'
   ],
   '/terms': [
-    'Terms of Use — YMovies',
+    'Terms of Service — YMovies',
     'Terms for using YMovies, its movie and TV metadata, and personal library features.'
   ],
   '/search': [

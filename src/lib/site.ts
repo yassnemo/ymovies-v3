@@ -9,6 +9,7 @@ export const site = {
     name: 'Yassine Erradouani',
     handle: 'yassnemo',
     website: 'https://yerradouani.me',
+    contact: 'https://yerradouani.me/contact',
     github: 'https://github.com/yassnemo'
   }
 } as const;

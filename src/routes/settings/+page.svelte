@@ -1,6 +1,8 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
   import { useApp } from '#lib/state.ts';
+  import Icon from '#lib/components/Icon.svelte';
   const app = useApp();
   const { session, preferences, ready, syncing } = app;
   let firstName = $state('');
@@ -10,6 +12,27 @@
   let busy = $state(false);
   let problem = $state('');
   let message = $state('');
+  let activeSection = $state('account');
+  const sections = [
+    ['account', 'Account'],
+    ['appearance', 'Appearance'],
+    ['activity', 'Activity'],
+    ['your-data', 'Your data']
+  ];
+  onMount(() => {
+    const updateSection = () => {
+      activeSection =
+        sections
+          .filter(
+            ([id]) =>
+              (document.getElementById(id)?.getBoundingClientRect().top ??
+                Infinity) < 240
+          )
+          .at(-1)?.[0] || 'account';
+    };
+    window.addEventListener('scroll', updateSection, { passive: true });
+    return () => window.removeEventListener('scroll', updateSection);
+  });
   $effect(() => {
     firstName = $session?.user.user_metadata.first_name || '';
     lastName = $session?.user.user_metadata.last_name || '';
@@ -57,15 +80,13 @@
     problem = '';
     message = '';
     try {
-      const { error } = await app
-        .auth()
-        .updateUser({
-          data: {
-            first_name: firstName,
-            last_name: lastName,
-            full_name: `${firstName} ${lastName}`.trim()
-          }
-        });
+      const { error } = await app.auth().updateUser({
+        data: {
+          first_name: firstName,
+          last_name: lastName,
+          full_name: `${firstName} ${lastName}`.trim()
+        }
+      });
       if (error) throw error;
       message = 'Your profile has been updated.';
     } catch (error) {
@@ -111,12 +132,24 @@
     if (window.confirm('Clear the watch history in your library?'))
       void app.update({ watchHistory: [] });
   }
+  function appearance(key: string, value: unknown) {
+    void app.update({
+      appSettings: { ...$preferences.appSettings, [key]: value }
+    });
+  }
 </script>
 
 <svelte:head><title>Settings — YMovies</title></svelte:head>
-<main id="main" class="page-container narrow">
+<main id="main" class="page-container narrow settings-page">
   <p class="eyebrow">Make it yours</p>
-  <h1 class="page-title">Settings</h1>
+  <h1 class="page-title"><Icon name="settings" size={30} />Settings</h1>
+  <nav class="settings-sections" aria-label="Settings sections">
+    {#each sections as [id, title]}<a
+        href={'#' + id}
+        class:active={activeSection === id}
+        aria-current={activeSection === id ? 'location' : undefined}>{title}</a
+      >{/each}
+  </nav>
   {#if problem}<p class="error-message" role="alert" style="margin-bottom:24px">
       {problem}
     </p>{/if}{#if message}<p
@@ -127,7 +160,7 @@
       {message}
     </p>{/if}{#if !$ready}<p role="status">
       Loading settings…
-    </p>{:else}{#if $session}<section class="panel">
+    </p>{:else}{#if $session}<section class="panel" id="account">
         <p class="eyebrow">Account</p>
         <h2>Your profile</h2>
         <p style="margin-bottom:24px">{$session.user.email}</p>
@@ -180,16 +213,64 @@
             >
           </div>
         </form>
-      </section>{:else}<section class="panel">
-        <h2>Keep your settings in sync</h2>
-        <p>
-          Sign in to manage your account and sync your library across devices.
-        </p>
-        <div class="actions">
+      </section>{:else}<section class="panel" id="account">
+        <h2>Account</h2>
+        <p>Sign in to sync your settings and watch progress across devices.</p>
+        <div class="settings-account-row">
+          <div>
+            <strong>Not signed in</strong>
+            <p>Create an account or sign in to sync your data</p>
+          </div>
           <a class="button primary" href="/signin?next=/settings">Sign in</a>
         </div>
       </section>{/if}
-    <section class="panel">
+    <section class="panel" id="appearance">
+      <h2>Appearance</h2>
+      <p>Change the look of the site to suit your needs.</p>
+      <div class="appearance-row">
+        <div>
+          <strong>Theme</strong><span
+            >Pick a color palette for the entire interface.</span
+          >
+        </div>
+        <label
+          ><span class="sr-only">Theme</span><select
+            value={String($preferences.appSettings.theme || 'default')}
+            onchange={(event) => appearance('theme', event.currentTarget.value)}
+            ><option value="default">Default</option><option value="green"
+              >Green</option
+            ><option value="violet">Violet</option><option value="red"
+              >Red</option
+            ></select
+          ></label
+        >
+      </div>
+      <label class="toggle-row" style="flex-direction:row"
+        ><div>
+          Reduce Motion<span>Reduce effects and automatic transitions.</span>
+        </div>
+        <input
+          type="checkbox"
+          checked={$preferences.appSettings.reduceMotion === true}
+          onchange={(event) =>
+            appearance('reduceMotion', event.currentTarget.checked)}
+        /></label
+      >
+      <label class="toggle-row" style="flex-direction:row"
+        ><div>
+          Show Title Logos<span
+            >Display movie and series titles as image logos.</span
+          >
+        </div>
+        <input
+          type="checkbox"
+          checked={$preferences.appSettings.showLogos !== false}
+          onchange={(event) =>
+            appearance('showLogos', event.currentTarget.checked)}
+        /></label
+      >
+    </section>
+    <section class="panel" id="activity">
       <p class="eyebrow">Preferences</p>
       <h2>Activity &amp; discovery</h2>
       {#each options as [key, title, description]}<label
@@ -210,7 +291,7 @@
             : 'Preferences are saved on this device.'}
       </p>
     </section>
-    <section class="panel">
+    <section class="panel" id="your-data">
       <p class="eyebrow">Your data</p>
       <h2>Watch history</h2>
       <p>Manage the titles in your viewing history.</p>

@@ -41,10 +41,30 @@
   let collection = $state('');
   let progress = $state(0);
   let expandedReviews = $state<string[]>([]);
+  let expandedOverview = $state(false);
+  let directors = $derived(
+    (item.credits?.crew || [])
+      .filter((person) => person.job === 'Director' || person.job === 'Creator')
+      .map((person) => person.name)
+      .filter((name, index, names) => names.indexOf(name) === index)
+      .slice(0, 3)
+  );
+  let language = $derived(
+    item.original_language
+      ? new Intl.DisplayNames(['en'], { type: 'language' }).of(
+          item.original_language
+        )
+      : null
+  );
   $effect(() => {
     item.id;
     tab = 'cast';
     collection = '';
+    expandedOverview = false;
+    document.body.style.setProperty(
+      '--ambient-image',
+      'url("' + imageUrl(item.backdrop_path || item.poster_path, 'w300') + '")'
+    );
   });
   $effect(() => {
     progress = history?.watchData?.watchProgress || 0;
@@ -87,6 +107,13 @@
 >
 <main id="main">
   <section class="detail-hero">
+    <div
+      class="hero-background-glow"
+      style:background-image={'url("' +
+        imageUrl(item.backdrop_path || item.poster_path, 'w300') +
+        '")'}
+      aria-hidden="true"
+    ></div>
     <img
       class="hero-backdrop"
       src={imageUrl(item.backdrop_path || item.poster_path, 'w1280')}
@@ -120,7 +147,20 @@
             href={`/genre/${data.type}/${genre.id}`}>{genre.name}</a
           >{/each}
       </div>
-      <p class="overview">{item.overview || 'No overview available.'}</p>
+      {#if directors.length}<p class="detail-director">
+          Director: <strong>{directors.join(', ')}</strong>
+        </p>{/if}
+      <div class="overview detail-overview">
+        <p class:clamped={!expandedOverview}>
+          {item.overview || 'No overview available.'}
+        </p>
+        {#if (item.overview?.length || 0) > 140}<button
+            class="more"
+            aria-expanded={expandedOverview}
+            onclick={() => (expandedOverview = !expandedOverview)}
+            >{expandedOverview ? 'Read Less' : 'Read More'}</button
+          >{/if}
+      </div>
       <div class="actions">
         {#if videos[0]}<button
             class="button primary"
@@ -130,6 +170,8 @@
               )}><Icon name="play" />Watch trailer</button
           >{/if}<button
           class="button secondary"
+          aria-label={saved ? 'Remove from my list' : 'Add to my list'}
+          title={saved ? 'Remove from my list' : 'Add to my list'}
           aria-pressed={saved}
           onclick={() => app.toggle('watchlist', item)}
           ><Icon name={saved ? 'check' : 'plus'} />{saved
@@ -137,11 +179,19 @@
             : 'My list'}</button
         ><button
           class="button secondary"
+          aria-label={favorite ? 'Unfavorite' : 'Favorite'}
+          title={favorite ? 'Unfavorite' : 'Favorite'}
           aria-pressed={favorite}
           onclick={() => app.toggle('favoriteMovies', item)}
           ><Icon name="heart" />{favorite ? 'Favorited' : 'Favorite'}</button
         ><button
           class="button secondary"
+          aria-label={history?.watchData?.completed
+            ? 'Mark unwatched'
+            : 'Mark watched'}
+          title={history?.watchData?.completed
+            ? 'Mark unwatched'
+            : 'Mark watched'}
           onclick={() =>
             app.watch(item, history?.watchData?.completed ? 0 : 100)}
           ><Icon name="check" />{history?.watchData?.completed
@@ -150,6 +200,27 @@
         >
       </div>
     </div>
+    {#if language || item.release_date || item.first_air_date}<aside
+        class="detail-facts"
+        aria-label="Title information"
+      >
+        {#if language}<div>
+            <span>Language</span><strong>{language}</strong>
+          </div>{/if}
+        {#if item.release_date || item.first_air_date}<div>
+            <span>{data.type === 'tv' ? 'First Aired' : 'Release Date'}</span
+            ><strong
+              >{new Date(
+                (item.release_date || item.first_air_date) + 'T12:00:00Z'
+              ).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                timeZone: 'UTC'
+              })}</strong
+            >
+          </div>{/if}
+      </aside>{/if}
   </section>
   <div class="page-container" style="padding-top:24px">
     <div class="two-columns">

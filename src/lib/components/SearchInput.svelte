@@ -74,7 +74,7 @@
     type="search"
     name="q"
     bind:value={query}
-    placeholder="Search movies and TV shows…"
+    placeholder="Search keywords..."
     aria-label="Search movies and TV shows"
     role="combobox"
     aria-expanded={focused && suggestions.length > 0}

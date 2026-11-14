@@ -4,6 +4,7 @@
   import { mediaKey, mediaTitle, mediaType } from '#lib/types/media.ts';
   import MediaRow from '#lib/components/MediaRow.svelte';
   import MediaCard from '#lib/components/MediaCard.svelte';
+  import Icon from '#lib/components/Icon.svelte';
   const app = useApp();
   const { preferences, ready, session } = app;
   const tabs = [
@@ -108,9 +109,9 @@
 </script>
 
 <svelte:head><title>My list — YMovies</title></svelte:head>
-<main id="main" class="page-container">
+<main id="main" class="page-container library-page">
   <p class="eyebrow">A collection of your kind of stories</p>
-  <h1 class="page-title">My list</h1>
+  <h1 class="page-title">My Lists</h1>
   {#if !$session}<p class="muted" style="margin-bottom:25px">
       Your library is saved on this device. <a
         href="/signin?next=/my-list"
@@ -159,9 +160,17 @@
     />{#if !$preferences.watchlist.length && !$preferences.favoriteMovies.length && !$preferences.watchHistory.length}<div
         class="empty-state"
       >
-        <h2>Your next favorites start here</h2>
-        <p>Save a title while browsing to build your own library.</p>
-        <a class="button primary" href="/movies">Discover movies</a>
+        <div class="folder-illustration"><Icon name="plus" size={24} /></div>
+        <h2>Start your first list</h2>
+        <p>
+          Save movies and shows for later, keep your favourites together, or put
+          together a collection.
+        </p>
+        <div class="actions">
+          <a class="button primary" href="/my-list?tab=collections"
+            ><Icon name="plus" size={18} />New List</a
+          ><a class="button secondary" href="/movies">Discover movies</a>
+        </div>
       </div>{/if}
   {:else}
     {#if tab === 'collections'}<section class="panel">

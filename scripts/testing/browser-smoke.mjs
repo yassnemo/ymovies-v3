@@ -138,8 +138,8 @@ try {
   await call('Page.addScriptToEvaluateOnNewDocument', {
     source: `if (!localStorage.getItem('ymovies:preferences:guest')) { localStorage.setItem('user_watchlist', JSON.stringify([{id:550,title:'Fight Club',media_type:'movie',poster_path:null}])); }`
   });
-  await visit('/', 'Find your next movie');
-  await visit('/my-list?tab=watchlist', 'My list');
+  await visit('/', 'Browse by Provider');
+  await visit('/my-list?tab=watchlist', 'My Lists');
   await until(
     `document.querySelectorAll('.media-card').length === 1`,
     'legacy watchlist migration'
@@ -148,9 +148,9 @@ try {
     await evaluate("document.querySelector('.card-title').textContent"),
     'Fight Club'
   );
-  await visit('/home', 'Trending movies');
+  await visit('/home', 'Trending Movies');
   await until(
-    `document.querySelectorAll('.media-card').length > 10 && !!document.querySelector('.onboarding')`,
+    `document.querySelectorAll('.media-card').length > 10 && !!document.querySelector('.provider-section')`,
     'home hydration'
   );
 
@@ -286,7 +286,7 @@ try {
   await visit('/profile', 'Your profile');
   await visit('/settings', 'Settings');
   await evaluate(
-    "document.querySelector('.toggle-row input').click()"
+    "document.querySelector('#activity .toggle-row input').click()"
   );
   assert.ok(
     await evaluate(
@@ -305,7 +305,7 @@ try {
     deviceScaleFactor: 1,
     mobile: true
   });
-  await visit('/home', 'Trending movies');
+  await visit('/home', 'Trending Movies');
   assert.equal(
     await evaluate(
       "getComputedStyle(document.querySelector('.mobile-nav')).display"

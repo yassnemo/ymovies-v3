@@ -27,6 +27,7 @@
     "test": "tsx --test tests/*.test.ts",
     "test:api": "node scripts/testing/test-api.js",
     "test:browser": "node scripts/testing/browser-smoke.mjs",
+    "test:design": "node scripts/testing/design-smoke.mjs",
     "db:push": "drizzle-kit push",
     "format": "prettier --write src tests vite.config.ts tailwind.config.ts"
   },

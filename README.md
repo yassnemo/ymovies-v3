@@ -31,6 +31,7 @@ In Supabase, allow your origin's `/auth/callback` and `/auth/reset-password` red
 | `npm test`             | Test gateway caching, request validation, and preference handling                          |
 | `npm run test:api`     | Check a running server's health, auth boundaries, and error routes                         |
 | `npm run test:browser` | Check desktop/mobile guest flows in a running server using Chrome                          |
+| `npm run test:design`  | Check responsive layouts, motion, hover, providers, and preferences; record browser frames |
 | `npm run build`        | Build a Node server into `build/`                                                          |
 | `npm start`            | Run the built server; load `.env` when present                                             |
 | `npm run preview`      | Preview the production build                                                               |
@@ -40,18 +41,19 @@ Browser checks use a fresh temporary browser profile. Set `TEST_BASE_URL` to cha
 
 ## Routes and features
 
-- `/`: the existing landing design, rebuilt in Svelte.
-- `/home`: featured titles, catalog rows, recommendations, genre onboarding, and continue watching.
+- `/`, `/home`: featured carousel, provider rail, ranked titles, catalog rows, recommendations, and continue watching.
 - `/movies`, `/tv`, `/genre/:mediaType/:genre`: category browsing, genre filters, sorting, and pagination.
 - `/search`: movie/TV search, release year and rating filters, and pagination.
 - `/movie/:id`, `/tv/:id`: cast and crew, trailers, reviews, related titles, providers, ratings, watch progress, and TV episode tracking.
 - `/my-list`: watchlist, favorites, history, continue watching, and editable collections.
 - `/profile`, `/settings`: account details, genre preferences, password changes, and saved activity preferences.
+- `/provider/:id`: provider-specific movies and shows. `/series` and `/lists` redirect to the existing shows and library routes.
 - Sign-in, sign-up, email verification, OAuth callback, and password reset routes.
 - `/privacy`, `/terms`, `/api-test`, and proper error pages.
 
 Existing local favorites, watchlists, history, collections, and episode tracking are migrated when read. Movie and TV identities include media type. Guest and signed-in preference caches are isolated. Failed account saves remain on the device and retry on reconnect.
 
+The visual system follows the recorded Cinejoy reference: glass navigation, title art, ranked poster rails, hover previews, and a fluid ambient background. Appearance settings persist locally and with the account; reduced motion disables automatic slides and background movement. See the [reference and validation notes](docs/design/CINEJOY_REFERENCE.md) for capture locations and measured timings.
 
 ## Deployment
 

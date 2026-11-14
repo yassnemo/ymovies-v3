@@ -13,6 +13,7 @@
   import '#lib/styles/reference-motion.css';
   import '#lib/styles/refinements.css';
   import '#lib/styles/provider-picks.css';
+  import '#lib/styles/hero-background.css';
   let {
     data,
     children

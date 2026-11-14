@@ -1,29 +1,4 @@
 {
-  "version": 2,
   "buildCommand": "npm run build:vercel",
-  "outputDirectory": "dist/public",
-  "headers": [
-    {
-      "source": "/assets/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
-      ]
-    }
-  ],
-  "rewrites": [
-    {
-      "source": "/api/tmdb/:endpoint*",
-      "destination": "/api/tmdb?endpoint=:endpoint*"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
-  ],
-  "env": {
-    "NODE_ENV": "production"
-  }
+  "framework": "sveltekit"
 }

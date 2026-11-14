@@ -1,28 +1,14 @@
 {
-  "include": ["client/src/**/*", "shared/**/*", "server/**/*", "types/**/*", "global.d.ts"],
-  "exclude": ["node_modules", "build", "dist", "**/*.test.ts"],
+  "extends": "$app/tsconfig",
+  "include": ["src", "server", "shared", "tests", "types", "*.ts"],
+  "exclude": ["node_modules", "build", "dist", ".temp", "client"],
   "compilerOptions": {
-    "incremental": true,
-    "tsBuildInfoFile": "./node_modules/typescript/tsbuildinfo",
-    "noEmit": true,
-    "target": "ES2020",
-    "module": "ESNext",
     "strict": true,
-    "lib": ["ES2020", "dom", "dom.iterable"],
-    "jsx": "react-jsx",
+    "allowJs": true,
+    "checkJs": false,
     "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "skipLibCheck": true,
-    "allowImportingTsExtensions": true,
-    "moduleResolution": "bundler",
     "resolveJsonModule": true,
-    "isolatedModules": true,
-    "baseUrl": ".",
-    "types": ["node"],
-    "typeRoots": ["./node_modules/@types", "./types"],
-    "paths": {
-      "@/*": ["./client/src/*"],
-      "@shared/*": ["./shared/*"]
-    }
+    "skipLibCheck": true,
+    "allowImportingTsExtensions": true
   }
 }

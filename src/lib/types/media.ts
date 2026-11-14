@@ -7,6 +7,8 @@ export interface Media {
   overview?: string;
   poster_path?: string | null;
   backdrop_path?: string | null;
+  logo_path?: string | null;
+  rank?: number;
   release_date?: string;
   first_air_date?: string;
   vote_average?: number;

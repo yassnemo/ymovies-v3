@@ -1,29 +1,29 @@
 /* Let the artwork dissolve into the page's ambient image, without an opaque edge. */
-.cine-hero {
+.ym-hero {
   --hero-art-height: 945px;
 }
 .detail-hero {
   --hero-art-height: 675px;
 }
-.cine-hero,
+.ym-hero,
 .detail-hero {
   --hero-glow-tail: 320px;
   background: transparent;
   overflow: visible;
 }
 .home-rows,
-.cine-hero + .browse-content,
+.ym-hero + .browse-content,
 .detail-hero + .page-container {
   position: relative;
   z-index: 1;
 }
-.cine-hero-image,
-.cine-hero-scrim,
+.ym-hero-image,
+.ym-hero-scrim,
 .detail-hero > .hero-backdrop,
 .detail-hero > .hero-shade {
   height: var(--hero-art-height);
 }
-.cine-hero-image,
+.ym-hero-image,
 .detail-hero > .hero-backdrop {
   mask-image: linear-gradient(
     to bottom,
@@ -36,7 +36,7 @@
     transparent 100%
   );
 }
-.cine-hero-scrim,
+.ym-hero-scrim,
 .detail-hero > .hero-shade {
   mask-image: linear-gradient(
     to bottom,
@@ -71,7 +71,7 @@
   z-index: -6;
 }
 .hero-background-glow.outgoing,
-.cine-hero-image.outgoing {
+.ym-hero-image.outgoing {
   animation: hero-art-out 0.8s ease both;
 }
 @keyframes hero-glow-in {
@@ -91,23 +91,23 @@
   }
 }
 @media (min-width: 1600px) {
-  .cine-hero {
+  .ym-hero {
     --hero-art-height: 1100px;
   }
 }
 @media (max-width: 1023px) {
-  .cine-hero {
+  .ym-hero {
     --hero-art-height: 830px;
   }
 }
 @media (max-width: 639px) {
-  .cine-hero {
+  .ym-hero {
     --hero-art-height: 105svh;
   }
   .detail-hero {
     --hero-art-height: 620px;
   }
-  .cine-hero,
+  .ym-hero,
   .detail-hero {
     --hero-glow-tail: 240px;
   }
@@ -120,12 +120,12 @@
     animation: none;
   }
   .hero-background-glow.outgoing,
-  .cine-hero-image.outgoing {
+  .ym-hero-image.outgoing {
     opacity: 0;
     animation: none;
   }
 }
 html[data-reduced-motion='true'] .hero-background-glow.outgoing,
-html[data-reduced-motion='true'] .cine-hero-image.outgoing {
+html[data-reduced-motion='true'] .ym-hero-image.outgoing {
   opacity: 0;
 }

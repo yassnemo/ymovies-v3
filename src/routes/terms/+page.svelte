@@ -1,4 +1,3 @@
-<svelte:head><title>Terms of Service — YMovies</title></svelte:head>
 <div class="min-h-screen bg-black text-white">
   <div class="max-w-4xl mx-auto px-6 py-20">
     <div class="text-center mb-16">

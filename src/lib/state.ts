@@ -112,7 +112,7 @@ export function createAppState(config: { url: string; key: string }) {
     const startRevision = revision;
     let local = read(key(), null) as Preferences | null;
     if (!local && !owner) {
-      // Carry over the React app's existing local preference keys.
+      // Carry over existing local preference keys before saving the current format.
       local = normalizePreferences({
         favoriteMovies: read('user_favorites', []) as Media[],
         watchlist: read('user_watchlist', []) as Media[],

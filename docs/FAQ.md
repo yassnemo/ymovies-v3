@@ -2,7 +2,7 @@
 
 ## Which framework does YMovies use?
 
-Svelte 5 and SvelteKit 3 with TypeScript, Vite, and Tailwind CSS. Both the Astro migration and the React UI have been replaced.
+Svelte 5 and SvelteKit 3 with TypeScript, Vite, and Tailwind CSS. Every interface component is a Svelte component.
 
 ## Can I browse without signing in?
 

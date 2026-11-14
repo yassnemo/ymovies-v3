@@ -139,7 +139,6 @@
   }
 </script>
 
-<svelte:head><title>Settings — YMovies</title></svelte:head>
 <main id="main" class="page-container narrow settings-page">
   <p class="eyebrow">Make it yours</p>
   <h1 class="page-title"><Icon name="settings" size={30} />Settings</h1>

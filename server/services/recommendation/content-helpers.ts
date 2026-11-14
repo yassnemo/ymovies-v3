@@ -4,7 +4,6 @@ import {
   type ScoreComponents,
   type TemporalRange
 } from './types';
-
 /**
  * Helper class for content analysis and classification
  */
@@ -15,10 +14,8 @@ export class ContentAnalyzer {
   private static readonly FAMILY_FRIENDLY_GENRES = new Set([
     16, 10751, 35, 14, 12
   ]); // Animation, Family, Comedy, Fantasy, Adventure
-
   static analyzeContent(movie: Movie): ContentContext {
     const genres = new Set(movie.genre_ids || []);
-
     return {
       isAnimation: genres.has(this.ANIMATION_GENRE),
       isFamily: genres.has(this.FAMILY_GENRE),
@@ -26,22 +23,18 @@ export class ContentAnalyzer {
       contentGenres: genres
     };
   }
-
   static isFamilyContent(context: ContentContext): boolean {
     return context.isAnimation || context.isFamily;
   }
-
   static isFamilyAppropriate(context: ContentContext): boolean {
     return Array.from(context.contentGenres).some((genre) =>
       this.FAMILY_FRIENDLY_GENRES.has(genre)
     );
   }
-
   private static hasMatureContent(genres: Set<number>): boolean {
     return Array.from(genres).some((genre) => this.MATURE_GENRES.has(genre));
   }
 }
-
 /**
  * Helper class for temporal calculations
  */
@@ -55,15 +48,11 @@ export class TemporalCalculator {
       return { min: sourceYear - 20, max: sourceYear + 20 };
     }
   }
-
   static calculateTemporalRelevance(movie: Movie, sourceMovie: Movie): number {
     const sourceYear = this.extractYear(sourceMovie.release_date);
     const movieYear = this.extractYear(movie.release_date);
-
     if (!sourceYear || !movieYear) return 0;
-
     const yearDiff = Math.abs(movieYear - sourceYear);
-
     if (sourceYear >= 2015) {
       return Math.max(0, (10 - yearDiff) / 10);
     } else if (sourceYear >= 2000) {
@@ -72,18 +61,15 @@ export class TemporalCalculator {
       return Math.max(0, (25 - yearDiff) / 25);
     }
   }
-
   static extractYear(releaseDate?: string): number | null {
     if (!releaseDate) return null;
     const year = parseInt(releaseDate.split('-')[0]);
     return isNaN(year) ? null : year;
   }
-
   static getDecade(year: number): string {
     return `${Math.floor(year / 10) * 10}s`;
   }
 }
-
 /**
  * Helper class for genre-related calculations
  */
@@ -109,28 +95,21 @@ export class GenreAnalyzer {
     10752: 'War',
     37: 'Western'
   };
-
   static getGenreName(genreId: number): string {
     return this.GENRE_MAP[genreId] || 'Movies';
   }
-
   static calculateGenreSimilarity(movie: Movie, sourceMovie: Movie): number {
     const sourceGenres = new Set(sourceMovie.genre_ids || []);
     const movieGenres = new Set(movie.genre_ids || []);
-
     if (sourceGenres.size === 0 || movieGenres.size === 0) return 0;
-
     const intersection = new Set(
       [...sourceGenres].filter((g) => movieGenres.has(g))
     );
     const union = new Set([...sourceGenres, ...movieGenres]);
-
     return intersection.size / union.size;
   }
-
   static calculateTitleSimilarity(title1: string, title2: string): number {
     if (title1 === title2) return 1.0;
-
     const words1 = new Set(
       title1
         .toLowerCase()
@@ -143,10 +122,8 @@ export class GenreAnalyzer {
         .split(' ')
         .filter((w) => w.length > 2)
     );
-
     const intersection = new Set([...words1].filter((w) => words2.has(w)));
     const union = new Set([...words1, ...words2]);
-
     return intersection.size / union.size;
   }
 }

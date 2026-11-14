@@ -1,28 +1,13 @@
 import { z } from 'zod';
 import { tmdb } from './catalog';
+import { readJson, RequestError } from './request';
+import { preferencesSchema, progressSchema, mediaIdSchema } from './validation';
 
 const json = (data: unknown, status = 200) =>
   Response.json(data, {
     status,
     headers: { 'Cache-Control': 'private, no-store' }
   });
-const preferencesSchema = z.object({
-  favoriteMovies: z.array(z.any()).optional(),
-  watchlist: z.array(z.any()).optional(),
-  watchHistory: z.array(z.any()).optional(),
-  likedGenres: z.array(z.string()).optional(),
-  dislikedGenres: z.array(z.string()).optional(),
-  completed: z.boolean().optional(),
-  collections: z.array(z.any()).optional(),
-  appSettings: z.record(z.any()).optional()
-});
-const progressSchema = z.object({
-  movieId: z.coerce.number().int().positive(),
-  watchProgress: z.number().min(0).max(100),
-  watchDuration: z.number().nonnegative().optional(),
-  lastStoppedAt: z.number().nonnegative().optional(),
-  rating: z.number().min(0).max(5).optional()
-});
 
 export async function handleApi(request: Request): Promise<Response> {
   const url = new URL(request.url);
@@ -124,7 +109,7 @@ export async function handleApi(request: Request): Promise<Response> {
         );
       }
       if (method === 'POST') {
-        const data = preferencesSchema.parse(await request.json());
+        const data = preferencesSchema.parse(await readJson(request));
         const saved = await storage.updateUserPreferences(userId, data);
         return saved
           ? json({ success: true })
@@ -137,22 +122,28 @@ export async function handleApi(request: Request): Promise<Response> {
     }
     if (route === 'watchlist' && method === 'POST') {
       const { movieId } = z
-        .object({ movieId: z.coerce.number().int().positive() })
-        .parse(await request.json());
-      return json({
-        success: true,
-        item: await storage.addToWatchlist({ userId, movieId })
-      });
+        .object({ movieId: mediaIdSchema })
+        .parse(await readJson(request));
+      const item = await storage.addToWatchlist({ userId, movieId });
+      return item
+        ? json({ success: true, item })
+        : json({ message: 'Could not save watchlist' }, 503);
     }
     const watchlistId = route.match(/^watchlist\/(\d+)$/);
     if (watchlistId && method === 'DELETE') {
-      await storage.removeFromWatchlist(userId, Number(watchlistId[1]));
+      await storage.removeFromWatchlist(
+        userId,
+        mediaIdSchema.parse(watchlistId[1])
+      );
       return json({ success: true });
     }
     const checkId = route.match(/^watchlist\/check\/(\d+)$/);
     if (checkId && method === 'GET')
       return json({
-        isInWatchlist: await storage.isInWatchlist(userId, Number(checkId[1]))
+        isInWatchlist: await storage.isInWatchlist(
+          userId,
+          mediaIdSchema.parse(checkId[1])
+        )
       });
     if (
       (route === 'history' || route === 'watch-history') &&
@@ -186,15 +177,15 @@ export async function handleApi(request: Request): Promise<Response> {
       (route === 'history' && method === 'POST') ||
       (progressId && method === 'PUT')
     ) {
-      const body = await request.json();
+      const body = await readJson(request);
       const data = progressSchema.parse({
         ...body,
         ...(progressId ? { movieId: progressId[1] } : {})
       });
-      return json({
-        success: true,
-        item: await storage.updateWatchProgress({ ...data, userId })
-      });
+      const item = await storage.updateWatchProgress({ ...data, userId });
+      return item
+        ? json({ success: true, item })
+        : json({ message: 'Could not save progress' }, 503);
     }
     if (
       (route === 'recommendations' ||
@@ -212,13 +203,11 @@ export async function handleApi(request: Request): Promise<Response> {
     }
     return json({ message: 'Method not allowed' }, 405);
   } catch (error) {
+    if (error instanceof RequestError)
+      return json({ message: error.message }, error.status);
     if (error instanceof z.ZodError || error instanceof SyntaxError)
       return json({ message: 'Invalid request data' }, 400);
-    console.error(
-      '[YMovies API]',
-      route,
-      error instanceof Error ? error.message : 'Unknown error'
-    );
+    console.error('[YMovies API] A service request failed.');
     return json({ message: 'Service temporarily unavailable' }, 503);
   }
 }

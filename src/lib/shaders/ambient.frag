@@ -1,4 +1,4 @@
-// Reference: Cinejoy public UI, captured 2026-11-14.
+// Ambient background: layered color fields and simplex noise.
 // Simplex noise: Ashima Arts / Stefan Gustavson, MIT.
 precision highp float;
 uniform float uTime;

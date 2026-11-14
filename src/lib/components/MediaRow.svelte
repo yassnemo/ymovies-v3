@@ -31,13 +31,13 @@
   });
 </script>
 
-{#if items.length}<section class="cine-row media-section" class:ranked>
+{#if items.length}<section class="ym-row media-section" class:ranked>
     {#if title}<div class="section-heading">
         {#if href}<h2>
             <a {href}>{title}<Icon name="right" size={18} /></a>
           </h2>{:else}<h2>{title}</h2>{/if}
       </div>{/if}
-    <div class="cine-row-content">
+    <div class="ym-row-content">
       <button
         class="rail-arrow left"
         class:unavailable={start}

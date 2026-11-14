@@ -1,12 +1,24 @@
 # YMovies
 
-Discover movies and TV shows, save a watchlist and favorites, organize collections, and track watch and episode progress.
+```text
+__   __   __     __    _____
+\ \ / /  /_ |   /_ |  |___ /
+ \ V /    | |    | |    |_ \
+  | |     | |    | |   ___) |
+  |_|     |_|    |_|  |____/
+```
 
-YMovies runs on **Svelte 5, SvelteKit 3, TypeScript 6, Vite 8, and Tailwind CSS 3**. The UI is implemented in Svelte. SvelteKit serves pages and same-origin APIs; the existing TMDB gateway, Supabase authentication, PostgreSQL/Drizzle storage, and optional Python recommendation service are retained.
+Built by **[Yassine Erradouani](https://yerradouani.me)** · [Live site](https://ymovies.yerradouani.me) · [GitHub](https://github.com/yassnemo)
 
-## Run locally
+I built YMovies to make finding something to watch feel good, and remembering it easy. Browse movies and shows, watch trailers, explore a cast, and keep a library of favorites, watchlists and episode progress.
 
-Use Node.js 22.12 or newer (Node.js 24 recommended).
+The interface is Svelte from end to end. SvelteKit renders pages and serves the API, TypeScript keeps the data in shape, and TMDB supplies the catalog. Browsing works without an account. Guest libraries stay on the device; signing in adds sync through Supabase and PostgreSQL.
+
+![YMovies on desktop](docs/images/ymovies-desktop.png)
+
+## Run it
+
+Use Node.js **22.12+**; Node.js 24 is used in CI.
 
 ```sh
 npm ci
@@ -14,53 +26,41 @@ cp .env.example .env
 npm run dev
 ```
 
-On PowerShell, use `Copy-Item .env.example .env`. Open http://localhost:5000.
+On PowerShell, use `Copy-Item .env.example .env`. Open **http://localhost:5000**.
 
-Set `TMDB_API_KEY` or `TMDB_BEARER_TOKEN` for the catalog. Guest browsing and browser-local lists do not require a database or Supabase. Missing catalog credentials display an unavailable state.
+Set `TMDB_API_KEY` or `TMDB_BEARER_TOKEN` to load the catalog. Without credentials, the app shows an unavailable state. Accounts are optional: the [setup guide](docs/setup/INSTALLATION.md) explains the Supabase and database variables. Keep server credentials out of `PUBLIC_` variables and source control.
 
-For accounts, set `PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_ANON_KEY`. The existing `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` names remain supported. Account sync also needs `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and `DATABASE_URL` on the server. Never expose service-role credentials or TMDB credentials as public variables.
+## Work on it
 
-In Supabase, allow your origin's `/auth/callback` and `/auth/reset-password` redirect URLs. Enable Google in Supabase to use Google sign-in.
+| Command                  | What it does                                                         |
+| ------------------------ | -------------------------------------------------------------------- |
+| `npm run dev`            | Starts the local app on port 5000                                    |
+| `npm run doctor`         | Checks setup without printing secrets                                |
+| `npm run check`          | Checks Svelte and TypeScript                                         |
+| `npm test`               | Runs the application and security tests                              |
+| `npm run format`         | Formats source and documentation                                     |
+| `npm run format:check`   | Checks formatting                                                    |
+| `npm run build`          | Builds the Node server into `build/`                                 |
+| `npm start`              | Runs that server, loading local environment files when present       |
+| `npm run test:api`       | Checks a running server's API boundaries                             |
+| `npm run test:browser`   | Checks guest flows on desktop and mobile in Chrome                   |
+| `npm run test:design`    | Checks layouts, motion and preferences; records browser frames       |
+| `npm run test:seo`       | Checks server-rendered metadata, sitemap and security headers        |
+| `npm run test:analytics` | Checks Google tag loading and navigation without sending real visits |
+| `npm run db:push`        | Applies the schema to the configured database; review changes first  |
 
-## Commands
+Browser checks accept `TEST_BASE_URL` and `CHROME_PATH`. Account sign-in, email delivery and production analytics need verification against your own services.
 
-| Command                | Purpose                                                                                    |
-| ---------------------- | ------------------------------------------------------------------------------------------ |
-| `npm run dev`          | Run SvelteKit locally on port 5000                                                         |
-| `npm run check`        | Generate route types and check Svelte/TypeScript                                           |
-| `npm test`             | Test gateway caching, request validation, and preference handling                          |
-| `npm run test:api`     | Check a running server's health, auth boundaries, and error routes                         |
-| `npm run test:browser` | Check desktop/mobile guest flows in a running server using Chrome                          |
-| `npm run test:design`  | Check responsive layouts, motion, hover, providers, and preferences; record browser frames |
-| `npm run build`        | Build a Node server into `build/`                                                          |
-| `npm start`            | Run the built server; load `.env` when present                                             |
-| `npm run preview`      | Preview the production build                                                               |
-| `npm run db:push`      | Apply the Drizzle schema to your configured database                                       |
+Start with [architecture](docs/ARCHITECTURE.md), [design](docs/DESIGN.md), [API](docs/api/API_DOCUMENTATION.md), or [contributing](docs/CONTRIBUTING.md). Deployment instructions are [here](docs/deployment/DEPLOYMENT.md); report security issues using [SECURITY.md](SECURITY.md).
 
-Browser checks use a fresh temporary browser profile. Set `TEST_BASE_URL` to change the server URL and `CHROME_PATH` if Chrome is installed outside its default location. Real-account sign-in and email delivery require separate verification with your configured Supabase project.
+## Discovery and analytics
 
-## Routes and features
+Public pages render titles, descriptions, canonical links and structured data on the server. `/genres` and `/providers` connect the catalog; `/about` identifies the creator. `/sitemap.xml` lists public routes and current trending titles. Private pages, search results and filtered duplicates are excluded from indexing. There are no ranking guarantees or fabricated ratings.
 
-- `/`, `/home`: featured carousel, provider rail, ranked titles, catalog rows, recommendations, and continue watching.
-- `/movies`, `/tv`, `/genre/:mediaType/:genre`: category browsing, genre filters, sorting, and pagination.
-- `/search`: movie/TV search, release year and rating filters, and pagination.
-- `/movie/:id`, `/tv/:id`: cast and crew, trailers, reviews, related titles, providers, ratings, watch progress, and TV episode tracking.
-- `/my-list`: watchlist, favorites, history, continue watching, and editable collections.
-- `/profile`, `/settings`: account details, genre preferences, password changes, and saved activity preferences.
-- `/provider/:id`: provider-specific movies and shows. `/series` and `/lists` redirect to the existing shows and library routes.
-- Sign-in, sign-up, email verification, OAuth callback, and password reset routes.
-- `/privacy`, `/terms`, `/api-test`, and proper error pages.
+The Google tag **G-0HC7C4GFD5** loads once in `src/app.html`. SvelteKit navigation sends explicit page views from `src/lib/analytics.ts`; query strings and URL fragments are removed first. In the GA4 stream, keep **Enhanced measurement → Page views → Advanced settings → Page changes based on browser history events** disabled to avoid counting navigation twice. The initial automatic page view is disabled in code. See [Google's page view guidance](https://developers.google.com/analytics/devguides/collection/ga4/views).
 
-Existing local favorites, watchlists, history, collections, and episode tracking are migrated when read. Movie and TV identities include media type. Guest and signed-in preference caches are isolated. Failed account saves remain on the device and retry on reconnect.
+## Credits
 
-The visual system follows the recorded Cinejoy reference: glass navigation, title art, ranked poster rails, hover previews, and a fluid ambient background. Appearance settings persist locally and with the account; reduced motion disables automatic slides and background movement. See the [reference and validation notes](docs/design/CINEJOY_REFERENCE.md) for capture locations and measured timings.
+Movie and TV metadata comes from [TMDB](https://www.themoviedb.org/), with availability data from JustWatch through TMDB. YMovies is not endorsed or certified by TMDB. The bundled Inter font retains its [SIL Open Font License](static/fonts/Inter-OFL.txt); shader attributions are kept beside their source.
 
-## Deployment
-
-Local and Heroku builds use `@sveltejs/adapter-node`. Set `PORT` and `ORIGIN` for your host, then run `npm run build && npm start`. Vercel sets `VERCEL`, selecting `@sveltejs/adapter-vercel`; `vercel.json` declares the SvelteKit framework. Configure runtime environment variables in your host's settings.
-
-The optional Flask recommendation service remains in `recommendation_service/`. Set `RECOMMENDATION_SERVICE_URL` when deploying it separately. The TypeScript recommendation engine remains available when that service is unavailable.
-
-See [architecture](docs/ARCHITECTURE.md), [API](docs/api/API_DOCUMENTATION.md), [setup](docs/setup/INSTALLATION.md), and [deployment](docs/deployment/DEPLOYMENT.md).
-
-Movie data comes from [TMDB](https://www.themoviedb.org/); availability data is supplied by JustWatch through TMDB. YMovies is not endorsed or certified by TMDB. Created by [Yassine Erradouani](https://yerradouani.me). [MIT license](LICENSE).
+[MIT license](LICENSE). Made by [Yassine Erradouani](https://yerradouani.me).

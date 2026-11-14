@@ -41,7 +41,6 @@
   );
 </script>
 
-<svelte:head><title>YMovies — Movies &amp; TV Shows</title></svelte:head>
 <main id="main">
   {#if data.unavailable}<div class="page-container empty-state">
       <h1>Your next great watch is on its way</h1>

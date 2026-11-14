@@ -18,7 +18,6 @@
   }
 </script>
 
-<svelte:head><title>Movie API diagnostics — YMovies</title></svelte:head>
 <main id="main" class="page-container narrow">
   <h1 class="page-title">Movie API diagnostics</h1>
   <p class="muted">Check the movie data gateway.</p>

@@ -1,3 +1,12 @@
+/*
+__   __   __     __    _____
+\ \ / /  /_ |   /_ |  |___ /
+ \ V /    | |    | |    |_ \
+  | |     | |    | |   ___) |
+  |_|     |_|    |_|  |____/
+
+Yassine Erradouani · https://yerradouani.me
+*/
 import { defineConfig, loadEnv } from 'vite';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
@@ -18,7 +27,33 @@ export default defineConfig(({ mode }) => {
       sveltekit({
         adapter: process.env.VERCEL ? vercel() : node(),
         preprocess: vitePreprocess(),
-        files: { assets: 'client/public' }
+        csp: {
+          mode: 'auto',
+          directives: {
+            'default-src': ['self'],
+            'base-uri': ['self'],
+            'object-src': ['none'],
+            'frame-ancestors': ['none'],
+            'form-action': ['self'],
+            'script-src': ['self', 'https://www.googletagmanager.com'],
+            'style-src': ['self', 'unsafe-inline'],
+            'img-src': ['self', 'data:', 'https:'],
+            'font-src': ['self'],
+            'frame-src': [
+              'https://www.youtube.com',
+              'https://www.youtube-nocookie.com'
+            ],
+            'connect-src': [
+              'self',
+              'https://*.supabase.co',
+              'wss://*.supabase.co',
+              'https://*.google-analytics.com',
+              'https://*.analytics.google.com',
+              'https://www.googletagmanager.com',
+              ...(mode === 'development' ? (['ws:', 'wss:'] as const) : [])
+            ]
+          }
+        }
       })
     ],
     server: {

@@ -1,51 +1,11 @@
-# Development files
-.env
-.env.local
-.env.development
-.env.test
-
-# Node modules
+.env*
 node_modules/
-
-# Build outputs (kept in specific dist folder)
 build/
-dist/public/
-
-# IDE files
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# OS files
-.DS_Store
-Thumbs.db
-
-# Git
-.git/
-.gitignore
-
-# Documentation and scripts (optional - comment out if needed)
-*.md
-*.sh
-*.bat
-test-*.js
-test-*.ts
-test-*.mjs
-debug-*.js
-check-*.js
-
-# Recommendation service (old Python Flask app)
-recommendation_service/
-
-# Temporary files
-temp/
-tmp/
-*.log
-*.cache
-
-# Local migration snapshots and framework output
-.temp/
-.astro/
-.svelte-kit/
 dist/
+.svelte-kit/
+.temp/
+.git/
+recommendation_service/
+docs/
+tests/
+*.log

@@ -1,2 +1,0 @@
-This file exists to help debug Vercel deployments.
-If you can see this file, the static assets are being served correctly.

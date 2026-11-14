@@ -30,14 +30,14 @@
   }
 </script>
 
-<svelte:head
-  ><title>{data.title} — YMovies</title><meta
-    name="description"
-    content={`Discover ${data.title.toLowerCase()} and find your next favorite on YMovies.`}
-  /></svelte:head
->
 {#if data.items.length}<Hero items={data.items.slice(0, 7)} compact />{/if}
 <main id="main" class="page-container browse-content">
+  <nav class="breadcrumbs" aria-label="Breadcrumb">
+    <a href="/">Home</a><span aria-hidden="true">/</span><a
+      href={data.type === 'tv' ? '/tv' : '/movies'}
+      >{data.type === 'tv' ? 'TV shows' : 'Movies'}</a
+    >
+  </nav>
   <h1 class="page-title">{data.title}</h1>
   <nav class="tabs" aria-label="Catalog categories">
     {#each categories as category}<a

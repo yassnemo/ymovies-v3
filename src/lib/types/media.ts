@@ -96,7 +96,11 @@ export interface Preferences {
   appSettings: Record<string, unknown>;
 }
 export const mediaType = (item: Media): MediaType =>
-  item.media_type || (item.name || item.first_air_date ? 'tv' : 'movie');
+  item.media_type === 'movie' || item.media_type === 'tv'
+    ? item.media_type
+    : item.name || item.first_air_date
+      ? 'tv'
+      : 'movie';
 export const mediaKey = (item: Media) => `${mediaType(item)}:${item.id}`;
 export const mediaTitle = (item: Media) =>
   item.title || item.name || 'Untitled';

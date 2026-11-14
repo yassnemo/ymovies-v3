@@ -1,0 +1,10 @@
+{
+  "name": "YMovies",
+  "short_name": "YMovies",
+  "description": "Movie and TV discovery, with a personal watchlist.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#080a0b",
+  "theme_color": "#080a0b",
+  "icons": [{ "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }]
+}

@@ -115,12 +115,10 @@
     busy = true;
     problem = '';
     try {
-      const result = await app
-        .auth()
-        .signInWithOAuth({
-          provider: 'google',
-          options: { redirectTo: callback() }
-        });
+      const result = await app.auth().signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: callback() }
+      });
       if (result.error) throw result.error;
     } catch (error) {
       problem =
@@ -132,7 +130,6 @@
   }
 </script>
 
-<svelte:head><title>{title} — YMovies</title></svelte:head>
 <main class="auth-shell" id="main">
   <section class="auth-card">
     <a class="brand" href="/"

@@ -1,33 +1,38 @@
 # Architecture
 
-SvelteKit owns server rendering, client navigation, route-level code splitting, and API routing. Components use Svelte 5 runes and a layout-scoped context for account and library stores. No React islands or Astro entry points are used.
+SvelteKit owns server rendering, client navigation, route splitting and API routing. Components use Svelte 5 runes. Account and library stores are created per layout instance, so one server request cannot share another visitor's session.
 
 ```text
 src/
-  app.html                  HTML document template
-  routes/                   SvelteKit pages, loaders, and request handlers
+  app.html                  Document and Google tag
+  hooks.server.ts           Response headers and safe errors
+  routes/                   Pages, server loaders and HTTP endpoints
   lib/components/           Shared Svelte UI
-  lib/types/                Catalog and preference types
-  lib/state.ts              Layout-scoped auth and library stores
-  lib/preferences.ts        Preference normalization and media identity helpers
-  lib/styles/               Shared styles and preserved landing styles
-  server/catalog.ts         Server-rendered TMDB catalog loaders
-  server/api.ts             Authenticated API dispatcher
-  server/tmdb-endpoint.ts    Public TMDB HTTP gateway
+  lib/state.ts              Authentication and library stores
+  lib/preferences.ts        Preference normalization and media identity
+  lib/seo.ts                Canonicals, metadata and structured data
+  lib/site.ts               Site identity and author links
+  lib/signature.ts          Developer signature used by sitemap and robots
+  lib/styles/               Shared styles and motion
+  server/                   Catalog, API dispatch and input validation
 server/
-  services/                 TMDB cache and recommendation engines
-  storage.ts                Drizzle storage
+  services/                 TMDB gateway/cache and recommendation engines
+  storage.ts                Drizzle persistence
   db.ts                     PostgreSQL connection
 shared/schema.ts            Database schema
-client/public/              Static logos, fonts, and landing media
-recommendation_service/     Optional Flask recommendation service
-tests/                      Node test runner tests
+static/                     Icons, fonts, provider logos and social preview
+recommendation_service/     Optional authenticated Flask service
+tests/                      Node test runner suites
 ```
 
-Catalog pages load TMDB data on the server, then hydrate native Svelte components. The gateway validates public endpoints and parameters, coalesces requests, serves cached data, and preserves stale data during upstream failures. TMDB credentials stay on the server.
+Catalog pages load TMDB data on the server before hydrating. The gateway allows specific public resources and query parameters, coalesces concurrent requests and serves cached data during upstream failures. TMDB credentials stay on the server.
 
-Supabase manages browser sessions. Protected APIs validate the bearer token before storage access. Only the public Supabase URL and anonymous key are serialized in layout data. State is created per layout instance, avoiding cross-request account state on the server.
+Supabase handles browser sessions. Protected API requests validate the bearer token with Supabase before using its user ID for storage. Only the public Supabase URL and anonymous key are serialized in layout data. JSON writes have size, depth and schema limits; account responses use `private, no-store`.
 
-Preferences are cached under a guest or user-specific local-storage key. Legacy local keys migrate on first read. Writes update local state immediately and serialize account saves. Pending writes retry when connectivity returns. Media identity is the pair of media type and numeric ID. TV episode progress lives in application preferences and imports legacy per-show tracking.
+Preferences are cached under a guest or user-specific browser key. Legacy keys migrate when read. Writes update the device first and serialize account saves; pending changes retry when connectivity returns. Media identity includes both type and numeric ID. Episode tracking lives in application preferences.
 
-Node and Vercel adapters are selected in `vite.config.ts`. SvelteKit 3 configuration lives in the Vite plugin. Subpath imports use `#lib/*` and `#shared/*` from `package.json`.
+The TypeScript recommendation engine works on its own. An explicitly configured Python service can add recommendations; it requires a shared token and receives a capped preference summary rather than an account ID or full history. Both services bound their caches. Their caches and cooldowns are process-local, not shared across deployment instances.
+
+Node and Vercel adapters are selected in `vite.config.ts`. SvelteKit configuration lives in the Vite plugin. `#lib/*` and `#shared/*` are package subpath imports.
+
+By [Yassine Erradouani](https://yerradouani.me).

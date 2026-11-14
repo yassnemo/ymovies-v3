@@ -129,6 +129,13 @@ try {
   await call('Page.bringToFront');
   await call('Runtime.enable');
   await call('Network.enable');
+  await call('Network.setBlockedURLs', {
+    urls: [
+      '*://*.googletagmanager.com/*',
+      '*://*.google-analytics.com/*',
+      '*://*.analytics.google.com/*'
+    ]
+  });
   await call('Emulation.setDeviceMetricsOverride', {
     width: 1440,
     height: 1000,
@@ -149,6 +156,10 @@ try {
     'Fight Club'
   );
   await visit('/home', 'Trending Movies');
+  await until(
+    "document.documentElement.dataset.appReady === 'true'",
+    'home hydration and local preferences'
+  );
   await until(
     `document.querySelectorAll('.media-card').length > 10 && !!document.querySelector('.provider-section')`,
     'home hydration'

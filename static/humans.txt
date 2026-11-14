@@ -1,0 +1,16 @@
+__   __   __     __    _____
+\ \ / /  /_ |   /_ |  |___ /
+ \ V /    | |    | |    |_ \
+  | |     | |    | |   ___) |
+  |_|     |_|    |_|  |____/
+
+Yassine Erradouani
+https://yerradouani.me
+https://github.com/yassnemo
+
+YMovies: https://ymovies.yerradouani.me
+Source: https://github.com/yassnemo/ymovies-v3
+
+Built with Svelte, SvelteKit and TypeScript.
+Movie and TV metadata: TMDB. Provider availability: JustWatch via TMDB.
+Inter font: Rasmus Andersson, SIL Open Font License (see /fonts/Inter-OFL.txt).

@@ -1,0 +1,10 @@
+node_modules/
+.svelte-kit/
+.astro/
+.temp/
+build/
+dist/
+static/
+package-lock.json
+recommendation_service/.venv/
+recommendation_service/notebooks/

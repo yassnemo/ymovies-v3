@@ -112,7 +112,7 @@
 </script>
 
 {#if item}<section
-    class="cine-hero hero"
+    class="ym-hero hero"
     class:compact
     aria-label="Featured titles"
   >
@@ -124,7 +124,7 @@
           aria-hidden="true"
         ></div>
         <img
-          class="cine-hero-image outgoing"
+          class="ym-hero-image outgoing"
           src={imageUrl(
             previous.backdrop_path || previous.poster_path,
             'w1280'
@@ -139,15 +139,15 @@
         aria-hidden="true"
       ></div>
       <img
-        class="cine-hero-image"
+        class="ym-hero-image"
         src={imageUrl(item.backdrop_path || item.poster_path, 'w1280')}
         alt=""
         fetchpriority="high"
       />{/key}
-    <div class="cine-hero-scrim"></div>
-    {#key mediaKey(item)}<div class="cine-hero-copy hero-copy">
+    <div class="ym-hero-scrim"></div>
+    {#key mediaKey(item)}<div class="ym-hero-copy hero-copy">
         <h1
-          class="cine-hero-title"
+          class="ym-hero-title"
           class:has-logo={!!logo && failedLogo !== mediaKey(item)}
         >
           {#if logo && failedLogo !== mediaKey(item)}<img
@@ -156,7 +156,7 @@
               onerror={() => (failedLogo = mediaKey(item!))}
             />{:else}{mediaTitle(item)}{/if}
         </h1>
-        <div class="cine-hero-meta">
+        <div class="ym-hero-meta">
           <span
             ><Icon name="star" size={17} />{item.vote_average?.toFixed(1) ||
               '—'}</span
@@ -168,8 +168,8 @@
             <img src="/images/landing/brand-mark.svg" alt="" />#{item.rank} on YMovies
             today
           </p>{/if}
-        <p class="cine-hero-overview">{item.overview}</p>
-        <div class="cine-hero-actions">
+        <p class="ym-hero-overview">{item.overview}</p>
+        <div class="ym-hero-actions">
           <a class="button primary hero-play" href={mediaHref(item)}
             ><Icon name="play" size={21} />Play</a
           >
@@ -185,7 +185,7 @@
           </div>
         </div>
       </div>{/key}
-    <div class="cine-hero-dots">
+    <div class="ym-hero-dots">
       {#each items as value, n}<button
           class:active={index % items.length === n}
           aria-label={'Go to slide ' + (n + 1)}

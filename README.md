@@ -1,14 +1,6 @@
 # YMovies
 
-```text
-__   __   __     __    _____
-\ \ / /  /_ |   /_ |  |___ /
- \ V /    | |    | |    |_ \
-  | |     | |    | |   ___) |
-  |_|     |_|    |_|  |____/
-```
-
-Built by **[Yassine Erradouani](https://yerradouani.me)** · [Live site](https://ymovies.yerradouani.me) · [GitHub](https://github.com/yassnemo)
+[Live site](https://ymovies.yerradouani.me) 
 
 I built YMovies to make finding something to watch feel good, and remembering it easy. Browse movies and shows, watch trailers, explore a cast, and keep a library of favorites, watchlists and episode progress.
 
@@ -61,6 +53,10 @@ The Google tag **G-0HC7C4GFD5** loads once in `src/app.html`. SvelteKit navigati
 
 ## Credits
 
-Movie and TV metadata comes from [TMDB](https://www.themoviedb.org/), with availability data from JustWatch through TMDB. YMovies is not endorsed or certified by TMDB. The bundled Inter font retains its [SIL Open Font License](static/fonts/Inter-OFL.txt); shader attributions are kept beside their source.
+Movie and TV metadata comes from [TMDB](https://www.themoviedb.org/), with availability data from JustWatch through TMDB. 
+YMovies is not endorsed or certified by TMDB. 
+The bundled Inter font retains its [SIL Open Font License](static/fonts/Inter-OFL.txt); shader attributions are kept beside their source.
 
-[MIT license](LICENSE). Made by [Yassine Erradouani](https://yerradouani.me).
+[MIT license](LICENSE). 
+
+Made by [Yassine Erradouani](https://yerradouani.me).

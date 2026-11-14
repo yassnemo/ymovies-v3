@@ -1,5 +1,6 @@
 node_modules/
 .svelte-kit/
+.astro/
 .temp/
 build/
 dist/

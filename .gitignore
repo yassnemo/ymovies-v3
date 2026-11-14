@@ -3,6 +3,7 @@ node_modules/
 .npm/
 .yarn/
 .svelte-kit/
+.astro/
 build/
 dist/
 *.tsbuildinfo

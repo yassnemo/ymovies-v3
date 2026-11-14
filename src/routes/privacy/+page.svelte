@@ -1,4 +1,3 @@
-<svelte:head><title>Privacy Policy — YMovies</title></svelte:head>
 <div class="min-h-screen bg-black text-white">
   <div class="max-w-3xl mx-auto px-6 py-20">
     <div class="mb-12">
@@ -10,7 +9,7 @@
       <h1 class="text-page-title font-light tracking-wide mb-4">
         Privacy Policy
       </h1>
-      <p class="text-gray-400 text-sm">Effective Date: February 13, 2026</p>
+      <p class="text-gray-400 text-sm">Effective Date: November 14, 2026</p>
     </div>
 
     <div class="space-y-10">
@@ -57,6 +56,12 @@
           We do not request access to your Google contacts, Google Drive, Gmail,
           or any other Google services beyond basic profile information.
         </p>
+        <p class="text-gray-300 leading-relaxed mt-4">
+          We also use Google Analytics to understand how the website is used.
+          This includes page views, navigation, and browser and device
+          information. Google Analytics may use cookies to measure visits and
+          interactions.
+        </p>
       </section>
 
       <section>
@@ -84,6 +89,11 @@
             <strong>Display:</strong> To show your name and profile picture within
             the app interface.
           </li>
+          <li class="flex items-start">
+            <span class="text-red-500 mr-3 mt-0.5">-</span>
+            <strong>Analytics:</strong> To understand website usage and improve browsing
+            and navigation.
+          </li>
         </ul>
       </section>
 
@@ -94,9 +104,15 @@
           4. Data Sharing
         </h2>
         <p class="text-gray-300 leading-relaxed">
-          We do <strong>not</strong> sell, trade, rent, or share your personal information
-          with any third parties. Your data is stored securely and is only accessible
-          to you through your authenticated account.
+          We do not sell or rent your account information. We use service
+          providers for authentication, data storage, and website analytics.
+          Google processes analytics data according to its
+          <a
+            href="https://policies.google.com/privacy"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="underline">Privacy Policy</a
+          >.
         </p>
       </section>
 

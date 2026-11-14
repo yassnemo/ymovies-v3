@@ -36,6 +36,11 @@ export const tvGenres = [
   [10768, 'War & Politics'],
   [37, 'Western']
 ] as const;
+export const genreSlug = (name: string) =>
+  name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+export const genreHref = (type: string, name: string) =>
+  `/genre/${type}/${genreSlug(name)}`;
+
 export function findGenre(type: string, slug: string) {
   const genres = type === 'tv' ? tvGenres : movieGenres;
   const aliases: Record<string, number> = {
@@ -46,8 +51,6 @@ export function findGenre(type: string, slug: string) {
   };
   return genres.find(
     ([id, name]) =>
-      String(id) === slug ||
-      name.toLowerCase().replace(/[^a-z0-9]+/g, '-') === slug ||
-      id === aliases[slug]
+      String(id) === slug || genreSlug(name) === slug || id === aliases[slug]
   );
 }

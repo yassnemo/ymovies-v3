@@ -3,7 +3,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { openBrowser } from './design-browser.mjs';
 
 const base = process.env.TEST_BASE_URL || 'http://localhost:5000';
-const output = '.temp/cinejoy/final';
+const output = '.temp/design/final';
 await mkdir(output, { recursive: true });
 const results = [];
 const recordings = [];
@@ -16,31 +16,37 @@ const desktop = await openBrowser();
 try {
   await visit(desktop, '', 1400);
   await desktop.until(
-    "document.querySelector('.cine-hero-title img')?.complete && document.querySelector('.cine-hero-image')?.naturalWidth > 0"
+    "document.querySelector('.ym-hero-title img')?.complete && document.querySelector('.ym-hero-image')?.naturalWidth > 0"
   );
   const stop = await desktop.record(output + '/desktop-frames');
   await desktop.screenshot(output + '/desktop-home.png');
   const geometry = await desktop.evaluate(
-    `({nav:document.querySelector('.cine-desktop-nav').getBoundingClientRect().toJSON(),hero:document.querySelector('.cine-hero').getBoundingClientRect().toJSON(),overflow:document.documentElement.scrollWidth>innerWidth})`
+    `({nav:document.querySelector('.ym-desktop-nav').getBoundingClientRect().toJSON(),hero:document.querySelector('.ym-hero').getBoundingClientRect().toJSON(),overflow:document.documentElement.scrollWidth>innerWidth})`
   );
   assert.equal(geometry.hero.height, 790);
   assert.ok(Math.abs(geometry.nav.width - 517.3125) < 3);
   assert.equal(geometry.overflow, false);
   const first = await desktop.evaluate(
-    "document.querySelector('.cine-hero-title').textContent + document.querySelector('.cine-hero-title img')?.alt"
+    "document.querySelector('.ym-hero-title').textContent + document.querySelector('.ym-hero-title img')?.alt"
   );
   await desktop.delay(8300);
   const next = await desktop.evaluate(
-    "document.querySelector('.cine-hero-title').textContent + document.querySelector('.cine-hero-title img')?.alt"
+    "document.querySelector('.ym-hero-title').textContent + document.querySelector('.ym-hero-title img')?.alt"
   );
   assert.notEqual(first, next, 'the hero advances automatically');
   await desktop.delay(800);
   await desktop.screenshot(output + '/desktop-hero-next.png');
-  await desktop.click('.cine-hero-dots > button', 0);
-  await desktop.delay(800);
+  await desktop.click('.hero-pause');
+  await desktop.until(
+    "document.querySelector('.hero-pause').getAttribute('aria-pressed')==='true'"
+  );
+  await desktop.click('.ym-hero-dots > button', 0);
+  await desktop.until(
+    "document.querySelector('.ym-hero-dots > button').getAttribute('aria-pressed')==='true'"
+  );
   assert.equal(
     await desktop.evaluate(
-      "document.querySelector('.cine-hero-dots > button').getAttribute('aria-pressed')"
+      "document.querySelector('.ym-hero-dots > button').getAttribute('aria-pressed')"
     ),
     'true'
   );
@@ -61,22 +67,22 @@ try {
   });
 
   await desktop.evaluate(
-    "document.querySelector('.cine-row:not(.ranked) .cine-card').scrollIntoView({block:'center',behavior:'smooth'})"
+    "document.querySelector('.ym-row:not(.ranked) .ym-card').scrollIntoView({block:'center',behavior:'smooth'})"
   );
   await desktop.delay(850);
   assert.equal(
     await desktop.evaluate(
-      "document.querySelector('.cine-navigation').classList.contains('condensed')"
+      "document.querySelector('.ym-navigation').classList.contains('condensed')"
     ),
     true
   );
   assert.equal(
     await desktop.evaluate(
-      "document.querySelector('.cine-row:not(.ranked) .media-rail').scrollLeft"
+      "document.querySelector('.ym-row:not(.ranked) .media-rail').scrollLeft"
     ),
     0
   );
-  await desktop.hover('.cine-row:not(.ranked) .cine-card');
+  await desktop.hover('.ym-row:not(.ranked) .ym-card');
   await desktop.until(
     "document.querySelector('.card-preview')?.parentElement === document.body"
   );
@@ -94,13 +100,13 @@ try {
   });
   await desktop.until("!document.querySelector('.card-preview')");
   const railBefore = await desktop.evaluate(
-    "document.querySelector('.cine-row:not(.ranked) .media-rail').scrollLeft"
+    "document.querySelector('.ym-row:not(.ranked) .media-rail').scrollLeft"
   );
-  await desktop.click('.cine-row:not(.ranked) .rail-arrow.right');
+  await desktop.click('.ym-row:not(.ranked) .rail-arrow.right');
   await desktop.delay(700);
   assert.ok(
     (await desktop.evaluate(
-      "document.querySelector('.cine-row:not(.ranked) .media-rail').scrollLeft"
+      "document.querySelector('.ym-row:not(.ranked) .media-rail').scrollLeft"
     )) > railBefore
   );
   results.push({
@@ -111,7 +117,7 @@ try {
   await desktop.evaluate(
     "document.querySelector('.provider-picks').scrollIntoView({block:'start',behavior:'smooth'})"
   );
-  await desktop.until("document.querySelector('.provider-picks .cine-card')");
+  await desktop.until("document.querySelector('.provider-picks .ym-card')");
   const netflix = await desktop.evaluate(
     "document.querySelector('.provider-picks .poster').getAttribute('href')"
   );
@@ -127,15 +133,15 @@ try {
 
   await desktop.evaluate('window.scrollTo(0,0)');
   await desktop.delay(300);
-  await desktop.click('.cine-desktop-nav button[aria-label="Settings"]');
-  await desktop.until("document.querySelector('.cine-account-menu')");
+  await desktop.click('.ym-desktop-nav button[aria-label="Settings"]');
+  await desktop.until("document.querySelector('.ym-account-menu')");
   await desktop.screenshot(output + '/desktop-menu.png');
   await desktop.call('Input.dispatchKeyEvent', {
     type: 'keyDown',
     key: 'Escape',
     code: 'Escape'
   });
-  await desktop.until("!document.querySelector('.cine-account-menu')");
+  await desktop.until("!document.querySelector('.ym-account-menu')");
   await visit(desktop, '/search', 1000);
   assert.equal(
     await desktop.evaluate(
@@ -147,7 +153,7 @@ try {
   await visit(desktop, '/search?q=arrival&type=movie', 1000);
   assert.ok(
     (await desktop.evaluate(
-      "document.querySelectorAll('.media-grid .cine-card').length"
+      "document.querySelectorAll('.media-grid .ym-card').length"
     )) > 0
   );
   await desktop.screenshot(output + '/desktop-search-results.png');
@@ -167,18 +173,16 @@ try {
   );
   assert.equal(
     await desktop.evaluate(
-      "getComputedStyle(document.documentElement).getPropertyValue('--cine-accent').trim()"
+      "getComputedStyle(document.documentElement).getPropertyValue('--ym-accent').trim()"
     ),
     '#c5a0ff'
   );
   const frozen = await desktop.evaluate(
-    "document.querySelector('.cine-hero-title img')?.alt"
+    "document.querySelector('.ym-hero-title img')?.alt"
   );
   await desktop.delay(8200);
   assert.equal(
-    await desktop.evaluate(
-      "document.querySelector('.cine-hero-title img')?.alt"
-    ),
+    await desktop.evaluate("document.querySelector('.ym-hero-title img')?.alt"),
     frozen,
     'reduce motion disables the carousel timer'
   );
@@ -196,14 +200,14 @@ const mobile = await openBrowser({ width: 390, height: 844, mobile: true });
 try {
   await visit(mobile, '', 1400);
   await mobile.until(
-    "document.querySelector('.cine-hero-image')?.naturalWidth > 0"
+    "document.querySelector('.ym-hero-image')?.naturalWidth > 0"
   );
   const stop = await mobile.record(output + '/mobile-frames');
   await mobile.screenshot(output + '/mobile-home.png');
   await mobile.delay(8300);
   await mobile.screenshot(output + '/mobile-hero-next.png');
   const nav = await mobile.evaluate(
-    "document.querySelector('.cine-mobile-nav').getBoundingClientRect().toJSON()"
+    "document.querySelector('.ym-mobile-nav').getBoundingClientRect().toJSON()"
   );
   assert.ok(nav.width < 390 && nav.width >= 280);
   assert.ok(Math.abs(nav.bottom - (844 - 16)) < 1);
@@ -212,12 +216,12 @@ try {
   await mobile.screenshot(output + '/mobile-scroll.png');
   assert.equal(
     await mobile.evaluate(
-      "document.querySelector('.cine-mobile-nav').getBoundingClientRect().bottom"
+      "document.querySelector('.ym-mobile-nav').getBoundingClientRect().bottom"
     ),
     nav.bottom
   );
   await mobile.evaluate(
-    "document.querySelector('.cine-mobile-nav button[aria-label=Settings]').click()"
+    "document.querySelector('.ym-mobile-nav button[aria-label=Settings]').click()"
   );
   await mobile.delay(400);
   await mobile.screenshot(output + '/mobile-menu.png');
@@ -264,7 +268,7 @@ try {
 }
 assert.deepEqual(browserErrors, [], 'no browser runtime exceptions');
 await writeFile(
-  '.temp/cinejoy/design-results.json',
+  '.temp/design/design-results.json',
   JSON.stringify({ results, recordings, browserErrors }, null, 2)
 );
 console.log(JSON.stringify({ results, recordings, browserErrors }, null, 2));

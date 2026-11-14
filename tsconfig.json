@@ -1,7 +1,7 @@
 {
   "extends": "$app/tsconfig",
-  "include": ["src", "server", "shared", "tests", "types", "*.ts"],
-  "exclude": ["node_modules", "build", "dist", ".temp", "client"],
+  "include": ["src", "server", "shared", "tests", "*.ts"],
+  "exclude": ["node_modules", "build", "dist", ".temp"],
   "compilerOptions": {
     "strict": true,
     "allowJs": true,

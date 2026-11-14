@@ -15,10 +15,6 @@
   }
 </script>
 
-<svelte:head
-  ><title>{data.q ? `Search: ${data.q}` : 'Search'} — YMovies</title
-  ></svelte:head
->
 <main
   id="main"
   class="page-container search-page"

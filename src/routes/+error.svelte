@@ -2,7 +2,6 @@
   import { page } from '$app/state';
 </script>
 
-<svelte:head><title>{page.status} — YMovies</title></svelte:head>
 <main id="main" class="page-container empty-state">
   <p class="eyebrow">{page.status}</p>
   <h1>{page.error?.message || 'Something went wrong'}</h1>

@@ -1,0 +1,20 @@
+{
+  "pid": 19328,
+  "port": 4321,
+  "url": "http://localhost:4321",
+  "urls": {
+    "local": ["http://localhost:4321/"],
+    "network": [
+      "http://169.254.123.235:4321/",
+      "http://169.254.123.57:4321/",
+      "http://192.168.0.102:4321/"
+    ],
+    "networkInterfaceNames": [
+      "OpenVPN TAP-Windows6",
+      "Local Area Connection 2",
+      "WiFi"
+    ]
+  },
+  "background": false,
+  "startedAt": "2026-11-14T01:33:03.488Z"
+}

@@ -1,5 +1,10 @@
 from flask import Flask, request, jsonify
-from flask_cors import CORS
+from werkzeug.exceptions import BadRequest, RequestEntityTooLarge, UnsupportedMediaType
+from collections import OrderedDict
+from hmac import compare_digest
+from threading import Lock
+import json
+import math
 import requests
 import os
 import time
@@ -10,7 +15,11 @@ from hybrid_recommender import (
 )
 
 app = Flask(__name__)
-CORS(app)
+app.config['MAX_CONTENT_LENGTH'] = 64 * 1024
+
+SERVICE_TOKEN = os.environ.get('RECOMMENDATION_SERVICE_TOKEN', '').strip()
+if not SERVICE_TOKEN:
+    raise RuntimeError('RECOMMENDATION_SERVICE_TOKEN environment variable is required')
 
 # TMDB API configuration
 TMDB_API_KEY = os.environ.get('TMDB_API_KEY')
@@ -18,23 +27,138 @@ if not TMDB_API_KEY:
     raise RuntimeError("TMDB_API_KEY environment variable is required")
 TMDB_BASE_URL = 'https://api.themoviedb.org/3'
 
-# Simple in-memory cache (process-local)
-_CACHE: Dict[str, Tuple[float, Any]] = {}
+# Process-local cache bounded by entries, serialized bytes, and time.
+_CACHE = OrderedDict()
 _CACHE_TTL = 60.0  # seconds
+_CACHE_MAX_ENTRIES = 128
+_CACHE_MAX_BYTES = 8 * 1024 * 1024
+_CACHE_ITEM_MAX_BYTES = 512 * 1024
+_CACHE_BYTES = 0
+_CACHE_LOCK = Lock()
+MAX_ID = 2_147_483_647
 
-def _cache_get(key: str):
-    now = time.time()
-    v = _CACHE.get(key)
-    if not v:
+
+@app.before_request
+def authenticate_service():
+    if request.path == '/health':
         return None
-    ts, data = v
-    if now - ts < _CACHE_TTL:
-        return data
-    _CACHE.pop(key, None)
+    provided = request.headers.get('Authorization', '')
+    expected = f'Bearer {SERVICE_TOKEN}'
+    if not compare_digest(provided.encode('utf-8'), expected.encode('utf-8')):
+        return jsonify({'error': 'Unauthorized'}), 401
+    for name, value in (request.view_args or {}).items():
+        if name in ('movie_id', 'tv_id') and not valid_id(value):
+            return jsonify({'error': 'Invalid media ID'}), 400
     return None
 
+
+@app.after_request
+def private_response(response):
+    response.headers['Cache-Control'] = 'private, no-store'
+    return response
+
+
+@app.errorhandler(RequestEntityTooLarge)
+def body_too_large(_error):
+    return jsonify({'error': 'Request data exceeds the 64 KB limit'}), 413
+
+
+@app.errorhandler(BadRequest)
+def invalid_input(_error):
+    return jsonify({'error': 'Invalid recommendation data'}), 400
+
+
+@app.errorhandler(UnsupportedMediaType)
+def invalid_content_type(_error):
+    return jsonify({'error': 'Use application/json for this request'}), 415
+
+
+def valid_id(value):
+    return type(value) is int and 0 < value <= MAX_ID
+
+
+def _id_list(value, limit):
+    if not isinstance(value, list) or len(value) > limit or not all(valid_id(item) for item in value):
+        raise ValueError('Invalid ID list')
+    return list(dict.fromkeys(value))
+
+
+def personalized_input():
+    if not request.is_json:
+        raise UnsupportedMediaType()
+    try:
+        data = json.loads(request.get_data(), parse_constant=lambda _value: None)
+    except (ValueError, RecursionError):
+        raise BadRequest() from None
+    if not isinstance(data, dict) or set(data) - {'watched_ids', 'rated_movies', 'liked_genres'}:
+        raise BadRequest()
+    try:
+        watched_ids = _id_list(data.get('watched_ids', []), 20)
+        liked_genres = _id_list(data.get('liked_genres', []), 50)
+        rated_movies = data.get('rated_movies', [])
+        if not isinstance(rated_movies, list) or len(rated_movies) > 100:
+            raise ValueError('Invalid ratings')
+        ratings = []
+        for item in rated_movies:
+            if not isinstance(item, dict) or set(item) - {'id', 'rating', 'genre_ids'}:
+                raise ValueError('Invalid rating')
+            rating = item.get('rating')
+            if not valid_id(item.get('id')) or type(rating) not in (int, float) or not math.isfinite(rating) or not 0 <= rating <= 5:
+                raise ValueError('Invalid rating')
+            ratings.append({
+                'id': item['id'],
+                'rating': rating,
+                'genre_ids': _id_list(item.get('genre_ids', []), 50),
+            })
+        return watched_ids, ratings, liked_genres
+    except ValueError:
+        raise BadRequest() from None
+
+
+class UpstreamError(Exception):
+    def __init__(self, status):
+        self.status = status
+
+
+def log_failure(operation, error):
+    status = error.status if isinstance(error, UpstreamError) else None
+    kind = 'upstream' if isinstance(error, (UpstreamError, requests.RequestException)) else 'internal'
+    app.logger.warning('recommendation_failure operation=%s type=%s status=%s', operation, kind, status)
+
+
+def _cache_remove(key):
+    global _CACHE_BYTES
+    entry = _CACHE.pop(key)
+    _CACHE_BYTES -= entry[2]
+
+def _cache_get(key: str):
+    with _CACHE_LOCK:
+        entry = _CACHE.get(key)
+        if entry is None:
+            return None
+        if time.monotonic() - entry[0] >= _CACHE_TTL:
+            _cache_remove(key)
+            return None
+        _CACHE.move_to_end(key)
+        return entry[1]
+
 def _cache_set(key: str, data: Any):
-    _CACHE[key] = (time.time(), data)
+    global _CACHE_BYTES
+    size = len(json.dumps(data, ensure_ascii=True).encode('utf-8'))
+    now = time.monotonic()
+    with _CACHE_LOCK:
+        for old_key, entry in list(_CACHE.items()):
+            if now - entry[0] >= _CACHE_TTL:
+                _cache_remove(old_key)
+        if key in _CACHE:
+            _cache_remove(key)
+        if size > _CACHE_ITEM_MAX_BYTES:
+            return
+        while _CACHE and (len(_CACHE) >= _CACHE_MAX_ENTRIES or _CACHE_BYTES + size > _CACHE_MAX_BYTES):
+            _cache_remove(next(iter(_CACHE)))
+        if size <= _CACHE_MAX_BYTES:
+            _CACHE[key] = (now, data, size)
+            _CACHE_BYTES += size
 
 def _headers_and_params():
     headers = {}
@@ -55,9 +179,12 @@ def tmdb_get(path: str, extra_params: Dict[str, str] | None = None) -> Any:
     if extra_params:
         params.update(extra_params)
     url = f"{TMDB_BASE_URL}{path}"
-    r = requests.get(url, headers=headers, params=params, timeout=7)
-    r.raise_for_status()
+    r = requests.get(url, headers=headers, params=params, timeout=7, allow_redirects=False)
+    if r.status_code != 200:
+        raise UpstreamError(r.status_code)
     data = r.json()
+    if not isinstance(data, dict):
+        raise UpstreamError(502)
     _cache_set(cache_key, data)
     return data
 
@@ -257,10 +384,7 @@ def get_personalized_recommendations():
         liked_genres: list[int] - genre IDs the user likes
     """
     try:
-        data = request.get_json() or {}
-        watched_ids: List[int] = data.get("watched_ids", [])
-        rated_movies: List[Dict[str, Any]] = data.get("rated_movies", [])
-        liked_genres: List[int] = data.get("liked_genres", [])
+        watched_ids, rated_movies, liked_genres = personalized_input()
 
         # Build user profile from history
         watch_history_details: List[Dict[str, Any]] = []
@@ -270,6 +394,10 @@ def get_personalized_recommendations():
             except Exception:
                 continue
 
+        details_by_id = {item['id']: item for item in watch_history_details}
+        for item in rated_movies:
+            if not item['genre_ids']:
+                item['genre_ids'] = get_genre_ids(details_by_id.get(item['id'], {}))
         user_profile = build_user_profile(watch_history_details, rated_movies, liked_genres)
 
         # Gather candidate pool from multiple sources
@@ -326,8 +454,10 @@ def get_personalized_recommendations():
             "recommendation_count": len(recommendations),
         })
 
+    except (BadRequest, UnsupportedMediaType, RequestEntityTooLarge):
+        raise
     except Exception as e:
-        print(f"Personalized recommendation error: {e}")
+        log_failure('personalized', e)
         return jsonify({"error": "Internal server error"}), 500
 
 
@@ -342,10 +472,7 @@ def reco_v2_hybrid_movie(movie_id: int):
         liked_genres: list[int]
     """
     try:
-        data = request.get_json(silent=True) or {}
-        watched_ids = data.get("watched_ids", [])
-        rated_movies = data.get("rated_movies", [])
-        liked_genres = data.get("liked_genres", [])
+        watched_ids, rated_movies, liked_genres = personalized_input()
 
         src = get_movie_details(movie_id)
 
@@ -388,9 +515,11 @@ def reco_v2_hybrid_movie(movie_id: int):
             })
         return jsonify(rows)
 
+    except (BadRequest, UnsupportedMediaType, RequestEntityTooLarge):
+        raise
     except Exception as e:
-        print(f"Hybrid movie recommendation error: {e}")
-        return jsonify([])
+        log_failure('hybrid_movie', e)
+        return jsonify({'error': 'Recommendations are temporarily unavailable'}), 503
 
 
 @app.route('/api/reco/v2/movie/<int:movie_id>')
@@ -423,8 +552,8 @@ def reco_v2_movie(movie_id: int):
         rows = mmr_diversify(rows, score_key='score', lambda_weight=0.78, top_k=30)
         return jsonify(rows)
     except Exception as e:
-        print('reco_v2_movie error:', e)
-        return jsonify([])
+        log_failure('movie', e)
+        return jsonify({'error': 'Recommendations are temporarily unavailable'}), 503
 
 
 @app.route('/api/reco/v2/tv/<int:tv_id>')
@@ -457,8 +586,8 @@ def reco_v2_tv(tv_id: int):
         rows = mmr_diversify(rows, score_key='score', lambda_weight=0.78, top_k=30)
         return jsonify(rows)
     except Exception as e:
-        print('reco_v2_tv error:', e)
-        return jsonify([])
+        log_failure('tv', e)
+        return jsonify({'error': 'Recommendations are temporarily unavailable'}), 503
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5001))

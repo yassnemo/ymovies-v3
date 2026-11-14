@@ -108,7 +108,6 @@
   }
 </script>
 
-<svelte:head><title>My list — YMovies</title></svelte:head>
 <main id="main" class="page-container library-page">
   <p class="eyebrow">A collection of your kind of stories</p>
   <h1 class="page-title">My Lists</h1>

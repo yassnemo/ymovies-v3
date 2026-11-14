@@ -5,7 +5,6 @@ export interface RecommendationQuery {
   excludeWatched: boolean;
   excludeWatchlist: boolean;
 }
-
 export interface UserProfile {
   preferredDecades: string[];
   preferredGenres: number[];
@@ -13,31 +12,26 @@ export interface UserProfile {
   preferredLanguages: string[];
   recentWatchingPatterns: WatchingPatterns;
 }
-
 export interface WatchingPatterns {
   totalWatched: number;
   completionRate: number;
   avgRating: number | null;
 }
-
 export interface ContentContext {
   isAnimation: boolean;
   isFamily: boolean;
   isMature: boolean;
   contentGenres: Set<number>;
 }
-
 export interface TemporalRange {
   min: number;
   max: number;
 }
-
 export interface MovieCandidate {
   movie: Movie;
   relevanceScore: number;
   source: string;
 }
-
 export interface RecommendationFilters {
   [key: string]: string | undefined;
   with_genres?: string;
@@ -51,7 +45,6 @@ export interface RecommendationFilters {
   'primary_release_date.lte'?: string;
   sort_by?: string;
 }
-
 export interface ScoreComponents {
   genreScore: number;
   qualityScore: number;
@@ -59,7 +52,6 @@ export interface ScoreComponents {
   languageScore: number;
   popularityScore: number;
 }
-
 export interface BlendedRecommendation {
   movie: Movie;
   contentScore: number;
@@ -67,7 +59,6 @@ export interface BlendedRecommendation {
   combinedScore: number;
   sources: string[];
 }
-
 export type RecommendationType =
   | 'continue_watching'
   | 'because_you_watched'
@@ -82,11 +73,9 @@ export type RecommendationType =
   | 'director_based'
   | 'time_based'
   | 'popular';
-
 export interface PersonalizedCategory {
   category: string;
   movies: Movie[];
   recommendationType: RecommendationType;
 }
-
 import { type Movie } from '#lib/types/movie.ts';

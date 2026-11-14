@@ -62,7 +62,7 @@
     if (event.key === 'Escape') menu = false;
   }}
 />
-<header class="cine-navigation" class:condensed>
+<header class="ym-navigation" class:condensed>
   <div class="nav-brand-group">
     {#if active !== '/'}<button
         class="back-control"
@@ -73,7 +73,7 @@
             : window.location.assign('/')}
         ><Icon name="left" size={25} /></button
       >{/if}
-    <a class="cine-brand" href="/" aria-label="YMovies home"
+    <a class="ym-brand" href="/" aria-label="YMovies home"
       ><img
         src="/images/landing/brand-mark.svg"
         alt="YMovies"
@@ -82,7 +82,7 @@
       /></a
     >
   </div>
-  <nav class="cine-desktop-nav" aria-label="Main navigation" bind:this={nav}>
+  <nav class="ym-desktop-nav" aria-label="Main navigation" bind:this={nav}>
     <span
       class="active-nav-pill"
       style={'transform:translateX(' +
@@ -118,7 +118,7 @@
     aria-label="Close account menu"
     onclick={() => (menu = false)}
   ></button>
-  <nav class="cine-account-menu" aria-label="Account menu">
+  <nav class="ym-account-menu" aria-label="Account menu">
     <a href={$session ? '/profile' : '/signin'}
       ><Icon name="user" size={17} />{$session ? 'Your profile' : 'Login'}</a
     >
@@ -137,7 +137,7 @@
         }}><Icon name="logout" size={17} />Sign out</button
       >{/if}
   </nav>{/if}
-<nav class="cine-mobile-nav mobile-nav" aria-label="Mobile navigation">
+<nav class="ym-mobile-nav mobile-nav" aria-label="Mobile navigation">
   {#each links as [href, label, icon]}<a
       {href}
       class:active={active === href}

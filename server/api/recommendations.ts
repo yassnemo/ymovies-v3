@@ -3,13 +3,18 @@ interface RecommendationRequest {
   user?: { claims?: { sub: string } };
 }
 const jsonWithStatus = (status: number, data: unknown) =>
-  Response.json(data, { status });
+  Response.json(data, {
+    status,
+    headers: { 'Cache-Control': 'private, no-store' }
+  });
 import { storage } from '../storage';
 import { TMDBService } from '../services/tmdb';
-import { RecommendationConnector } from '../services/recommendation-connector';
+import {
+  RecommendationConnector,
+  type PersonalizationInput
+} from '../services/recommendation-connector';
 import { RecommendationEngine } from '../services/recommendation-engine';
 
-// Define basic Movie interface for type safety
 interface Movie {
   id: number;
   title: string;
@@ -27,47 +32,20 @@ interface Movie {
   popularity: number;
 }
 
-// Define a type for the user object with claims
-interface AuthUser {
-  claims?: {
-    sub: string;
-    [key: string]: any;
-  };
-}
-
-// Define Movie interface to match client-side type
-interface Movie {
-  id: number;
-  title: string;
-  overview: string;
-  poster_path: string | null;
-  backdrop_path: string | null;
-  release_date: string;
-  vote_average: number;
-  vote_count: number;
-  adult: boolean;
-  genre_ids?: number[];
-  genres?: { id: number; name: string }[];
-  original_language: string;
-  original_title: string;
-  popularity: number;
-}
-
-// Define import for database operations
 import { db } from '../db';
 import { favoriteItems } from '../../shared/schema';
 import { eq } from 'drizzle-orm';
 
 // Initialize TMDb service and recommendation connector
-const tmdbService = new TMDBService(process.env.TMDB_API_KEY || '');
+const tmdbCredential =
+  process.env.TMDB_API_KEY || process.env.TMDB_BEARER_TOKEN || '';
+const tmdbService = new TMDBService(tmdbCredential);
 const recommendationConnector = new RecommendationConnector();
 // Initialize the enhanced recommendation engine
-const recommendationEngine = new RecommendationEngine(
-  process.env.TMDB_API_KEY || ''
-);
+const recommendationEngine = new RecommendationEngine(tmdbCredential);
 
 // Small in-memory caches to reduce latency on repeated requests
-type CacheEntry<T> = { data: T; expiresAt: number };
+type CacheEntry<T> = { data: T; expiresAt: number; bytes: number };
 const SIMILAR_CACHE = new Map<string, CacheEntry<Movie[]>>();
 const BECAUSE_CACHE = new Map<
   string,
@@ -79,11 +57,23 @@ const BECAUSE_CACHE = new Map<
 >();
 const DEFAULT_TTL_MS = 1000 * 60 * 60 * 6; // 6 hours — recommendations don't change minute-to-minute
 const TV_SIMILAR_CACHE = new Map<string, CacheEntry<any[]>>();
+const MAX_CACHE_ENTRIES = 128;
+const MAX_CACHE_BYTES = 4 * 1024 * 1024;
+const validId = (value: number) =>
+  Number.isInteger(value) && value > 0 && value <= 2_147_483_647;
+
+function logFailure(operation: string) {
+  console.warn('[Recommendations API]', { operation, type: 'service_failure' });
+}
 
 function getCache<T>(map: Map<string, CacheEntry<T>>, key: string): T | null {
   const now = Date.now();
   const entry = map.get(key);
-  if (entry && entry.expiresAt > now) return entry.data;
+  if (entry && entry.expiresAt > now) {
+    map.delete(key);
+    map.set(key, entry);
+    return entry.data;
+  }
   if (entry) map.delete(key);
   return null;
 }
@@ -93,7 +83,26 @@ function setCache<T>(
   data: T,
   ttlMs = DEFAULT_TTL_MS
 ) {
-  map.set(key, { data, expiresAt: Date.now() + ttlMs });
+  const now = Date.now();
+  for (const [oldKey, entry] of map) {
+    if (entry.expiresAt <= now) map.delete(oldKey);
+  }
+  map.delete(key);
+  const bytes = Buffer.byteLength(JSON.stringify(data), 'utf8');
+  if (bytes > 512 * 1024) return;
+  let totalBytes = [...map.values()].reduce(
+    (total, entry) => total + entry.bytes,
+    0
+  );
+  while (
+    map.size &&
+    (map.size >= MAX_CACHE_ENTRIES || totalBytes + bytes > MAX_CACHE_BYTES)
+  ) {
+    const oldest = map.keys().next().value!;
+    totalBytes -= map.get(oldest)!.bytes;
+    map.delete(oldest);
+  }
+  map.set(key, { data, bytes, expiresAt: now + ttlMs });
 }
 
 // Utility: create a timeout promise
@@ -125,7 +134,7 @@ export async function getPersonalizedRecommendations(
 ) {
   try {
     // Handle user authentication safely
-    const userId = (req.user as AuthUser | undefined)?.claims?.sub;
+    const userId = req.user?.claims?.sub;
 
     if (!userId) {
       return jsonWithStatus(401, { message: 'Unauthorized' });
@@ -134,86 +143,77 @@ export async function getPersonalizedRecommendations(
     // Get user's data for recommendation engine
     const watchHistory = await storage.getWatchHistory(userId);
     const preferences = await storage.getUserPreferences(userId);
-    const watchlist = await storage.getWatchlistItems(userId);
 
-    // Get favorite items from database
-    let userFavorites: { movieId: number }[] = [];
-
-    try {
-      const favorites = await db
-        .select()
-        .from(favoriteItems)
-        .where(eq(favoriteItems.userId, userId));
-
-      userFavorites = favorites || [];
-    } catch (err) {
-      console.error('Error fetching favorite items:', err);
-      // Fall back to empty array
-      userFavorites = [];
-    }
-
-    // Check if Python recommendation service is available
-    const isRecommendationServiceAvailable =
-      await recommendationConnector.isAvailable();
-
-    // Format history items with proper type safety
-    const transformedHistory = watchHistory.map((item: any) => ({
-      movieId: item.movieId,
-      watch_progress: item.watchProgress ? item.watchProgress / 100 : 0,
-      watch_count: item.watchCount || 1,
-      completed: item.completed || false,
-      rating: item.rating || null,
-      watchedAt: item.watchedAt
-    }));
-
-    if (isRecommendationServiceAvailable) {
+    if (await recommendationConnector.isAvailable()) {
       try {
-        // Format user data for personalized recommendations with type safety
-        const userData = {
-          userId,
-          liked_movies: userFavorites.map((item: any) => item.movieId),
-          watch_history: transformedHistory,
-          watchlist: watchlist.map((item: any) => item.movieId),
-          user_preferences: preferences
-            ? {
-                // Include backward compatibility with old schema
-                likedGenres: preferences.likedGenres || [],
-                dislikedGenres: preferences.dislikedGenres || []
-              }
-            : {}
+        const userFavorites = await db
+          .select()
+          .from(favoriteItems)
+          .where(eq(favoriteItems.userId, userId))
+          .limit(100);
+        const ratedMovies: PersonalizationInput['rated_movies'] = watchHistory
+          .filter(
+            (item) =>
+              validId(item.movieId) &&
+              typeof item.rating === 'number' &&
+              Number.isFinite(item.rating) &&
+              item.rating >= 0 &&
+              item.rating <= 5
+          )
+          .slice(0, 100)
+          .map((item) => ({ id: item.movieId, rating: item.rating! }));
+        const ratedIds = new Set(ratedMovies.map((item) => item.id));
+        for (const item of userFavorites) {
+          if (
+            validId(item.movieId) &&
+            !ratedIds.has(item.movieId) &&
+            ratedMovies.length < 100
+          ) {
+            ratedMovies.push({ id: item.movieId, rating: 5 });
+            ratedIds.add(item.movieId);
+          }
+        }
+        const genres = await tmdbService.getGenres();
+        const genreIds = new Map(
+          genres.map((genre) => [
+            String(genre.name).toLowerCase(),
+            genre.id as number
+          ])
+        );
+        const likedGenres = (preferences?.likedGenres || [])
+          .map((value) =>
+            /^\d+$/.test(value)
+              ? Number(value)
+              : genreIds.get(value.toLowerCase()) || 0
+          )
+          .filter(validId)
+          .slice(0, 50);
+        const userData: PersonalizationInput = {
+          watched_ids: watchHistory
+            .map((item) => item.movieId)
+            .filter(validId)
+            .slice(0, 20),
+          rated_movies: ratedMovies,
+          liked_genres: [...new Set(likedGenres)]
         };
-
-        // Get personalized recommendations
         const recommendationResponse =
           await recommendationConnector.getPersonalizedRecommendations(
             userData
           );
-
-        // Return recommendation categories
-        return Response.json(recommendationResponse);
-      } catch (error) {
-        console.error('Error connecting to recommendation service:', error);
-        // Fall back to enhanced TypeScript recommendation engine instead of basic TMDB
-        const enhancedRecommendations =
-          await recommendationEngine.getPersonalizedRecommendations(userId, 15);
-        return Response.json({
-          recommendation_categories: [
-            { category: 'Recommended for you', movies: enhancedRecommendations }
-          ]
-        });
+        return jsonWithStatus(200, recommendationResponse);
+      } catch {
+        logFailure('personalized_python');
       }
-    } else {
-      // Use enhanced TypeScript recommendation engine instead of basic TMDB fallback
-      const enhancedRecommendations =
-        await recommendationEngine.getPersonalizedRecommendations(userId, 15);
-      return Response.json({
-        recommendation_categories: [
-          { category: 'Recommended for you', movies: enhancedRecommendations }
-        ]
-      });
     }
+    const enhancedRecommendations =
+      await recommendationEngine.getPersonalizedRecommendations(userId, 15);
+    return jsonWithStatus(200, {
+      recommendation_categories: [
+        { category: 'Recommended for you', movies: enhancedRecommendations }
+      ]
+    });
   } catch (error) {
-    console.error('Error generating personalized recommendations:', error);
+    logFailure('personalized');
     return jsonWithStatus(500, {
       message: 'Failed to generate recommendations'
     });
@@ -225,23 +225,25 @@ export async function getPersonalizedRecommendations(
  */
 export async function getSimilarMovies(req: RecommendationRequest) {
   try {
-    const movieId = parseInt(req.params.movieId);
+    const movieId = /^\d+$/.test(req.params.movieId)
+      ? Number(req.params.movieId)
+      : NaN;
 
-    if (isNaN(movieId)) {
+    if (!validId(movieId)) {
       return jsonWithStatus(400, { message: 'Invalid movie ID' });
     }
 
     // Get authenticated user ID for personalized filtering
-    const userId = (req.user as AuthUser | undefined)?.claims?.sub;
+    const userId = req.user?.claims?.sub;
 
     // Serve from cache if we have fresh data
-    const cacheKey = `${movieId}`;
+    const cacheKey = `${userId || 'public'}:${movieId}`;
     const cached = getCache(SIMILAR_CACHE, cacheKey);
     if (cached) {
-      return Response.json(cached);
+      return jsonWithStatus(200, cached);
     }
 
-    // Hedge: start Python request and a fast fallback. If Python is slow (>2.5s), return fallback now; cache Python when it comes.
+    // Start both sources so a slow service does not delay the fallback.
     const userIdOrAnonymous = userId || 'anonymous-user';
     const pythonPromise = recommendationConnector.getSimilarMovies(movieId, 15);
     const fallbackPromise = recommendationEngine.getEnhancedBecauseYouWatched(
@@ -249,6 +251,8 @@ export async function getSimilarMovies(req: RecommendationRequest) {
       movieId,
       15
     );
+    // The Python result may win before this promise is awaited.
+    void fallbackPromise.catch(() => {});
 
     try {
       // Prefer Python if it returns quickly
@@ -257,16 +261,16 @@ export async function getSimilarMovies(req: RecommendationRequest) {
       );
       if (pythonFast && pythonFast.length > 0) {
         setCache(SIMILAR_CACHE, cacheKey, pythonFast);
-        return Response.json(pythonFast);
+        return jsonWithStatus(200, pythonFast);
       }
     } catch {}
 
     // Fallback path
     const fallback = await fallbackPromise;
-    setCache(SIMILAR_CACHE, cacheKey, fallback);
-    return Response.json(fallback);
+    if (fallback.length) setCache(SIMILAR_CACHE, cacheKey, fallback);
+    return jsonWithStatus(200, fallback);
   } catch (error) {
-    console.error('Error fetching similar movies:', error);
+    logFailure('similar_movies');
     return jsonWithStatus(500, { message: 'Failed to fetch similar movies' });
   }
 }
@@ -278,9 +282,9 @@ export async function getTrendingWithDelay(req: RecommendationRequest) {
   try {
     const movies = await tmdbService.getTrending();
 
-    return Response.json(movies);
+    return jsonWithStatus(200, movies);
   } catch (error) {
-    console.error('Error fetching trending movies:', error);
+    logFailure('trending');
     return jsonWithStatus(500, { message: 'Failed to fetch trending movies' });
   }
 }
@@ -292,20 +296,22 @@ export async function getBecauseYouLikedRecommendations(
   req: RecommendationRequest
 ) {
   try {
-    const movieId = parseInt(req.params.movieId);
+    const movieId = /^\d+$/.test(req.params.movieId)
+      ? Number(req.params.movieId)
+      : NaN;
 
-    if (isNaN(movieId)) {
+    if (!validId(movieId)) {
       return jsonWithStatus(400, { message: 'Invalid movie ID' });
     }
 
     // Get authenticated user ID for personalized filtering
-    const userId = (req.user as AuthUser | undefined)?.claims?.sub;
+    const userId = req.user?.claims?.sub;
 
     // Serve from cache if available
-    const cacheKey = `${movieId}`;
+    const cacheKey = `${userId || 'public'}:${movieId}`;
     const cached = getCache(BECAUSE_CACHE, cacheKey);
     if (cached) {
-      return Response.json(cached);
+      return jsonWithStatus(200, cached);
     }
 
     const sourceMovie = await tmdbService.getMovieDetails(movieId);
@@ -317,6 +323,7 @@ export async function getBecauseYouLikedRecommendations(
     const fallbackPromise = recommendationEngine
       .getEnhancedBecauseYouWatched(userId || 'anonymous-user', movieId, 12)
       .then((recs) => ({ recommendations: recs, sourceMovie, category }));
+    void fallbackPromise.catch(() => {});
 
     let payload;
     try {
@@ -328,10 +335,11 @@ export async function getBecauseYouLikedRecommendations(
       payload = await fallbackPromise;
     }
 
-    setCache(BECAUSE_CACHE, cacheKey, payload);
-    return Response.json(payload);
+    if (payload.recommendations.length)
+      setCache(BECAUSE_CACHE, cacheKey, payload);
+    return jsonWithStatus(200, payload);
   } catch (error) {
-    console.error("Error getting 'because you liked' recommendations:", error);
+    logFailure('because_you_liked');
     return jsonWithStatus(500, { message: 'Failed to get recommendations' });
   }
 }
@@ -341,21 +349,22 @@ export async function getBecauseYouLikedRecommendations(
  */
 export async function getSimilarTVShowsEnhanced(req: RecommendationRequest) {
   try {
-    const tvId = parseInt(req.params.tvId);
+    const tvId = /^\d+$/.test(req.params.tvId) ? Number(req.params.tvId) : NaN;
 
-    if (isNaN(tvId)) {
+    if (!validId(tvId)) {
       return jsonWithStatus(400, { message: 'Invalid TV ID' });
     }
 
     const cacheKey = `${tvId}`;
     const cached = getCache(TV_SIMILAR_CACHE, cacheKey);
     if (cached) {
-      return Response.json(cached);
+      return jsonWithStatus(200, cached);
     }
 
     // Hedge: prefer Python v2 microservice if it responds quickly; otherwise use enhanced TS engine, then TMDB
     const pythonPromise = recommendationConnector.getSimilarTV(tvId, 15);
     const enhancedPromise = recommendationEngine.getEnhancedSimilarTV(tvId, 15);
+    void enhancedPromise.catch(() => {});
 
     let result: any[] | null = null;
     try {
@@ -375,57 +384,10 @@ export async function getSimilarTVShowsEnhanced(req: RecommendationRequest) {
           : await tmdbService.getSimilarTV(tvId);
     }
 
-    setCache(TV_SIMILAR_CACHE, cacheKey, result);
-    return Response.json(result);
+    if (result.length) setCache(TV_SIMILAR_CACHE, cacheKey, result);
+    return jsonWithStatus(200, result);
   } catch (error) {
-    console.error('Error fetching enhanced similar TV shows:', error);
+    logFailure('similar_tv');
     return jsonWithStatus(500, { message: 'Failed to fetch similar TV shows' });
   }
-}
-
-/**
- * Fallback recommendation logic using TMDb API and basic user history
- */
-async function getFallbackRecommendations(
-  userId: string,
-  watchHistory: any[]
-): Promise<Movie[]> {
-  // If user has watch history, get recommendations based on most recent movie
-  if (watchHistory.length > 0) {
-    // Sort by most recent
-    const sortedHistory = [...watchHistory].sort((a, b) => {
-      const dateA = a.watchedAt ? new Date(a.watchedAt).getTime() : 0;
-      const dateB = b.watchedAt ? new Date(b.watchedAt).getTime() : 0;
-      return dateB - dateA;
-    });
-
-    // Get recently watched movie ID
-    const recentMovieId = sortedHistory[0].movieId;
-
-    // Get similar movies based on recently watched
-    const similarMovies = await tmdbService.getSimilarMovies(recentMovieId);
-
-    return similarMovies;
-  }
-
-  // If no watch history, get user preferences
-  const preferences = await storage.getUserPreferences(userId);
-
-  if (
-    preferences &&
-    preferences.likedGenres &&
-    preferences.likedGenres.length > 0
-  ) {
-    // Build params based on preferences
-    const discoverParams: Record<string, string> = {
-      with_genres: preferences.likedGenres.join(','),
-      sort_by: 'popularity.desc'
-    };
-
-    // Get movies based on genre preferences
-    return await tmdbService.discoverMovies(discoverParams);
-  }
-
-  // If all else fails, return popular movies
-  return await tmdbService.getPopular();
 }

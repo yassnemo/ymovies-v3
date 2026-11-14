@@ -12,13 +12,13 @@ Set `PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_ANON_KEY` (legacy VITE names are 
 
 Check the server's `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and `DATABASE_URL`. API calls need a valid Supabase access token. Failed writes remain pending locally and retry when the browser reconnects. Guest libraries are intentionally device-local.
 
-## Build or editor errors after changing frameworks
+## Build or editor errors
 
 Run `npm ci`, then `npm run check`. Use Node.js 22.12+ and the Svelte editor extension. SvelteKit 3 uses plugin configuration in `vite.config.ts`, TypeScript's `$app/tsconfig`, and package subpath imports for `#lib` and `#shared`.
 
 ## Production deep links fail
 
-Deploy the SvelteKit server output with the matching adapter. Do not use the former static React SPA rewrites or Astro output paths. Set `ORIGIN` when using the Node adapter behind a proxy.
+Deploy the SvelteKit server output with the matching adapter. Set `ORIGIN` when using the Node adapter behind a proxy.
 
 ## Vercel adapter reports EPERM on Windows
 

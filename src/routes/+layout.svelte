@@ -1,18 +1,17 @@
 <script lang="ts">
   import { onMount, setContext, untrack, type Snippet } from 'svelte';
   import { page } from '$app/state';
-  import { onNavigate } from '$app/navigation';
+  import { afterNavigate, onNavigate } from '$app/navigation';
+  import { trackPageView } from '#lib/analytics.ts';
   import { APP_STATE, createAppState } from '#lib/state.ts';
   import Navbar from '#lib/components/Navbar.svelte';
   import Footer from '#lib/components/Footer.svelte';
   import Icon from '#lib/components/Icon.svelte';
   import AmbientBackground from '#lib/components/AmbientBackground.svelte';
-  import '#lib/styles/legacy.css';
-  import '#lib/styles/app.css';
-  import '#lib/styles/cinejoy.css';
-  import '#lib/styles/reference-motion.css';
-  import '#lib/styles/refinements.css';
-  import '#lib/styles/provider-picks.css';
+  import Seo from '#lib/components/Seo.svelte';
+  import '#lib/styles/base.css';
+  import '#lib/styles/catalog.css';
+  import '#lib/styles/motion.css';
   import '#lib/styles/hero-background.css';
   let {
     data,
@@ -35,12 +34,15 @@
       red: '#ff6371'
     };
     document.documentElement.style.setProperty(
-      '--cine-accent',
+      '--ym-accent',
       accents[String(appearance.theme)] || accents.default
     );
   });
   let scrollPosition = $state(0);
   onMount(() => app.init());
+  afterNavigate(({ to }) => {
+    if (to) trackPageView(to.url, document.title);
+  });
   onNavigate((navigation) => {
     if (
       !document.startViewTransition ||
@@ -67,12 +69,7 @@
 
 <svelte:window bind:scrollY={scrollPosition} />
 
-<svelte:head
-  ><meta
-    name="description"
-    content="Discover movies and TV shows. Track your watchlist, favorites, and episode progress with YMovies."
-  /></svelte:head
->
+<Seo url={page.url} data={page.data} status={page.status} />
 {#if chrome}{#if ambient}<AmbientBackground />{:else}<div
       class="catalog-ambient"
       aria-hidden="true"

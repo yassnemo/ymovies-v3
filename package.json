@@ -1,6 +1,6 @@
 {
-  "name": "ymovies-svelte",
-  "version": "1.0.0",
+  "name": "ymovies",
+  "version": "4.0.0",
   "private": true,
   "type": "module",
   "license": "MIT",
@@ -13,15 +13,8 @@
   },
   "scripts": {
     "dev": "vite dev --host 0.0.0.0 --port 5000",
-    "dev:simple": "npm run dev",
-    "dev:client": "npm run dev",
     "build": "vite build",
-    "build:clean": "vite build",
-    "build:vercel": "vite build",
-    "build:heroku": "vite build",
     "start": "node --env-file-if-exists=.env --env-file-if-exists=.env.local build/index.js",
-    "start:heroku": "node build/index.js",
-    "heroku-postbuild": "vite build",
     "preview": "vite preview --host 0.0.0.0 --port 5000",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "test": "tsx --test tests/*.test.ts",
@@ -29,16 +22,20 @@
     "test:browser": "node scripts/testing/browser-smoke.mjs",
     "test:design": "node scripts/testing/design-smoke.mjs",
     "db:push": "drizzle-kit push",
-    "format": "prettier --write src tests vite.config.ts tailwind.config.ts"
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "doctor": "node scripts/doctor.js",
+    "test:seo": "node scripts/testing/seo-smoke.mjs",
+    "test:analytics": "node scripts/testing/analytics-smoke.mjs"
   },
   "dependencies": {
     "@neondatabase/serverless": "^0.10.4",
-    "@supabase/supabase-js": "^2.49.4",
-    "axios": "^1.15.0",
+    "@supabase/supabase-js": "^2.119.0",
+    "axios": "^1.21.1",
     "drizzle-orm": "^0.45.2",
-    "drizzle-zod": "^0.7.0",
-    "ws": "^8.18.0",
-    "zod": "^3.24.2"
+    "drizzle-zod": "^0.8.3",
+    "ws": "^8.23.0",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@opentelemetry/api": "^1.9.0",
@@ -46,21 +43,32 @@
     "@sveltejs/adapter-vercel": "^7.0.3",
     "@sveltejs/kit": "^3.2.0",
     "@sveltejs/vite-plugin-svelte": "^7.3.1",
-    "@tailwindcss/typography": "^0.5.15",
-    "@types/express": "^4.17.21",
     "@types/node": "^24.0.0",
     "@types/ws": "^8.5.13",
     "autoprefixer": "^10.4.20",
-    "drizzle-kit": "^0.31.4",
-    "postcss": "^8.4.47",
+    "drizzle-kit": "^0.31.11",
+    "postcss": "^8.5.25",
     "prettier": "^3.10.1",
     "prettier-plugin-svelte": "^4.1.1",
     "svelte": "^5.57.3",
     "svelte-check": "^4.7.8",
     "tailwindcss": "^3.4.17",
-    "tailwindcss-animate": "^1.0.7",
     "tsx": "^4.20.5",
     "typescript": "^6.0.0",
     "vite": "^8.3.8"
+  },
+  "overrides": {
+    "esbuild": "^0.28.1",
+    "postcss-selector-parser": "^6.1.5"
+  },
+  "description": "Discover movies and TV shows, build a watchlist, and keep track of what you watch.",
+  "author": {
+    "name": "Yassine Erradouani",
+    "url": "https://yerradouani.me"
+  },
+  "homepage": "https://ymovies.yerradouani.me",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yassnemo/ymovies-v3.git"
   }
 }

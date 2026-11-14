@@ -6,7 +6,8 @@ import { tmpdir } from 'node:os';
 export async function openBrowser({
   width = 1440,
   height = 900,
-  mobile = false
+  mobile = false,
+  analytics = false
 } = {}) {
   const profile = resolve(tmpdir(), `ymovies-design-${Date.now()}`);
   await mkdir(profile, { recursive: true });
@@ -215,6 +216,14 @@ export async function openBrowser({
   await call('Page.bringToFront');
   await call('Runtime.enable');
   await call('Network.enable');
+  if (!analytics)
+    await call('Network.setBlockedURLs', {
+      urls: [
+        '*://*.googletagmanager.com/*',
+        '*://*.google-analytics.com/*',
+        '*://*.analytics.google.com/*'
+      ]
+    });
   await call('Emulation.setDeviceMetricsOverride', {
     width,
     height,

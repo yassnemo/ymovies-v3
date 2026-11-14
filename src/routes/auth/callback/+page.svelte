@@ -38,7 +38,6 @@
   });
 </script>
 
-<svelte:head><title>Completing sign in — YMovies</title></svelte:head>
 <main class="auth-shell" id="main">
   <section class="auth-card">
     <h1>{problem ? 'Unable to complete sign in' : 'Completing sign in…'}</h1>

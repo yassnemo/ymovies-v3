@@ -58,7 +58,7 @@
 </script>
 
 <article
-  class="cine-card media-card movie-card"
+  class="ym-card media-card movie-card"
   bind:this={card}
   onmouseenter={enter}
   onmouseleave={leave}

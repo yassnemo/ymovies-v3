@@ -1,11 +1,39 @@
 <!doctype html>
 <html lang="en" class="dark">
+  <!-- YMovies by Yassine Erradouani · https://yerradouani.me -->
   <head>
     <meta charset="utf-8" />
+    <!-- Google tag (gtag.js) -->
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-0HC7C4GFD5"
+    ></script>
+    <script nonce="%sveltekit.nonce%">
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag('js', new Date());
+      gtag('config', 'G-0HC7C4GFD5', {
+        send_page_view: false,
+        page_location: window.location.origin + window.location.pathname,
+        page_referrer: document.referrer.split(/[?#]/, 1)[0]
+      });
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="apple-touch-icon" href="/logo.png" />
-    <meta name="theme-color" content="#e50914" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/icon-180.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="theme-color" content="#080a0b" />
+    <meta name="application-name" content="YMovies" />
+    <link rel="author" href="/humans.txt" />
+    <link
+      rel="preload"
+      href="/fonts/Inter-variable.ttf"
+      as="font"
+      type="font/ttf"
+      crossorigin="anonymous"
+    />
     <link
       rel="preconnect"
       href="https://image.tmdb.org"

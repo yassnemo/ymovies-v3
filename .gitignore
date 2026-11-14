@@ -1,164 +1,57 @@
-# Dependency directories
-node_modules
-.npm
-/npm-debug.log*
-/yarn-debug.log*
-/yarn-error.log*
-
-# Build output
-dist
-build
+# Dependencies and generated output
+node_modules/
+.npm/
+.yarn/
+.svelte-kit/
+build/
+dist/
 *.tsbuildinfo
-server/public
+.vercel/
+.netlify/
+.cache/
+.temp/
+coverage/
+.nyc_output/
 
-# Environment variables (ALL variations)
-.env
-
-# Auth credentials (NEVER commit service role keys)
-.env.local
-.env.development
-.env.test
-.env.production
-.env*.local
-.env.heroku
-.env.vercel
-.env.staging
-.env.live
-client/public/env.js
-
-# OS generated files
-.DS_Store
-Thumbs.db
-ehthumbs.db
-Desktop.ini
-
-# Editor/IDE specific files
-.idea/
-.vscode/
-*.sublime-project
-*.sublime-workspace
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-.project
-.classpath
-.settings/
-*.code-workspace
-
-# Debug logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
-
-# Testing
-/coverage
-/.nyc_output
-
-# Misc
-vite.config.ts.*
-*.tar.gz
-.cache
-.temp
-.upm/
-.vercel
-.netlify
-
-# Database files
-*.sqlite
-*.sqlite3
-*.db
-
-# Python specifics (for recommendation service)
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-env/
-venv/
-ENV/
-.venv/
-*.egg-info/
-.installed.cfg
-*.egg
-
-# Attached assets (documentation/reference files)
-attached_assets/
-
-# Credentials (never commit)
+# Local configuration and credentials
+.env*
+!.env.example
+static/env.js
 *service-account*.json
 *google-credentials*.json
-
-# Deployment scripts with credentials
+**/credentials*.json
+**/secrets*.json
+*.private.md
+docs/private/
+guides/
 deploy-*-with-credentials.*
 *-deploy-live.*
 *-production-deploy.*
 
-# Documentation with sensitive information
-guides/
-docs/private/
-*.private.md
-.vercel
+# Python and local data
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+*.egg-info/
+*.sqlite*
+*.db
 
-.vercel
-
-# === SECURITY & CREDENTIALS ===
-.env*
-!.env.example
-**/service-account*.json  
-**/credentials*.json
-**/secrets*.json
-**/*credentials*
-**/*secrets*
-
-# === DEVELOPMENT FILES ===  
-backup/
-archive/
+# Editor, operating system and temporary files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.sw?
+*~
 *.log
 *.tmp
 *.temp
-debug-*
-test-output-*
-
-# === EDITOR FILES ===
-.vscode/settings.json
-.vscode/launch.json
-.idea/
-*.swp
-*.swo
-*~
-
-# === OS FILES ===
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
-# === BUILD & CACHE ===
-.next/
-.nuxt/
-dist/
-build/
-.cache/
-.temp/
-node_modules/
-.npm/
-.yarn/
 *.tgz
 *.tar.gz
-
-
-# Astro generated types
-.astro/
-
-# SvelteKit generated output
-.svelte-kit/
+vite.config.ts.*
+backup/
+archive/
+attached_assets/

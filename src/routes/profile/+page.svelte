@@ -29,7 +29,6 @@
   }
 </script>
 
-<svelte:head><title>Your profile — YMovies</title></svelte:head>
 <main id="main" class="page-container narrow profile-page">
   <p class="eyebrow">Your world of film</p>
   <div class="section-heading">

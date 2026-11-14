@@ -13,6 +13,7 @@
   import MediaRow from './MediaRow.svelte';
   import Episodes from './Episodes.svelte';
   import Providers from './Providers.svelte';
+  import { genreHref } from '#lib/genres.ts';
   let { data }: { data: { item: Detail; type: MediaType } } = $props();
   const app = useApp();
   const { preferences } = app;
@@ -93,18 +94,6 @@
   }
 </script>
 
-<svelte:head
-  ><title>{mediaTitle(item)} — YMovies</title><meta
-    name="description"
-    content={item.overview || `Discover ${mediaTitle(item)} on YMovies.`}
-  /><meta
-    property="og:title"
-    content={mediaTitle(item)}
-  />{#if item.backdrop_path}<meta
-      property="og:image"
-      content={imageUrl(item.backdrop_path, 'w1280')}
-    />{/if}</svelte:head
->
 <main id="main">
   <section class="detail-hero">
     <div
@@ -129,6 +118,12 @@
       height="300"
     />
     <div class="detail-copy">
+      <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <a href="/">Home</a><span aria-hidden="true">/</span><a
+          href={data.type === 'tv' ? '/tv' : '/movies'}
+          >{data.type === 'tv' ? 'TV shows' : 'Movies'}</a
+        >
+      </nav>
       <p class="eyebrow">{data.type === 'tv' ? 'TV series' : 'Movie'}</p>
       <h1>{mediaTitle(item)}</h1>
       {#if item.tagline}<p class="tagline">{item.tagline}</p>{/if}
@@ -144,7 +139,7 @@
       <div class="chip-list">
         {#each item.genres || [] as genre}<a
             class="chip"
-            href={`/genre/${data.type}/${genre.id}`}>{genre.name}</a
+            href={genreHref(data.type, genre.name)}>{genre.name}</a
           >{/each}
       </div>
       {#if directors.length}<p class="detail-director">

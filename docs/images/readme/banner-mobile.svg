@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="330" viewBox="0 0 640 330" role="img" aria-labelledby="title desc">
+  <title id="title">YMovies</title>
+  <desc id="desc">For the what should we watch crowd. Discover, save, and pick up later.</desc>
+  <defs><clipPath id="rounded"><rect x="1" y="1" width="638" height="328" rx="22"/></clipPath></defs>
+  <g clip-path="url(#rounded)" font-family="Arial, Helvetica, sans-serif">
+    <rect width="640" height="330" fill="#101218"/>
+    <circle cx="660" cy="10" r="250" fill="#242032"/>
+    <path d="M390 0v330M430 0v330M470 0v330M510 0v330M550 0v330M590 0v330M390 50h250M390 90h250M390 130h250M390 170h250M390 210h250M390 250h250M390 290h250" stroke="#fff" stroke-opacity=".045"/>
+    <text x="28" y="43" fill="#abb0bf" font-size="13" letter-spacing="1.5">MOVIES. SERIES. YOUR PICKS.</text>
+    <text x="24" y="132" fill="#f7f8fa" font-size="76" font-weight="700" letter-spacing="-4">YMovies</text>
+    <text x="29" y="187" fill="#d4d6e1" font-size="24">For the “what should</text>
+    <text x="29" y="220" fill="#d4d6e1" font-size="24">we watch?” crowd.</text>
+    <rect x="28" y="265" width="109" height="32" rx="16" fill="#c4f878"/>
+    <text x="82" y="286" text-anchor="middle" fill="#16220b" font-size="12" font-weight="700" letter-spacing="1">DISCOVER</text>
+    <rect x="149" y="265" width="77" height="32" rx="16" fill="#c8b5ff"/>
+    <text x="187" y="286" text-anchor="middle" fill="#271940" font-size="12" font-weight="700" letter-spacing="1">SAVE</text>
+    <rect x="238" y="265" width="122" height="32" rx="16" fill="#ffb58d"/>
+    <text x="299" y="286" text-anchor="middle" fill="#3a2114" font-size="12" font-weight="700" letter-spacing="1">PICK UP LATER</text>
+    <g transform="rotate(11 503 140)">
+      <rect x="428" y="45" width="150" height="207" rx="16" fill="#b79cf4"/>
+      <rect x="442" y="60" width="122" height="103" rx="9" fill="#2e2443"/>
+      <path d="m489 83 40 26-40 26Z" fill="#c7b4f4"/>
+      <text x="447" y="196" fill="#251c35" font-size="19" font-weight="700">THE SERIES</text>
+      <path d="M448 218h83" stroke="#251c35" stroke-width="5" stroke-linecap="round" opacity=".3"/>
+    </g>
+    <g transform="rotate(-9 549 247)">
+      <rect x="486" y="181" width="126" height="129" rx="16" fill="#c4f878"/>
+      <path d="M530 201h38v61l-19-13-19 13Z" fill="#1b2612"/>
+      <text x="549" y="289" text-anchor="middle" fill="#1b2612" font-size="13" font-weight="700" letter-spacing="1">ON THE LIST</text>
+    </g>
+  </g>
+  <rect x="1" y="1" width="638" height="328" rx="22" fill="none" stroke="#30333e" stroke-width="2"/>
+</svg>

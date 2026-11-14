@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="360" viewBox="0 0 1280 360" role="img" aria-labelledby="title desc">
+  <title id="title">YMovies</title>
+  <desc id="desc">For the what should we watch crowd. Movies, series, and a list worth coming back to.</desc>
+  <defs>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#fff" stroke-opacity=".045"/></pattern>
+    <clipPath id="rounded"><rect x="1" y="1" width="1278" height="358" rx="24"/></clipPath>
+  </defs>
+  <g clip-path="url(#rounded)">
+    <rect width="1280" height="360" fill="#101218"/>
+    <rect width="1280" height="360" fill="url(#grid)"/>
+    <circle cx="1250" cy="20" r="270" fill="#242032"/>
+    <path d="M830 360 1115 0" stroke="#3a334c" stroke-width="1"/>
+    <svg x="48" y="35" width="43" height="35.26" viewBox="192 258 900 740" color="#f5f6f8">
+
+<g transform="translate(0.000000,1280.000000) scale(0.100000,-0.100000)"
+fill="currentColor" stroke="none">
+<path d="M4740 10163 c-220 -20 -361 -58 -516 -138 -101 -53 -153 -90 -251
+-180 -107 -99 -205 -230 -269 -360 -66 -135 -97 -241 -120 -408 -16 -120 -16
+-134 -1 -248 20 -142 47 -244 92 -348 17 -42 333 -677 700 -1411 368 -734 668
+-1339 668 -1345 0 -5 -129 -268 -286 -583 -282 -563 -307 -617 -344 -757 -26
+-100 -26 -399 0 -500 70 -267 163 -444 323 -615 170 -180 362 -288 624 -351
+83 -20 365 -17 460 4 193 45 363 120 495 219 97 73 212 193 275 285 47 70
+2446 4852 2530 5043 177 405 139 836 -104 1164 -163 220 -411 393 -666 466
+-41 11 -89 25 -105 30 -17 5 -88 15 -158 21 -293 25 -555 -44 -782 -207 -86
+-61 -220 -204 -287 -304 -31 -47 -380 -735 -784 -1544 -561 -1123 -737 -1467
+-766 -1495 -25 -26 -56 -43 -96 -55 -53 -17 -65 -17 -113 -5 -111 28 -181 117
+-181 228 0 58 8 76 416 893 231 463 427 868 441 913 34 105 65 288 65 383 0
+83 -29 263 -55 351 -72 235 -231 463 -428 613 -117 90 -234 146 -427 206 -60
+19 -284 41 -350 35z"/>
+<path d="M2612 7309 c-308 -618 -573 -1158 -587 -1199 -29 -82 -65 -291 -65
+-382 0 -74 27 -258 47 -323 68 -220 165 -386 312 -533 237 -236 521 -352 860
+-352 531 0 969 319 1140 828 80 240 81 523 2 757 -18 54 -252 533 -589 1209
+l-560 1119 -560 -1124z"/>
+<path d="M9063 7302 c-597 -1198 -610 -1227 -633 -1412 -38 -315 36 -614 215
+-865 232 -325 582 -505 985 -505 324 0 603 109 828 324 209 200 331 446 369
+744 17 136 17 148 0 283 -14 107 -28 168 -56 248 -35 98 -1110 2269 -1140
+2303 -3 4 -259 -500 -568 -1120z"/>
+</g>
+</svg>
+    <g font-family="Arial, Helvetica, sans-serif">
+      <text x="107" y="59" fill="#abb0bf" font-size="13" letter-spacing="2">MOVIES. SERIES. YOUR PICKS.</text>
+      <text x="44" y="168" fill="#f7f8fa" font-size="88" font-weight="700" letter-spacing="-5">YMovies</text>
+      <text x="49" y="220" fill="#d4d6e1" font-size="29">For the “what should we watch?” crowd.</text>
+      <rect x="49" y="270" width="108" height="32" rx="16" fill="#c4f878"/>
+      <text x="103" y="291" text-anchor="middle" fill="#16220b" font-size="12" font-weight="700" letter-spacing="1">DISCOVER</text>
+      <rect x="169" y="270" width="78" height="32" rx="16" fill="#c8b5ff"/>
+      <text x="208" y="291" text-anchor="middle" fill="#271940" font-size="12" font-weight="700" letter-spacing="1">SAVE</text>
+      <rect x="259" y="270" width="122" height="32" rx="16" fill="#ffb58d"/>
+      <text x="320" y="291" text-anchor="middle" fill="#3a2114" font-size="12" font-weight="700" letter-spacing="1">PICK UP LATER</text>
+      <g transform="rotate(12 1071 155)">
+        <rect x="983" y="30" width="180" height="250" rx="18" fill="#b79cf4"/>
+        <rect x="1002" y="50" width="142" height="104" rx="10" fill="#2e2443"/>
+        <path d="m1060 77 36 24-36 24Z" fill="#c7b4f4"/>
+        <text x="1005" y="192" fill="#251c35" font-size="24" font-weight="700">THE SERIES</text>
+        <path d="M1005 216h101M1005 235h67" stroke="#251c35" stroke-width="5" stroke-linecap="round" opacity=".35"/>
+      </g>
+      <g transform="rotate(-9 908 213)">
+        <rect x="814" y="91" width="188" height="252" rx="18" fill="#c4f878"/>
+        <svg x="846" y="132" width="120" height="98.39999999999999" viewBox="192 258 900 740" color="#1b2612">
+
+<g transform="translate(0.000000,1280.000000) scale(0.100000,-0.100000)"
+fill="currentColor" stroke="none">
+<path d="M4740 10163 c-220 -20 -361 -58 -516 -138 -101 -53 -153 -90 -251
+-180 -107 -99 -205 -230 -269 -360 -66 -135 -97 -241 -120 -408 -16 -120 -16
+-134 -1 -248 20 -142 47 -244 92 -348 17 -42 333 -677 700 -1411 368 -734 668
+-1339 668 -1345 0 -5 -129 -268 -286 -583 -282 -563 -307 -617 -344 -757 -26
+-100 -26 -399 0 -500 70 -267 163 -444 323 -615 170 -180 362 -288 624 -351
+83 -20 365 -17 460 4 193 45 363 120 495 219 97 73 212 193 275 285 47 70
+2446 4852 2530 5043 177 405 139 836 -104 1164 -163 220 -411 393 -666 466
+-41 11 -89 25 -105 30 -17 5 -88 15 -158 21 -293 25 -555 -44 -782 -207 -86
+-61 -220 -204 -287 -304 -31 -47 -380 -735 -784 -1544 -561 -1123 -737 -1467
+-766 -1495 -25 -26 -56 -43 -96 -55 -53 -17 -65 -17 -113 -5 -111 28 -181 117
+-181 228 0 58 8 76 416 893 231 463 427 868 441 913 34 105 65 288 65 383 0
+83 -29 263 -55 351 -72 235 -231 463 -428 613 -117 90 -234 146 -427 206 -60
+19 -284 41 -350 35z"/>
+<path d="M2612 7309 c-308 -618 -573 -1158 -587 -1199 -29 -82 -65 -291 -65
+-382 0 -74 27 -258 47 -323 68 -220 165 -386 312 -533 237 -236 521 -352 860
+-352 531 0 969 319 1140 828 80 240 81 523 2 757 -18 54 -252 533 -589 1209
+l-560 1119 -560 -1124z"/>
+<path d="M9063 7302 c-597 -1198 -610 -1227 -633 -1412 -38 -315 36 -614 215
+-865 232 -325 582 -505 985 -505 324 0 603 109 828 324 209 200 331 446 369
+744 17 136 17 148 0 283 -14 107 -28 168 -56 248 -35 98 -1110 2269 -1140
+2303 -3 4 -259 -500 -568 -1120z"/>
+</g>
+</svg>
+        <text x="839" y="279" fill="#1b2612" font-size="23" font-weight="700">THE NEXT ONE</text>
+        <path d="M840 307h134" stroke="#1b2612" stroke-width="5" stroke-linecap="round" opacity=".3"/>
+      </g>
+      <g transform="rotate(7 1165 275)">
+        <rect x="1095" y="207" width="136" height="125" rx="16" fill="#ffb58d"/>
+        <path d="M1143 230h40v65l-20-14-20 14Z" fill="#3b281e"/>
+        <text x="1163" y="317" fill="#3b281e" font-size="12" text-anchor="middle" font-weight="700" letter-spacing="1">ON THE LIST</text>
+      </g>
+    </g>
+  </g>
+  <rect x="1" y="1" width="1278" height="358" rx="24" fill="none" stroke="#30333e" stroke-width="2"/>
+</svg>

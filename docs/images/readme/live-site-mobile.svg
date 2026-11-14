@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="250" viewBox="0 0 640 250" role="img" aria-labelledby="title desc">
+  <title id="title">Open the live YMovies website</title>
+  <desc id="desc">Find tonight’s pick at ymovies.yerradouani.me. Click to open YMovies.</desc>
+  <rect x="1" y="1" width="638" height="248" rx="22" fill="#c4f878" stroke="#a5d563" stroke-width="2"/>
+  <path d="m575 1-108 248M616 1 508 249" stroke="#16220b" stroke-opacity=".08" stroke-width="22"/>
+  <g font-family="Arial, Helvetica, sans-serif" fill="#19240f">
+    <text x="28" y="39" font-size="14" font-weight="700" letter-spacing="1.7">LESS README. MORE MOVIES.</text>
+    <text x="26" y="101" font-size="48" font-weight="700" letter-spacing="-1.5">Find tonight’s pick.</text>
+    <text x="29" y="144" font-size="26">ymovies.yerradouani.me</text>
+    <rect x="28" y="175" width="265" height="51" rx="25.5" fill="#16220b"/>
+    <text x="52" y="207" fill="#e4ffbe" font-size="16" font-weight="700" letter-spacing="1">OPEN YMOVIES</text>
+    <path d="m246 208 18-18m-17 0h17v17" fill="none" stroke="#c4f878" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>

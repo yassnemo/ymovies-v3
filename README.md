@@ -1,10 +1,56 @@
-# YMovies
+<picture>
+  <source media="(max-width: 600px)" srcset="docs/images/readme/banner-mobile.svg" />
+  <img src="docs/images/readme/banner.svg" alt="YMovies — for the ‘what should we watch?’ crowd." width="1280" />
+</picture>
 
-[Live site](https://ymovies.yerradouani.me) 
+<p align="center">
+  <a href="#run-it">Run locally</a> &nbsp; / &nbsp;
+  <a href="docs/ARCHITECTURE.md">How it works</a> &nbsp; / &nbsp;
+  <a href="docs/CONTRIBUTING.md">Make it better</a>
+</p>
+
+<p align="center">
+  <a href="https://ymovies.yerradouani.me">
+    <picture>
+      <source media="(max-width: 600px)" srcset="docs/images/readme/live-site-mobile.svg" />
+      <img src="docs/images/readme/live-site.svg" alt="Open YMovies. Find tonight’s pick at ymovies.yerradouani.me." width="1280" />
+    </picture>
+  </a>
+</p>
 
 I built YMovies to make finding something to watch feel good, and remembering it easy. Browse movies and shows, watch trailers, explore a cast, and keep a library of favorites, watchlists and episode progress.
 
 The interface is Svelte from end to end. SvelteKit renders pages and serves the API, TypeScript keeps the data in shape, and TMDB supplies the catalog. Browsing works without an account. Guest libraries stay on the device; signing in adds sync through Supabase and PostgreSQL.
+
+## The stack, in full color
+
+<p align="center">
+  <a href="https://svelte.dev/"><img src="docs/images/readme/stack/svelte.svg" alt="Svelte 5" height="28" /></a>
+  <a href="https://svelte.dev/docs/kit"><img src="docs/images/readme/stack/sveltekit.svg" alt="SvelteKit 3" height="28" /></a>
+  <a href="https://www.typescriptlang.org/"><img src="docs/images/readme/stack/typescript.svg" alt="TypeScript 6" height="28" /></a>
+  <a href="https://vite.dev/"><img src="docs/images/readme/stack/vite.svg" alt="Vite 8" height="28" /></a>
+  <a href="https://tailwindcss.com/"><img src="docs/images/readme/stack/tailwind.svg" alt="Tailwind CSS 3" height="28" /></a>
+</p>
+<p align="center">
+  <a href="https://nodejs.org/"><img src="docs/images/readme/stack/node.svg" alt="Node.js 22.12 or newer" height="28" /></a>
+  <a href="https://supabase.com/"><img src="docs/images/readme/stack/supabase.svg" alt="Supabase" height="28" /></a>
+  <a href="https://www.postgresql.org/"><img src="docs/images/readme/stack/postgres.svg" alt="PostgreSQL" height="28" /></a>
+  <a href="https://orm.drizzle.team/"><img src="docs/images/readme/stack/drizzle.svg" alt="Drizzle" height="28" /></a>
+  <a href="https://developer.themoviedb.org/"><img src="docs/images/readme/stack/tmdb.svg" alt="TMDB" height="28" /></a>
+</p>
+
+The optional recommendation service has its own little corner:
+
+<p>
+  <a href="recommendation_service/README.md"><img src="docs/images/readme/stack/python.svg" alt="Python" height="28" /></a>
+  <a href="https://flask.palletsprojects.com/"><img src="docs/images/readme/stack/flask.svg" alt="Flask" height="28" /></a>
+</p>
+
+## A few good reasons to open it
+
+| Find a good one                                                                              | Make it yours                                                        | Keep your place                                                                  |
+| -------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| Browse movies and series, check the cast, play a trailer, or start with a genre or provider. | Save favorites, build a watchlist, and sort titles into collections. | Track movie progress and TV episodes. Keep it on your device or sign in to sync. |
 
 ![YMovies on desktop](docs/images/ymovies-desktop.png)
 
@@ -22,7 +68,7 @@ On PowerShell, use `Copy-Item .env.example .env`. Open **http://localhost:5000**
 
 Set `TMDB_API_KEY` or `TMDB_BEARER_TOKEN` to load the catalog. Without credentials, the app shows an unavailable state. Accounts are optional: the [setup guide](docs/setup/INSTALLATION.md) explains the Supabase and database variables. Keep server credentials out of `PUBLIC_` variables and source control.
 
-## Work on it
+## Bring your own editor
 
 | Command                  | What it does                                                         |
 | ------------------------ | -------------------------------------------------------------------- |
@@ -45,18 +91,25 @@ Browser checks accept `TEST_BASE_URL` and `CHROME_PATH`. Account sign-in, email 
 
 Start with [architecture](docs/ARCHITECTURE.md), [design](docs/DESIGN.md), [API](docs/api/API_DOCUMENTATION.md), or [contributing](docs/CONTRIBUTING.md). Deployment instructions are [here](docs/deployment/DEPLOYMENT.md); report security issues using [SECURITY.md](SECURITY.md).
 
-## Discovery and analytics
+<details>
+<summary><strong>The search and analytics bits</strong></summary>
 
 Public pages render titles, descriptions, canonical links and structured data on the server. `/genres` and `/providers` connect the catalog; `/about` identifies the creator. `/sitemap.xml` lists public routes and current trending titles. Private pages, search results and filtered duplicates are excluded from indexing. There are no ranking guarantees or fabricated ratings.
 
 The Google tag **G-0HC7C4GFD5** loads once in `src/app.html`. SvelteKit navigation sends explicit page views from `src/lib/analytics.ts`; query strings and URL fragments are removed first. In the GA4 stream, keep **Enhanced measurement → Page views → Advanced settings → Page changes based on browser history events** disabled to avoid counting navigation twice. The initial automatic page view is disabled in code. See [Google's page view guidance](https://developers.google.com/analytics/devguides/collection/ga4/views).
 
+</details>
+
 ## Credits
 
-Movie and TV metadata comes from [TMDB](https://www.themoviedb.org/), with availability data from JustWatch through TMDB. 
-YMovies is not endorsed or certified by TMDB. 
+Movie and TV metadata comes from [TMDB](https://www.themoviedb.org/), with availability data from JustWatch through TMDB.
+
+YMovies is not endorsed or certified by TMDB.
+
 The bundled Inter font retains its [SIL Open Font License](static/fonts/Inter-OFL.txt); shader attributions are kept beside their source.
 
-[MIT license](LICENSE). 
+Technology badges use [Shields.io](https://shields.io/) and [Simple Icons](https://simpleicons.org/). The banners use the project's own artwork.
+
+[MIT license](LICENSE).
 
 Made by [Yassine Erradouani](https://yerradouani.me).

@@ -4,6 +4,7 @@
   import { movieGenres, tvGenres } from '#lib/genres.ts';
   import { mediaKey } from '#lib/types/media.ts';
   import MediaCard from './MediaCard.svelte';
+  import Hero from './Hero.svelte';
   let { data }: { data: Awaited<ReturnType<typeof browseCatalog>> } = $props();
   const labels: Record<string, string> = {
     trending: 'Trending',
@@ -35,8 +36,8 @@
     content={`Discover ${data.title.toLowerCase()} and find your next favorite on YMovies.`}
   /></svelte:head
 >
-<main id="main" class="page-container">
-  <p class="eyebrow">Discover something great</p>
+{#if data.items.length}<Hero items={data.items.slice(0, 7)} compact />{/if}
+<main id="main" class="page-container browse-content">
   <h1 class="page-title">{data.title}</h1>
   <nav class="tabs" aria-label="Catalog categories">
     {#each categories as category}<a
@@ -46,6 +47,7 @@
       >{/each}
   </nav>
   <form class="filter-bar" method="GET">
+    <input type="hidden" name="type" value={data.type} />
     <input type="hidden" name="category" value={data.category} /><label
       >Genre<select name="genre" value={String(data.selectedGenre || '')}
         ><option value="">All genres</option

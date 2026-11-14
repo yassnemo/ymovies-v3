@@ -21,16 +21,17 @@ export async function resource<T>(
 }
 export async function homeCatalog() {
   const definitions: [string, string, MediaType, string][] = [
-    ['Trending movies', '/trending/movie/week', 'movie', '/movies'],
-    ['Popular movies', '/movie/popular', 'movie', '/movies?category=popular'],
-    ['Trending TV shows', '/trending/tv/week', 'tv', '/tv'],
-    ['Popular TV shows', '/tv/popular', 'tv', '/tv?category=popular'],
+    ['Trending Movies', '/trending/movie/day', 'movie', '/movies'],
+    ['Trending Series', '/trending/tv/day', 'tv', '/tv'],
+    ['Popular Movies', '/movie/popular', 'movie', '/movies?category=popular'],
+    ['Popular Series', '/tv/popular', 'tv', '/tv?category=popular'],
     [
-      'Top rated movies',
+      'Top Rated Movies',
       '/movie/top_rated',
       'movie',
       '/movies?category=top_rated'
-    ]
+    ],
+    ['Top Rated Series', '/tv/top_rated', 'tv', '/tv?category=top_rated']
   ];
   const results = await Promise.allSettled(
     definitions.map(async ([title, path, type, href]) => ({
@@ -45,7 +46,43 @@ export async function homeCatalog() {
   const sections: CatalogSection[] = results.flatMap((result) =>
     result.status === 'fulfilled' ? [result.value] : []
   );
-  return { sections, unavailable: sections.length === 0 };
+  const mixed = await resource<{ results: Media[] }>('/trending/all/day').catch(
+    () => ({ results: [] })
+  );
+  const ranked = mixed.results
+    .filter((item) => item.media_type === 'movie' || item.media_type === 'tv')
+    .slice(0, 10);
+  const selected = sections[0]?.items.slice(0, 7) || [];
+  const featured = await heroImages(
+    selected.map((item) => ({
+      ...item,
+      rank:
+        ranked.findIndex(
+          (value) =>
+            value.id === item.id && value.media_type === item.media_type
+        ) + 1 || undefined
+    }))
+  );
+  return { sections, ranked, featured, unavailable: sections.length === 0 };
+}
+export async function heroImages(items: Media[]): Promise<Media[]> {
+  return Promise.all(
+    items.map(async (item) => {
+      try {
+        const images = await resource<{
+          logos: { file_path: string; iso_639_1: string | null }[];
+        }>('/' + (item.media_type || 'movie') + '/' + item.id + '/images', {
+          include_image_language: 'en,null'
+        });
+        const logo =
+          images.logos.find((value) => value.iso_639_1 === 'en') ||
+          images.logos[0];
+        return { ...item, logo_path: logo?.file_path || '' };
+      } catch {
+        return item;
+      }
+    })
+  );
 }
 export async function browseCatalog(
   type: MediaType,
@@ -83,10 +120,17 @@ export async function browseCatalog(
     : '';
   let endpoint =
     category === 'trending' ? `/trending/${type}/week` : `/${type}/${category}`;
-  if (selectedGenre || year || url.searchParams.has('sort')) {
+  const provider = /^\d+$/.test(url.searchParams.get('provider') || '')
+    ? url.searchParams.get('provider')!
+    : '';
+  if (selectedGenre || year || provider || url.searchParams.has('sort')) {
     endpoint = `/discover/${type}`;
     params.sort_by = sort;
     if (selectedGenre) params.with_genres = String(selectedGenre);
+    if (provider) {
+      params.with_watch_providers = provider;
+      params.watch_region = 'US';
+    }
     if (year)
       params[
         type === 'movie' ? 'primary_release_year' : 'first_air_date_year'
@@ -217,7 +261,7 @@ export async function searchCatalog(url: URL) {
         ...empty,
         sections: home.sections.filter(
           (section) =>
-            section.title.startsWith('Popular') &&
+            section.title.startsWith('Trending') &&
             (type === 'multi' || section.items[0]?.media_type === type)
         ),
         unavailable: home.unavailable

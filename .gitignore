@@ -12,6 +12,8 @@ dist/
 .cache/
 .temp/
 coverage/
+tests/performance/results/*
+!tests/performance/results/.gitkeep
 .nyc_output/
 
 # Local configuration and credentials

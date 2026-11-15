@@ -90,6 +90,8 @@ Set `TMDB_API_KEY` or `TMDB_BEARER_TOKEN` to load the catalog. Without credentia
 
 Browser checks accept `TEST_BASE_URL` and `CHROME_PATH`. Account sign-in, email delivery and production analytics need verification against your own services.
 
+For free local k6 load testing, see [performance testing](tests/performance/README.md). Start with `npm run test:load:smoke`; it uses isolated synthetic dependencies by default and produces JSON and HTML reports. Normal, stress and spike profiles require an intentional separate command.
+
 Start with [architecture](docs/ARCHITECTURE.md), [design](docs/DESIGN.md), [API](docs/api/API_DOCUMENTATION.md), or [contributing](docs/CONTRIBUTING.md). Deployment instructions are [here](docs/deployment/DEPLOYMENT.md); report security issues using [SECURITY.md](SECURITY.md).
 
 <details>

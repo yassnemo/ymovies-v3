@@ -2,6 +2,7 @@ node_modules/
 .svelte-kit/
 .astro/
 .temp/
+tests/performance/results/
 build/
 dist/
 static/

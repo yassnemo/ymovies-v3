@@ -1,0 +1,80 @@
+name: Performance smoke
+
+on:
+  pull_request:
+  push:
+    branches: [main, develop]
+  workflow_dispatch:
+    inputs:
+      staging:
+        description: Also smoke-test the configured staging environment
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: performance-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        target: ${{ fromJSON(github.event_name == 'workflow_dispatch' && inputs.staging && '["fixture", "staging"]' || '["fixture"]') }}
+    # Configure the protected performance-staging environment for remote smoke runs.
+    environment: ${{ matrix.target == 'staging' && 'performance-staging' || 'performance-fixture' }}
+    env:
+      PERF_TARGET: ${{ matrix.target }}
+      PERF_VUS: '2'
+      PERF_THINK_MIN: '0.5'
+      PERF_THINK_MAX: '1.5'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run test:load:check
+      - name: Install pinned open-source k6 (verify release checksum)
+        shell: bash
+        run: |
+          set -euo pipefail
+          release=https://github.com/grafana/k6/releases/download/v1.6.0
+          curl --fail --location --retry 3 "$release/k6-v1.6.0-linux-amd64.tar.gz" -o "$RUNNER_TEMP/k6-v1.6.0-linux-amd64.tar.gz"
+          curl --fail --location --retry 3 "$release/k6-v1.6.0-checksums.txt" -o "$RUNNER_TEMP/k6-v1.6.0-checksums.txt"
+          cd "$RUNNER_TEMP"
+          sha256sum --check --ignore-missing k6-v1.6.0-checksums.txt
+          tar -xzf k6-v1.6.0-linux-amd64.tar.gz
+          echo "K6_BINARY=$RUNNER_TEMP/k6-v1.6.0-linux-amd64/k6" >> "$GITHUB_ENV"
+      - name: Isolated application smoke
+        if: matrix.target == 'fixture'
+        run: npm run test:load:smoke
+      - name: Staging smoke (manual only)
+        if: matrix.target == 'staging'
+        env:
+          PERF_BASE_URL: ${{ vars.PERF_BASE_URL }}
+          PERF_EXTERNAL_SERVICES: ${{ vars.PERF_EXTERNAL_SERVICES }}
+          PERF_ISOLATION_CONFIRMED: ${{ vars.PERF_ISOLATION_CONFIRMED }}
+          PERF_INCLUDE_AUTH: ${{ vars.PERF_INCLUDE_AUTH || 'false' }}
+          PERF_INCLUDE_AI: ${{ vars.PERF_INCLUDE_AI || 'false' }}
+          PERF_TOKENS_JSON: ${{ secrets.PERF_TOKENS_JSON }}
+          PERF_P95_MS: ${{ vars.PERF_P95_MS || '1500' }}
+          PERF_P99_MS: ${{ vars.PERF_P99_MS || '3000' }}
+        shell: bash
+        run: |
+          if [ -z "$PERF_BASE_URL" ]; then echo 'Configure PERF_BASE_URL in performance-staging first.'; exit 1; fi
+          npm run test:load:smoke
+      - name: Save reports even when thresholds fail
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: performance-smoke-${{ matrix.target }}-${{ github.run_id }}
+          path: tests/performance/results/
+          if-no-files-found: warn
+          retention-days: 14

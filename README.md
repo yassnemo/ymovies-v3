@@ -70,22 +70,23 @@ Set `TMDB_API_KEY` or `TMDB_BEARER_TOKEN` to load the catalog. Without credentia
 
 ## Bring your own editor
 
-| Command                  | What it does                                                         |
-| ------------------------ | -------------------------------------------------------------------- |
-| `npm run dev`            | Starts the local app on port 5000                                    |
-| `npm run doctor`         | Checks setup without printing secrets                                |
-| `npm run check`          | Checks Svelte and TypeScript                                         |
-| `npm test`               | Runs the application and security tests                              |
-| `npm run format`         | Formats source and documentation                                     |
-| `npm run format:check`   | Checks formatting                                                    |
-| `npm run build`          | Builds the Node server into `build/`                                 |
-| `npm start`              | Runs that server, loading local environment files when present       |
-| `npm run test:api`       | Checks a running server's API boundaries                             |
-| `npm run test:browser`   | Checks guest flows on desktop and mobile in Chrome                   |
-| `npm run test:design`    | Checks layouts, motion and preferences; records browser frames       |
-| `npm run test:seo`       | Checks server-rendered metadata, sitemap and security headers        |
-| `npm run test:analytics` | Checks Google tag loading and navigation without sending real visits |
-| `npm run db:push`        | Applies the schema to the configured database; review changes first  |
+| Command                   | What it does                                                         |
+| ------------------------- | -------------------------------------------------------------------- |
+| `npm run dev`             | Starts the local app on port 5000                                    |
+| `npm run doctor`          | Checks setup without printing secrets                                |
+| `npm run check`           | Checks Svelte and TypeScript                                         |
+| `npm test`                | Runs the application and security tests                              |
+| `npm run format`          | Formats source and documentation                                     |
+| `npm run format:check`    | Checks formatting                                                    |
+| `npm run build`           | Builds the Node server into `build/`                                 |
+| `npm start`               | Runs that server, loading local environment files when present       |
+| `npm run test:api`        | Checks a running server's API boundaries                             |
+| `npm run test:browser`    | Checks guest flows on desktop and mobile in Chrome                   |
+| `npm run test:design`     | Checks layouts, motion and preferences; records browser frames       |
+| `npm run test:navigation` | Checks desktop/mobile transitions, history, reduced motion and fonts |
+| `npm run test:seo`        | Checks server-rendered metadata, sitemap and security headers        |
+| `npm run test:analytics`  | Checks Google tag loading and navigation without sending real visits |
+| `npm run db:push`         | Applies the schema to the configured database; review changes first  |
 
 Browser checks accept `TEST_BASE_URL` and `CHROME_PATH`. Account sign-in, email delivery and production analytics need verification against your own services.
 

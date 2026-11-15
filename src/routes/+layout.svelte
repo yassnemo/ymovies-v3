@@ -1,5 +1,11 @@
 <script lang="ts">
-  import { onMount, setContext, untrack, type Snippet } from 'svelte';
+  import {
+    onDestroy,
+    onMount,
+    setContext,
+    untrack,
+    type Snippet
+  } from 'svelte';
   import { page } from '$app/state';
   import { afterNavigate, onNavigate } from '$app/navigation';
   import { trackPageView } from '#lib/analytics.ts';
@@ -43,18 +49,37 @@
   afterNavigate(({ to }) => {
     if (to) trackPageView(to.url, document.title);
   });
+  let activeTransition: ViewTransition | undefined;
+  onDestroy(() => activeTransition?.skipTransition());
   onNavigate((navigation) => {
+    // Finish an interrupted fade before capturing the next page.
+    activeTransition?.skipTransition();
     if (
       !document.startViewTransition ||
+      document.hidden ||
+      navigation.from?.url.pathname === navigation.to?.url.pathname ||
       $preferences.appSettings.reduceMotion ||
       matchMedia('(prefers-reduced-motion: reduce)').matches
     )
       return;
     return new Promise<void>((resolve) => {
-      document.startViewTransition(async () => {
+      try {
+        const transition = document.startViewTransition(async () => {
+          // Release navigation immediately; never wait for the animation.
+          resolve();
+          await navigation.complete;
+        });
+        activeTransition = transition;
+        // A failed/skipped snapshot must never hold up the router.
+        void transition.ready.catch(() => resolve());
+        void transition.finished
+          .catch(() => {})
+          .finally(() => {
+            if (activeTransition === transition) activeTransition = undefined;
+          });
+      } catch {
         resolve();
-        await navigation.complete;
-      });
+      }
     });
   });
   let ambient = $derived(
@@ -75,7 +100,7 @@
       aria-hidden="true"
     ></div>{/if}<a class="skip-link" href="#main">Skip to content</a><Navbar
   />{/if}
-<div class:app-content={chrome}>{@render children()}</div>
+<div class="route-content" class:app-content={chrome}>{@render children()}</div>
 {#if chrome}<Footer />{/if}
 {#if chrome && scrollPosition > 600}<button
     class="back-to-top"

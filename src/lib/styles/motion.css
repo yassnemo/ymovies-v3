@@ -13,26 +13,31 @@ body {
   opacity: 0.72;
   transition: background-image 1s;
 }
-.app-content {
+.route-content {
   view-transition-name: app-content;
 }
-.ym-navigation {
-  view-transition-name: site-navigation;
+/* Only the page content fades. Keep the shell and its geometry still. */
+::view-transition {
+  pointer-events: none;
 }
-.ym-mobile-nav {
-  view-transition-name: mobile-navigation;
+::view-transition-group(root),
+::view-transition-group(app-content),
+::view-transition-new(root) {
+  animation: none;
+}
+::view-transition-old(root) {
+  display: none;
+}
+::view-transition-image-pair(app-content) {
+  isolation: isolate;
 }
 ::view-transition-old(app-content) {
-  animation: route-leave 0.18s ease both;
+  animation: route-leave 160ms ease-out both;
+  mix-blend-mode: normal;
 }
 ::view-transition-new(app-content) {
-  animation: route-enter 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-::view-transition-old(site-navigation),
-::view-transition-new(site-navigation),
-::view-transition-old(mobile-navigation),
-::view-transition-new(mobile-navigation) {
-  animation: none;
+  animation: route-enter 160ms ease-out both;
+  mix-blend-mode: normal;
 }
 #main {
   scroll-margin-top: 90px;
@@ -59,20 +64,19 @@ body {
 @keyframes route-leave {
   to {
     opacity: 0;
-    filter: blur(3px);
   }
 }
 @keyframes route-enter {
   from {
     opacity: 0;
-    transform: translateY(8px);
-    filter: blur(3px);
   }
   to {
     opacity: 1;
-    transform: none;
-    filter: blur(0);
   }
+}
+:root[data-reduced-motion='true']::view-transition-old(app-content),
+:root[data-reduced-motion='true']::view-transition-new(app-content) {
+  animation: none;
 }
 @media (max-width: 639px) {
   .catalog-ambient {

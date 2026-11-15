@@ -21,6 +21,7 @@
     "test:api": "node scripts/testing/test-api.js",
     "test:browser": "node scripts/testing/browser-smoke.mjs",
     "test:design": "node scripts/testing/design-smoke.mjs",
+    "test:navigation": "node scripts/testing/navigation-smoke.mjs",
     "db:push": "drizzle-kit push",
     "format": "prettier --write .",
     "format:check": "prettier --check .",

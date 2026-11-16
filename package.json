@@ -36,7 +36,7 @@
     "test:analytics": "node scripts/testing/analytics-smoke.mjs"
   },
   "dependencies": {
-    "@neondatabase/serverless": "^0.10.4",
+    "@neondatabase/serverless": "^1.2.0",
     "@supabase/supabase-js": "^2.119.0",
     "axios": "^1.21.1",
     "drizzle-orm": "^0.45.2",
